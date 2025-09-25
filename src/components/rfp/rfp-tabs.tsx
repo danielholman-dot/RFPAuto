@@ -315,7 +315,6 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            {!hasSubmitted && <Button variant="outline" size="sm">Send Reminder</Button>}
                           </TableCell>
                         </TableRow>
                       );
