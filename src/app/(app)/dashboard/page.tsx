@@ -6,7 +6,6 @@ import {
   Users,
 } from "lucide-react"
 import Link from "next/link"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,25 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { rfps, contractors } from "@/lib/data"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
-import type { ChartConfig } from "@/components/ui/chart"
-
-const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-]
-
-const chartConfig = {
-  desktop: {
-    label: "RFPs",
-    color: "hsl(var(--primary))",
-  },
-} satisfies ChartConfig
+import { RfpVolumeChart } from "@/components/dashboard/rfp-volume-chart"
 
 export default function Dashboard() {
   const activeRFPs = rfps.filter(r => r.status === 'In Progress' || r.status === 'Sent');
@@ -162,29 +143,7 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfig}>
-                <BarChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{
-                    top: 20,
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8} />
-                </BarChart>
-              </ChartContainer>
+              <RfpVolumeChart />
             </CardContent>
           </Card>
         </div>
