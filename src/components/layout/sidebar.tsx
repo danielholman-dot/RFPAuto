@@ -16,6 +16,7 @@ import {
   Users,
   Settings,
   Briefcase,
+  Map,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -54,6 +55,20 @@ export function AppSidebar() {
             </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <Link href="/rfp/new" passHref>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/rfp/new')}
+                tooltip={{ children: 'New RFP' }}
+              >
+                <span>
+                  <FilePlus2 />
+                  <span>New RFP</span>
+                </span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <Link href="/rfp" passHref>
               <SidebarMenuButton
                 asChild
@@ -77,6 +92,20 @@ export function AppSidebar() {
                 <span>
                   <Users />
                   <span>Contractors</span>
+                </span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Link href="/metro" passHref>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/metro')}
+                tooltip={{ children: 'Metro' }}
+              >
+                <span>
+                  <Map />
+                  <span>Metro</span>
                 </span>
               </SidebarMenuButton>
             </Link>
