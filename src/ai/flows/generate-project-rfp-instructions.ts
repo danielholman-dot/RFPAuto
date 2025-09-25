@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { marcusSOPContent } from '@/lib/sop';
 
 const GenerateProjectRFPInstructionsInputSchema = z.object({
   projectName: z.string().describe('The name of the project.'),
@@ -18,7 +19,6 @@ const GenerateProjectRFPInstructionsInputSchema = z.object({
   estimatedBudget: z.number().describe('The estimated budget for the project.'),
   startDate: z.string().describe('The start date for the project.'),
   technicalDocuments: z.string().describe('Technical documents related to the project.'),
-  marcusSOPContent: z.string().describe('Boilerplate content from the MARCUS SOP.'),
 });
 export type GenerateProjectRFPInstructionsInput = z.infer<
   typeof GenerateProjectRFPInstructionsInputSchema
@@ -50,7 +50,7 @@ Contractor Type: {{{contractorType}}}
 Estimated Budget: {{{estimatedBudget}}}
 Start Date: {{{startDate}}}
 Technical Documents: {{{technicalDocuments}}}
-MARCUS SOP Content: {{{marcusSOPContent}}}
+MARCUS SOP Content: ${marcusSOPContent}
 
 Generate project-specific RFP instructions:`,
 });
