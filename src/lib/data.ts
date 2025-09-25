@@ -1,3 +1,4 @@
+
 export const metroCodes = [
   { code: 'CMH', city: 'Columbus', state: 'Ohio' },
   { code: 'IAD', city: 'Gainsville', state: 'Virginia' },
@@ -35,5 +36,5 @@ export const metroCodes = [
 ];
 
 export const contractorTypes = [
-  'General Contractor', 'Mechanical', 'Electrical', 'Plumbing', 'Civil Engineering'
+  'General Contractor', 'Mechanical', 'Electrical', 'Civil Engineering', 'NICON'
 ];
