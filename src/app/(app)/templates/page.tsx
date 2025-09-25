@@ -1,5 +1,12 @@
+
 'use client';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import {
   Card,
   CardContent,
@@ -40,34 +47,42 @@ Best regards,`,
           </CardDescription>
         </CardHeader>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>EOI - Expression of Interest</CardTitle>
-          <CardDescription>
-            Template for sending an initial Expression of Interest invitation to
-            potential contractors.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-semibold text-sm text-muted-foreground">
-              Subject
-            </h3>
-            <p className="text-sm p-3 bg-muted rounded-md mt-1">
-              {eoiTemplate.subject}
-            </p>
-          </div>
-          <Separator />
-          <div>
-            <h3 className="font-semibold text-sm text-muted-foreground">
-              Body
-            </h3>
-            <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
-              {eoiTemplate.body}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="item-1">
+          <Card>
+            <AccordionTrigger className="p-6">
+              <div>
+                <CardTitle className="text-left">EOI - Expression of Interest</CardTitle>
+                <CardDescription className="text-left">
+                  Template for sending an initial Expression of Interest invitation to
+                  potential contractors.
+                </CardDescription>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">
+                    Subject
+                  </h3>
+                  <p className="text-sm p-3 bg-muted rounded-md mt-1">
+                    {eoiTemplate.subject}
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">
+                    Body
+                  </h3>
+                  <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
+                    {eoiTemplate.body}
+                  </div>
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }
