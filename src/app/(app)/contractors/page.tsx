@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Table,
@@ -15,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Star } from 'lucide-react';
+import { Loader2, Star } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Contractor } from '@/lib/types';
 import { collection, query, orderBy } from 'firebase/firestore';
@@ -33,13 +34,16 @@ export default function ContractorsPage() {
     );
   }, [firestore]);
 
-
   const { data: contractors, loading } = useCollection<Contractor>(
     contractorsQuery
   );
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (loading || !firestore) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
