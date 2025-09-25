@@ -28,6 +28,12 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
   const [emailContent, setEmailContent] = useState<{ to: string, subject: string, body: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const formatDate = (date: any) => {
+    if (!date) return 'TBD';
+    const d = date.toDate ? date.toDate() : new Date(date);
+    return format(d, 'MMMM d, yyyy');
+  };
+
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
@@ -40,6 +46,10 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
         contractorName: contractor.name,
         campusLocation: rfp.metroCode,
         eoiDueDate: eoiDueDate,
+        rfpStartDate: formatDate(rfp.rfpStartDate),
+        rfpEndDate: formatDate(rfp.rfpEndDate),
+        projectStartDate: formatDate(rfp.projectStartDate),
+        projectEndDate: formatDate(rfp.projectEndDate),
       }).then(result => {
         setEmailContent({
             to: contractor.contactEmail,

@@ -1,3 +1,4 @@
+
 'use client';
 import { notFound } from 'next/navigation';
 import { RfpTabs } from '@/components/rfp/rfp-tabs';
@@ -89,8 +90,13 @@ export default function RfpDetailPage({ params }: RfpDetailPageProps) {
         <CardContent className="grid md:grid-cols-3 gap-4 text-sm">
             <div><strong>Metro:</strong> {rfp.metroCode}</div>
             <div><strong>Contractor Type:</strong> {rfp.contractorType}</div>
-            <div><strong>Project Start Date:</strong> {formatDate(rfp.projectStartDate)}</div>
             <div className="md:col-span-3"><strong>Budget:</strong> ${rfp.estimatedBudget.toLocaleString()}</div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:col-span-3">
+              <div><strong>RFP Start:</strong> {formatDate(rfp.rfpStartDate)}</div>
+              <div><strong>RFP End:</strong> {formatDate(rfp.rfpEndDate)}</div>
+              <div><strong>Project Start:</strong> {formatDate(rfp.projectStartDate)}</div>
+              <div><strong>Project End:</strong> {formatDate(rfp.projectEndDate)}</div>
+            </div>
             <div className="md:col-span-3">
                 <p><strong>Scope:</strong> {rfp.scopeOfWork}</p>
             </div>

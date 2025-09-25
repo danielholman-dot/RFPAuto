@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -22,6 +23,10 @@ const GenerateRfpInvitationInputSchema = z.object({
   contractorName: z.string().describe('The name of the contractor company (GC).'),
   campusLocation: z.string().describe('The operational data center site location.'),
   eoiDueDate: z.string().describe('The due date for the EOI, e.g., Month/Day/Year at Time PST.'),
+  rfpStartDate: z.string().optional().describe('The start date of the RFP period.'),
+  rfpEndDate: z.string().optional().describe('The end date of the RFP period.'),
+  projectStartDate: z.string().optional().describe('The projected start date of the project.'),
+  projectEndDate: z.string().optional().describe('The projected end date of the project.'),
 });
 
 export type GenerateRfpInvitationInput = z.infer<typeof GenerateRfpInvitationInputSchema>;
@@ -63,6 +68,13 @@ const rfpInvitationPrompt = ai.definePrompt({
 
   Generate the email subject and body based on the template below. The To, Cc, and Bcc fields are for context and should not be part of the generated output.
 
+  After the main body, include a "Key Dates" section with the provided dates.
+
+  RFP Start Date: {{{rfpStartDate}}}
+  RFP End Date: {{{rfpEndDate}}}
+  Project Start Date: {{{projectStartDate}}}
+  Project End Date: {{{projectEndDate}}}
+
   <template>
   Subject: CONFIDENTIAL Expression of Interest - Google MARCUS {{{projectName}}} | ${new Date().getFullYear()} {{{contractorName}}}
 
@@ -81,6 +93,11 @@ const rfpInvitationPrompt = ai.definePrompt({
   Thank you for your time and we appreciate your consideration as a potential partner.
 
   Best regards,
+
+  ---
+  **Key Dates:**
+  RFP Period: {{{rfpStartDate}}} - {{{rfpEndDate}}}
+  Projected Timeline: {{{projectStartDate}}} - {{{projectEndDate}}}
   </template>
   `,
 });
