@@ -60,6 +60,29 @@ Regards,
 [Your Company]`,
   };
 
+  const ndaTemplate = {
+    subject: 'NDA Renewal Request - [Company Name]',
+    body: `Dear [Company Name or POC Name],
+
+I hope this message finds you well.
+
+We are reaching out to notify you that Google is currently in the process of updating its non-disclosure agreements. During our review, we noted that our NDA with your company is set to expire soon and requires renewal for another 5 years. This NDA is crucial as it enables Google’s Data Center Construction team to engage your company regarding future Requests for Proposals (RFPs).
+
+To expedite this renewal process, we kindly request the following information:
+- Legal entity name of your company
+- Company address and website
+- Name, role, and email address of the person authorized to sign the new NDA
+
+Once we receive the above information, we will send the updated NDA via DocuSign for your review and signature.
+
+Thank you for your prompt attention to this matter. We look forward to your response.
+
+Sincerely,
+
+[Your Name]
+[Your Position]`,
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -132,6 +155,39 @@ Regards,
                   </h3>
                   <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
                     {nonAwardTemplate.body}
+                  </div>
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+        <AccordionItem value="item-3">
+          <Card>
+            <AccordionTrigger className="p-6">
+              <div>
+                <CardTitle className="text-left">NDA Renewal Email</CardTitle>
+                <CardDescription className="text-left">
+                  Template for requesting an NDA renewal from a partner company.
+                </CardDescription>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">
+                    Subject
+                  </h3>
+                  <p className="text-sm p-3 bg-muted rounded-md mt-1">
+                    {ndaTemplate.subject}
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">
+                    Body
+                  </h3>
+                  <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
+                    {ndaTemplate.body}
                   </div>
                 </div>
               </CardContent>
