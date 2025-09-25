@@ -36,5 +36,12 @@ export const metroCodes = [
 ];
 
 export const contractorTypes = [
-  'General Contractor', 'Mechanical', 'Electrical', 'Civil Engineering', 'NICON'
+  'General Contractor', 
+  'Mechanical', 
+  'Electrical', 
+  'Civil Engineering', 
+  'NICON',
+  'Electrical / NICON',
+  'Electrical / Mechanical',
+  'Electrical / Professional Services'
 ];

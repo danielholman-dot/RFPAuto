@@ -1,8 +1,24 @@
+'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { contractorTypes } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useFirestore } from "@/firebase";
+import { seedContractors } from "@/lib/seed";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
+  const firestore = useFirestore();
+  const [seedStatus, setSeedStatus] = useState('');
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  const handleSeed = async () => {
+    setIsSeeding(true);
+    await seedContractors(firestore, setSeedStatus);
+    setIsSeeding(false);
+  }
+
   return (
     <div className="grid gap-6">
       <Card>
@@ -12,8 +28,21 @@ export default function SettingsPage() {
             Manage system-wide configurations and options.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
             <p>User preferences, notification settings, and other global configurations will be available here in a future update.</p>
+            <div>
+              <h3 className="text-lg font-medium mb-2">Database Seeding</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                This will clear and re-populate the contractors collection in Firestore with the latest data. This is a destructive action.
+              </p>
+              <div className="flex items-center gap-4">
+                <Button onClick={handleSeed} disabled={isSeeding}>
+                  {isSeeding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Seed Contractor Data
+                </Button>
+                {seedStatus && <p className="text-sm text-muted-foreground">{seedStatus}</p>}
+              </div>
+            </div>
         </CardContent>
       </Card>
       <Card>

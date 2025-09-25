@@ -13,6 +13,7 @@ export type RFP = {
   projectEndDate?: Timestamp | Date;
   status: 'Draft' | 'Sent' | 'In Progress' | 'Awarded' | 'Completed';
   invitedContractors?: string[];
+  proposals?: Proposal[];
 };
 
 export type Contractor = {
