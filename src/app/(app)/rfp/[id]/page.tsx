@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import type { RFP } from '@/lib/types';
 import { getRfpById } from '@/lib/data';
-import { useEffect, useState } from 'react';
+import { useEffect, useState }from 'react';
 
 type RfpDetailPageProps = {
   params: {
@@ -14,18 +14,18 @@ type RfpDetailPageProps = {
   };
 };
 
-export default function RfpDetailPage({ params }: RfpDetailPageProps) {
+export default function RfpDetailPage({ params: { id } }: RfpDetailPageProps) {
   const [rfp, setRfp] = useState<RFP | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
-      const data = await getRfpById(params.id);
+      const data = await getRfpById(id);
       setRfp(data);
       setLoading(false);
     }
     loadData();
-  }, [params.id]);
+  }, [id]);
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
@@ -42,9 +42,9 @@ export default function RfpDetailPage({ params }: RfpDetailPageProps) {
   if (!rfp) {
     // This part handles the creation of a *new* RFP, which doesn't exist in the DB yet.
     // We check for a specific prefix to know it's a new draft.
-    if (params.id.startsWith('draft-')) {
+    if (id.startsWith('draft-')) {
         const newRfp: RFP = {
-            id: params.id,
+            id: id,
             projectName: 'New RFP Draft',
             scopeOfWork: 'To be defined.',
             metroCode: 'N/A',
