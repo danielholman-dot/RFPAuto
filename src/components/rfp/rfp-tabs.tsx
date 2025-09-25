@@ -17,14 +17,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo } from "react";
 import { analyzeAndScoreProposals, AnalyzeAndScoreProposalsOutput } from "@/ai/flows/analyze-and-score-proposals";
 import Link from "next/link";
-import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors } from "@/lib/data";
+import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp } from "@/lib/data";
 import { RfpInvitationDialog } from "./rfp-invitation-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type RfpTabsProps = {
   rfp: RFP;
@@ -35,6 +36,9 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   const [suggestedContractors, setSuggestedContractors] = useState<Contractor[]>([]);
   const [suggestedLoading, setSuggestedLoading] = useState(!isDraft);
 
+  const [allContractors, setAllContractors] = useState<Contractor[]>([]);
+  const [selectedContractorToAdd, setSelectedContractorToAdd] = useState<string>('');
+
   const [invitedContractors, setInvitedContractors] = useState<Contractor[]>([]);
   const [invitedLoading, setInvitedLoading] = useState(!isDraft);
 
@@ -43,6 +47,14 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
 
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
   const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
+
+  const loadInvited = async () => {
+    if (isDraft) return;
+    setInvitedLoading(true);
+    const contractors = await getInvitedContractors(rfp.invitedContractors || []);
+    setInvitedContractors(contractors);
+    setInvitedLoading(false);
+  }
 
   useEffect(() => {
     if (isDraft) return;
@@ -53,13 +65,6 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
       setSuggestedContractors(contractors);
       setSuggestedLoading(false);
     }
-
-    async function loadInvited() {
-      setInvitedLoading(true);
-      const contractors = await getInvitedContractors(rfp.invitedContractors || []);
-      setInvitedContractors(contractors);
-      setInvitedLoading(false);
-    }
     
     async function loadProposals() {
       setProposalsLoading(true);
@@ -67,12 +72,30 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
       setProposals(props);
       setProposalsLoading(false);
     }
+    
+    async function loadAllContractors() {
+        const contractors = await getContractors();
+        setAllContractors(contractors);
+    }
 
     loadSuggestions();
     loadInvited();
     loadProposals();
+    loadAllContractors();
 
   }, [rfp, isDraft]);
+
+  const handleAddContractorToRfp = async () => {
+    if (!selectedContractorToAdd) return;
+    await addInvitedContractorToRfp(rfp.id, selectedContractorToAdd);
+    // Add to local state to immediately show change
+    const contractor = allContractors.find(c => c.id === selectedContractorToAdd);
+    if (contractor && !invitedContractors.find(c => c.id === contractor.id)) {
+        setInvitedContractors(prev => [...prev, contractor]);
+    }
+    setSelectedContractorToAdd('');
+  };
+
 
   const proposalStatusByContractor = useMemo(() => {
     const statusMap = new Map<string, Proposal | null>();
@@ -124,8 +147,13 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
 
   const getContractorById = (id: string) => {
     // Check both invited and suggested, as a proposal could be from a contractor not in the invited list for some reason
-    return invitedContractors?.find(c => c.id === id) || suggestedContractors?.find(c => c.id === id);
+    return invitedContractors?.find(c => c.id === id) || suggestedContractors?.find(c => c.id === id) || allContractors?.find(c => c.id === id);
   }
+
+  const uninvitedContractors = useMemo(() => {
+    const invitedIds = new Set(invitedContractors.map(c => c.id));
+    return allContractors.filter(c => !invitedIds.has(c.id));
+  }, [allContractors, invitedContractors]);
 
   return (
     <>
@@ -222,10 +250,30 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
         <TabsContent value="proposals" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Proposal Submissions</CardTitle>
-              <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
+                <CardTitle>Proposal Submissions</CardTitle>
+                <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
             </CardHeader>
             <CardContent>
+                <div className="flex items-center gap-4 mb-6 p-4 border rounded-lg">
+                    <div className="flex-grow">
+                        <Select value={selectedContractorToAdd} onValueChange={setSelectedContractorToAdd}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a contractor to add..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {uninvitedContractors.map(c => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                        {c.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Button onClick={handleAddContractorToRfp} disabled={!selectedContractorToAdd}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add to List
+                    </Button>
+                </div>
               {proposalsLoading ? (
                 <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
               ) : invitedContractors.length === 0 && !invitedLoading ? (

@@ -3,7 +3,7 @@ import type { Contractor, RFP, Proposal } from './types';
 
 // Simulate a database
 let contractors: (Contractor & { id: string })[] = ContractorsData.map((c, i) => ({ ...c, id: `contractor-${i}`}));
-let rfps: (RFP & { id: string })[] = RFPData.map((r, i) => ({ ...r, id: `rfp-${i}`, proposals: [] }));
+let rfps: (RFP & { id: string })[] = RFPData.map((r, i) => ({ ...r, id: `rfp-${i}`, proposals: [], invitedContractors: [] }));
 let proposals: (Proposal & { id: string })[] = [];
 
 // Metro Codes
@@ -77,6 +77,11 @@ export async function getContractors(): Promise<Contractor[]> {
   return Promise.resolve(contractors);
 }
 
+export async function getContractorById(id: string): Promise<Contractor | null> {
+  return Promise.resolve(contractors.find(c => c.id === id) || null);
+}
+
+
 export async function getRfps(): Promise<RFP[]> {
   // sort by project start date descending
   return Promise.resolve(rfps.sort((a, b) => {
@@ -97,6 +102,7 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals'>): Promise<st
     ...rfpData,
     id: newId,
     proposals: [],
+    invitedContractors: [],
   };
   rfps.push(newRfp);
   return Promise.resolve(newId);
@@ -141,4 +147,16 @@ export async function getInvitedContractors(ids: string[]): Promise<Contractor[]
   return Promise.resolve(contractors.filter(c => ids.includes(c.id)));
 }
 
-    
+export async function addInvitedContractorToRfp(rfpId: string, contractorId: string): Promise<void> {
+  const rfp = rfps.find(r => r.id === rfpId);
+  if (!rfp) {
+    throw new Error("RFP not found");
+  }
+  if (!rfp.invitedContractors) {
+    rfp.invitedContractors = [];
+  }
+  if (!rfp.invitedContractors.includes(contractorId)) {
+    rfp.invitedContractors.push(contractorId);
+  }
+  return Promise.resolve();
+}
