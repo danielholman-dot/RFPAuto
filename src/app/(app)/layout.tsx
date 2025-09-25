@@ -2,7 +2,7 @@
 
 import { Header } from '@/components/layout/header';
 import { AppSidebar } from '@/components/layout/sidebar';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export default function AppLayout({
