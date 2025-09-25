@@ -30,7 +30,7 @@ export default function ContractorsPage() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'contractors'),
-      orderBy('performance', 'desc')
+      orderBy('preference', 'asc')
     );
   }, [firestore]);
 
@@ -46,6 +46,12 @@ export default function ContractorsPage() {
     );
   }
 
+  const getPreferenceLabel = (preference?: number) => {
+    if (preference === 1) return 'Most Preferred';
+    if (preference && preference > 1 && preference <= 5) return 'Preferred';
+    return 'N/A';
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -56,24 +62,28 @@ export default function ContractorsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Metro Codes</TableHead>
-              <TableHead className="text-right">Performance</TableHead>
+              <TableHead>Contractor Name</TableHead>
+              <TableHead>POC Name</TableHead>
+              <TableHead>POC Email</TableHead>
+              <TableHead>Contractor Type</TableHead>
+              <TableHead>Most Preferred/Preferred</TableHead>
+              <TableHead>Region</TableHead>
+              <TableHead>Metro/Site</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {contractors?.map((contractor) => (
               <TableRow key={contractor.id}>
                 <TableCell className="font-medium">{contractor.name}</TableCell>
-                <TableCell>{contractor.type}</TableCell>
+                <TableCell>{contractor.contactName}</TableCell>
                 <TableCell>
-                  <div>{contractor.contactName}</div>
                   <div className="text-sm text-muted-foreground">
                     {contractor.contactEmail}
                   </div>
                 </TableCell>
+                <TableCell>{contractor.type}</TableCell>
+                <TableCell>{getPreferenceLabel(contractor.preference)}</TableCell>
+                <TableCell>{contractor.region || 'N/A'}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {contractor.metroCodes.map((code) => (
@@ -82,10 +92,6 @@ export default function ContractorsPage() {
                       </Badge>
                     ))}
                   </div>
-                </TableCell>
-                <TableCell className="text-right flex items-center justify-end">
-                  {contractor.performance}%
-                  <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
                 </TableCell>
               </TableRow>
             ))}

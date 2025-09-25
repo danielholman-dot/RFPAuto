@@ -25,6 +25,7 @@ export type Contractor = {
   type: string;
   preference?: number;
   performance: number;
+  region?: string;
 };
 
 export type Proposal = {

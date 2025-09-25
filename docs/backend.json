@@ -101,6 +101,10 @@
         "performance": {
           "type": "number",
           "description": "A score representing the contractor's past performance."
+        },
+        "region": {
+          "type": "string",
+          "description": "The region the contractor operates in."
         }
       },
       "required": [
