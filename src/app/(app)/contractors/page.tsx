@@ -20,14 +20,19 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import type { Contractor } from '@/lib/types';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
+import { useMemo } from 'react';
 
 export default function ContractorsPage() {
   const firestore = useFirestore();
-  const contractorsCollection = collection(firestore, 'contractors');
-  const contractorsQuery = query(
-    contractorsCollection,
-    orderBy('performance', 'desc')
-  );
+
+  const contractorsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'contractors'),
+      orderBy('performance', 'desc')
+    );
+  }, [firestore]);
+
 
   const { data: contractors, loading } = useCollection<Contractor>(
     contractorsQuery
