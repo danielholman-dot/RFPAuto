@@ -41,7 +41,7 @@ export default function RfpDetailPage({ params }: RfpDetailPageProps) {
             metroCode: 'N/A',
             contractorType: 'N/A',
             estimatedBudget: 0,
-            startDate: new Date(),
+            projectStartDate: new Date(),
             status: 'Draft',
             proposals: [],
             invitedContractors: [],
@@ -81,7 +81,7 @@ export default function RfpDetailPage({ params }: RfpDetailPageProps) {
         <CardContent className="grid md:grid-cols-3 gap-4 text-sm">
             <div><strong>Metro:</strong> {rfp.metroCode}</div>
             <div><strong>Contractor Type:</strong> {rfp.contractorType}</div>
-            <div><strong>Start Date:</strong> {formatDate(rfp.startDate)}</div>
+            <div><strong>Project Start Date:</strong> {formatDate(rfp.projectStartDate)}</div>
             <div className="md:col-span-3"><strong>Budget:</strong> ${rfp.estimatedBudget.toLocaleString()}</div>
             <div className="md:col-span-3">
                 <p><strong>Scope:</strong> {rfp.scopeOfWork}</p>

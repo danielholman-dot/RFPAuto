@@ -33,7 +33,7 @@ import { RfpVolumeChart } from '@/components/dashboard/rfp-volume-chart';
 export default function Dashboard() {
   const firestore = useFirestore();
   const { data: rfps, loading: rfpsLoading } = useCollection<RFP>(
-    query(collection(firestore, 'rfps'), orderBy('startDate', 'desc'))
+    query(collection(firestore, 'rfps'), orderBy('projectStartDate', 'desc'))
   );
   const { data: contractors, loading: contractorsLoading } =
     useCollection<Contractor>(collection(firestore, 'contractors'));

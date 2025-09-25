@@ -25,10 +25,25 @@
           "type": "number",
           "description": "The estimated budget for the project."
         },
-        "startDate": {
+        "rfpStartDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The start date for the RFP."
+        },
+        "rfpEndDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The end date for the RFP."
+        },
+        "projectStartDate": {
           "type": "string",
           "format": "date-time",
           "description": "The target start date for the project."
+        },
+        "projectEndDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The target end date for the project."
         },
         "status": {
           "type": "string",

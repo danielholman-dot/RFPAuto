@@ -25,7 +25,7 @@ import type { RFP } from '@/lib/types';
 
 export default function RfpRegistryPage() {
   const firestore = useFirestore();
-  const rfpsQuery = query(collection(firestore, 'rfps'), orderBy('startDate', 'desc'));
+  const rfpsQuery = query(collection(firestore, 'rfps'), orderBy('projectStartDate', 'desc'));
   const { data: rfps, loading } = useCollection<RFP>(rfpsQuery);
 
   const formatDate = (date: any) => {
@@ -63,7 +63,7 @@ export default function RfpRegistryPage() {
               <TableHead>Project Name</TableHead>
               <TableHead>Metro</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Start Date</TableHead>
+              <TableHead>Project Start Date</TableHead>
               <TableHead className="text-right">Budget</TableHead>
             </TableRow>
           </TableHeader>
@@ -90,7 +90,7 @@ export default function RfpRegistryPage() {
                     {rfp.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{formatDate(rfp.startDate)}</TableCell>
+                <TableCell>{formatDate(rfp.projectStartDate)}</TableCell>
                 <TableCell className="text-right">
                   ${rfp.estimatedBudget.toLocaleString()}
                 </TableCell>
