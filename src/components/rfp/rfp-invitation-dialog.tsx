@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Textarea from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loader2, Send } from "lucide-react";
 import { generateRfpInvitation } from "@/ai/flows/generate-rfp-invitations";
@@ -82,9 +81,11 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="body" className="text-right mt-2">Body</Label>
-                <div id="body" className="col-span-3 h-64 border rounded-md p-2 text-sm whitespace-pre-wrap overflow-auto">
-                    {emailContent.body}
-                </div>
+                <div 
+                  id="body" 
+                  className="col-span-3 h-64 border rounded-md p-2 text-sm overflow-auto"
+                  dangerouslySetInnerHTML={{ __html: emailContent.body }}
+                />
             </div>
           </div>
         ) : (

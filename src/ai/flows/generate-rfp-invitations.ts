@@ -29,14 +29,19 @@ export type GenerateRfpInvitationInput = z.infer<typeof GenerateRfpInvitationInp
 const GenerateRfpInvitationOutputSchema = z.object({
   emailTo: z.string().describe('The recipient email address.'),
   emailSubject: z.string().describe('The subject of the email invitation.'),
-  emailBody: z.string().describe('The body of the email invitation.'),
+  emailBody: z.string().describe('The body of the email invitation, formatted with HTML line breaks (<br/>) and bold tags (<b>).'),
 });
 
 export type GenerateRfpInvitationOutput = z.infer<typeof GenerateRfpInvitationOutputSchema>;
 
 
 export async function generateRfpInvitation(input: GenerateRfpInvitationInput): Promise<GenerateRfpInvitationOutput> {
-  return generateRfpInvitationFlow(input);
+  const result = await generateRfpInvitationFlow(input);
+  // Basic conversion from Markdown-like bolding to HTML bold tags.
+  const formattedBody = result.emailBody
+    .replace(/\n/g, '<br/>') // Convert newlines to <br> tags
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Convert **text** to <b>text</b>
+  return { ...result, emailBody: formattedBody };
 }
 
 
@@ -47,7 +52,7 @@ const rfpInvitationPrompt = ai.definePrompt({
   prompt: `You are an expert email drafter specializing in writing compelling RFP Expression of Interest (EOI) emails for project managers.
 
   Given the following project details and contractor information, draft a personalized email invitation for EOI participation.
-  The tone should be professional and formal.
+  The tone should be professional and formal. Use markdown for bolding.
 
   Project Name: {{{projectName}}}
   Year: ${new Date().getFullYear()}
@@ -67,10 +72,10 @@ const rfpInvitationPrompt = ai.definePrompt({
 
   Google is seeking qualified General Contractors/Suppliers to perform post-facility handover work at our operational data center campuses located in {{{campusLocation}}}. This work includes, but is not limited to, Moves, Adds, Retrofits, Changes, Utilities, and Security (collectively known as MARCUS works). This is confidential information and adheres to the terms set forth in the NDA.
 
-  Objectives:
+  **Objectives:**
   This Expression of Interest (EOI) aims to gather written submissions from qualified companies interested in participating in the upcoming RFP process.
 
-  Action Required
+  **Action Required**
   If your company is interested in receiving more details about this upcoming RFP, please provide all details required in the following Expression of Interest form [LINK]. Due {{{eoiDueDate}}}.
 
   Thank you for your time and we appreciate your consideration as a potential partner.
