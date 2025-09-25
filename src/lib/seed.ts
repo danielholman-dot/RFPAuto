@@ -492,7 +492,10 @@ export const RFPData = [
     metroCode: 'DFW',
     contractorType: 'Mechanical',
     estimatedBudget: 2500000,
+    rfpStartDate: new Date('2024-07-01'),
+    rfpEndDate: new Date('2024-07-21'),
     projectStartDate: new Date('2024-08-01'),
+    projectEndDate: new Date('2025-02-01'),
     status: 'In Progress'
   },
   {
@@ -501,7 +504,10 @@ export const RFPData = [
     metroCode: 'LAX',
     contractorType: 'NICON',
     estimatedBudget: 15000000,
+    rfpStartDate: new Date('2024-07-15'),
+    rfpEndDate: new Date('2024-08-15'),
     projectStartDate: new Date('2024-09-15'),
+    projectEndDate: new Date('2025-09-15'),
     status: 'Awarded'
   },
   {
@@ -510,7 +516,10 @@ export const RFPData = [
     metroCode: 'CMH',
     contractorType: 'Electrical / NICON',
     estimatedBudget: 5000000,
+    rfpStartDate: new Date('2024-08-01'),
+    rfpEndDate: new Date('2024-09-01'),
     projectStartDate: new Date('2024-10-01'),
+    projectEndDate: new Date('2025-04-01'),
     status: 'Sent'
   },
   {
@@ -519,7 +528,10 @@ export const RFPData = [
     metroCode: 'LNK/CBF',
     contractorType: 'Electrical',
     estimatedBudget: 7500000,
+    rfpStartDate: new Date('2024-06-01'),
+    rfpEndDate: new Date('2024-06-30'),
     projectStartDate: new Date('2024-07-20'),
+    projectEndDate: new Date('2025-01-20'),
     status: 'Completed'
   },
   {
@@ -528,7 +540,12 @@ export const RFPData = [
     metroCode: 'AUS',
     contractorType: 'General Contractor',
     estimatedBudget: 12000000,
+    rfpStartDate: new Date('2024-11-01'),
+    rfpEndDate: new Date('2024-12-01'),
     projectStartDate: new Date('2025-01-10'),
+    projectEndDate: new Date('2025-10-10'),
     status: 'Draft'
   },
 ];
+
+    
