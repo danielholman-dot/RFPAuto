@@ -25,34 +25,93 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { RFP, Contractor } from '@/lib/types';
 import { RfpVolumeChart } from '@/components/dashboard/rfp-volume-chart';
 import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
-import { getContractors, getRfps } from '@/lib/data';
-import { useEffect, useState } from 'react';
+import { getContractors, getRfps, getMetroRegions, getMetrosByRegion } from '@/lib/data';
+import { useEffect, useState, useMemo } from 'react';
 
 export default function Dashboard() {
-  const [rfps, setRfps] = useState<RFP[]>([]);
-  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [allRfps, setAllRfps] = useState<RFP[]>([]);
+  const [allContractors, setAllContractors] = useState<Contractor[]>([]);
+  
+  const [regions, setRegions] = useState<string[]>([]);
+  const [metros, setMetros] = useState<{code: string, city: string}[]>([]);
+
   const [loading, setLoading] = useState(true);
+
+  const [regionFilter, setRegionFilter] = useState('all');
+  const [metroFilter, setMetroFilter] = useState('all');
 
   useEffect(() => {
     async function loadData() {
-      const [rfpsData, contractorsData] = await Promise.all([getRfps(), getContractors()]);
-      setRfps(rfpsData);
-      setContractors(contractorsData);
+      const [rfpsData, contractorsData, regionData] = await Promise.all([
+        getRfps(), 
+        getContractors(),
+        getMetroRegions(),
+      ]);
+      setAllRfps(rfpsData);
+      setAllContractors(contractorsData);
+      setRegions(['all', ...regionData]);
       setLoading(false);
     }
     loadData();
   }, []);
+
+  useEffect(() => {
+    async function loadMetros() {
+      if (regionFilter === 'all') {
+        setMetros([]);
+        setMetroFilter('all');
+      } else {
+        const metroData = await getMetrosByRegion(regionFilter);
+        setMetros(metroData);
+        setMetroFilter('all');
+      }
+    }
+    loadMetros();
+  }, [regionFilter]);
+
+  const filteredRfps = useMemo(() => {
+    if (regionFilter === 'all' && metroFilter === 'all') {
+      return allRfps;
+    }
+    
+    let currentMetros = metros.map(m => m.code);
+    if(regionFilter !== 'all' && metros.length === 0) {
+        // This case happens during initial load of a region
+        return [];
+    }
+
+    return allRfps.filter(rfp => {
+      const regionMatch = regionFilter === 'all' || currentMetros.includes(rfp.metroCode);
+      const metroMatch = metroFilter === 'all' || rfp.metroCode === metroFilter;
+      return regionMatch && metroMatch;
+    });
+  }, [allRfps, regionFilter, metroFilter, metros]);
+
+  const filteredContractors = useMemo(() => {
+     if (regionFilter === 'all') {
+      return allContractors;
+    }
+    return allContractors.filter(c => c.region === regionFilter);
+  }, [allContractors, regionFilter]);
+
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
   const activeRFPs =
-    rfps?.filter((r) => r.status === 'In Progress' || r.status === 'Sent') || [];
-  const totalBudget = rfps?.reduce((sum, rfp) => sum + rfp.estimatedBudget, 0) || 0;
+    filteredRfps?.filter((r) => r.status === 'In Progress' || r.status === 'Sent') || [];
+  const totalBudget = filteredRfps?.reduce((sum, rfp) => sum + rfp.estimatedBudget, 0) || 0;
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
@@ -65,6 +124,32 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <main className="flex flex-1 flex-col gap-4 md:gap-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h1 className="text-2xl font-semibold">Dashboard</h1>
+            <div className="flex gap-4">
+                <Select value={regionFilter} onValueChange={setRegionFilter}>
+                    <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue placeholder="Filter by Region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {regions.map(region => (
+                            <SelectItem key={region} value={region}>{region === 'all' ? 'All Regions' : region}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={metroFilter} onValueChange={setMetroFilter} disabled={regionFilter === 'all'}>
+                    <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue placeholder="Filter by Metro" />
+                    </SelectTrigger>
+                    <SelectContent>
+                         <SelectItem value="all">All Metros</SelectItem>
+                        {metros.map(metro => (
+                            <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -90,7 +175,7 @@ export default function Dashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+{contractors?.length || 0}</div>
+              <div className="text-2xl font-bold">+{filteredContractors?.length || 0}</div>
               <p className="text-xs text-muted-foreground">
                 In the preferred list
               </p>
@@ -102,9 +187,9 @@ export default function Dashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+{rfps?.length || 0}</div>
+              <div className="text-2xl font-bold">+{filteredRfps?.length || 0}</div>
               <p className="text-xs text-muted-foreground">
-                +2 since last month
+                Matching current filters
               </p>
             </CardContent>
           </Card>
@@ -132,7 +217,7 @@ export default function Dashboard() {
                 </CardDescription>
                 </CardHeader>
                 <CardContent className="pl-2">
-                    <RfpGanttChart rfps={rfps} />
+                    <RfpGanttChart rfps={filteredRfps} />
                 </CardContent>
             </Card>
              <Card>
@@ -141,7 +226,7 @@ export default function Dashboard() {
                 <CardDescription>
                   Number of RFPs created over the last 6 months.
                 </CardDescription>
-              </CardHeader>
+              </Header>
               <CardContent>
                 <RfpVolumeChart />
               </CardContent>
@@ -172,7 +257,7 @@ export default function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rfps?.slice(0, 5).map((rfp) => (
+                  {filteredRfps?.slice(0, 5).map((rfp) => (
                     <TableRow key={rfp.id}>
                       <TableCell>
                         <div className="font-medium">{rfp.projectName}</div>

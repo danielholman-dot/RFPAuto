@@ -8,44 +8,53 @@ let proposals: (Proposal & { id: string })[] = [];
 
 // Metro Codes
 export const metroCodes = [
-  { code: 'CMH', city: 'Columbus', state: 'Ohio' },
-  { code: 'IAD', city: 'Gainsville', state: 'Virginia' },
-  { code: 'LNK/CBF', city: 'Council Bluffs', state: 'Iowa' },
-  { code: 'DFW', city: 'Midlothian', state: 'Texas' },
-  { code: 'DLS', city: 'The Dalles', state: 'Oregon' },
-  { code: 'TUL', city: 'Pryor', state: 'Oklahoma' },
-  { code: 'CKV', city: 'Clarksville', state: 'Tennessee' },
-  { code: 'RIC', city: 'Richmond', state: 'Virginia' },
-  { code: 'CHS', city: 'Charleston', state: 'South Carolina' },
-  { code: 'RNO', city: 'McCarren', state: 'Nevada' },
-  { code: 'SLC', city: 'Salt Lake City', state: 'Utah' },
-  { code: 'MCI', city: 'Kansas City', state: 'Missouri' },
-  { code: 'PHX', city: 'Mesa', state: 'Arizona' },
-  { code: 'YUL', city: 'Montreal', state: 'Quebec' },
-  { code: 'FWA', city: 'Fort Wayne', state: 'Indiana' },
-  { code: 'CLT', city: 'Charlotte', state: 'North Carolina' },
-  { code: 'AUS', city: 'Austin', state: 'Texas' },
-  { code: 'HSV', city: 'Widows Creek', state: 'Alabama' },
-  { code: 'BMI', city: 'Bloomington', state: 'Illinois' },
-  { code: 'CID', city: 'Cedar Rapids', state: 'Iowa' },
-  { code: 'FDY', city: 'Lima', state: 'Ohio' },
-  { code: 'SWO', city: 'Stillwater', state: 'Oklahoma' },
-  { code: 'AMW', city: 'Ames', state: 'Iowa' },
-  { code: 'LAS', city: 'Las Vegas', state: 'Nevada' },
-  { code: 'LAX', city: 'Los Angeles', state: 'California' },
-  { code: 'ATL', city: 'Atlanta', state: 'Georgia' },
-  { code: 'MSP', city: 'Minneapolis', state: 'Minnesota' },
-  { code: 'MRN', city: 'Lenoir', state: 'North Carolina' },
-  { code: 'MEM', city: 'Memphis', state: 'Tennessee' },
-  { code: 'PHN', city: 'Clair County', state: 'Michigan' },
-  { code: 'ROA', city: 'Roanoke', state: 'Virginia' },
-  { code: 'DYS', city: 'Abilene', state: 'Texas' },
-  { code: 'HOU', city: 'Houston', state: 'Texas' }
+  { code: 'CMH', city: 'Columbus', state: 'Ohio', region: 'East' },
+  { code: 'IAD', city: 'Gainsville', state: 'Virginia', region: 'East' },
+  { code: 'LNK/CBF', city: 'Council Bluffs', state: 'Iowa', region: 'Midwest' },
+  { code: 'DFW', city: 'Midlothian', state: 'Texas', region: 'South' },
+  { code: 'DLS', city: 'The Dalles', state: 'Oregon', region: 'West' },
+  { code: 'TUL', city: 'Pryor', state: 'Oklahoma', region: 'South' },
+  { code: 'CKV', city: 'Clarksville', state: 'Tennessee', region: 'East' },
+  { code: 'RIC', city: 'Richmond', state: 'Virginia', region: 'East' },
+  { code: 'CHS', city: 'Charleston', state: 'South Carolina', region: 'East' },
+  { code: 'RNO', city: 'McCarren', state: 'Nevada', region: 'West' },
+  { code: 'SLC', city: 'Salt Lake City', state: 'Utah', region: 'West' },
+  { code: 'MCI', city: 'Kansas City', state: 'Missouri', region: 'Midwest' },
+  { code: 'PHX', city: 'Mesa', state: 'Arizona', region: 'West' },
+  { code: 'YUL', city: 'Montreal', state: 'Quebec', region: 'Canada' },
+  { code: 'FWA', city: 'Fort Wayne', state: 'Indiana', region: 'Midwest' },
+  { code: 'CLT', city: 'Charlotte', state: 'North Carolina', region: 'East' },
+  { code: 'AUS', city: 'Austin', state: 'Texas', region: 'South' },
+  { code: 'HSV', city: 'Widows Creek', state: 'Alabama', region: 'South' },
+  { code: 'BMI', city: 'Bloomington', state: 'Illinois', region: 'Midwest' },
+  { code: 'CID', city: 'Cedar Rapids', state: 'Iowa', region: 'Midwest' },
+  { code: 'FDY', city: 'Lima', state: 'Ohio', region: 'East' },
+  { code: 'SWO', city: 'Stillwater', state: 'Oklahoma', region: 'South' },
+  { code: 'AMW', city: 'Ames', state: 'Iowa', region: 'Midwest' },
+  { code: 'LAS', city: 'Las Vegas', state: 'Nevada', region: 'West' },
+  { code: 'LAX', city: 'Los Angeles', state: 'California', region: 'West' },
+  { code: 'ATL', city: 'Atlanta', state: 'Georgia', region: 'East' },
+  { code: 'MSP', city: 'Minneapolis', state: 'Minnesota', region: 'Midwest' },
+  { code: 'MRN', city: 'Lenoir', state: 'North Carolina', region: 'East' },
+  { code: 'MEM', city: 'Memphis', state: 'Tennessee', region: 'East' },
+  { code: 'PHN', city: 'Clair County', state: 'Michigan', region: 'Midwest' },
+  { code: 'ROA', city: 'Roanoke', state: 'Virginia', region: 'East' },
+  { code: 'DYS', city: 'Abilene', state: 'Texas', region: 'South' },
+  { code: 'HOU', city: 'Houston', state: 'Texas', region: 'South' }
 ];
 
 export const getMetroCodes = async () => {
   return metroCodes.map(m => ({ code: m.code, city: m.city }));
 }
+
+export const getMetroRegions = async () => {
+    return Promise.resolve([...new Set(metroCodes.map(m => m.region))]);
+}
+
+export const getMetrosByRegion = async (region: string) => {
+    return Promise.resolve(metroCodes.filter(m => m.region === region).map(m => ({ code: m.code, city: m.city })));
+}
+
 
 // Contractor Types
 export const contractorTypes = [
@@ -131,3 +140,5 @@ export async function getInvitedContractors(ids: string[]): Promise<Contractor[]
   }
   return Promise.resolve(contractors.filter(c => ids.includes(c.id)));
 }
+
+    
