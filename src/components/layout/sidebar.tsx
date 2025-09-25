@@ -17,6 +17,7 @@ import {
   Settings,
   Briefcase,
   Map,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -27,6 +28,7 @@ export function AppSidebar() {
 
   const isActive = (path: string) => {
     if (path === '/rfp' && pathname.startsWith('/rfp/')) return true;
+    if (path === '/templates' && pathname.startsWith('/templates')) return true;
     return pathname === path;
   };
 
@@ -78,6 +80,20 @@ export function AppSidebar() {
                 <span>
                   <Book />
                   <span>RFP Registry</span>
+                </span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Link href="/templates" passHref>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/templates')}
+                tooltip={{ children: 'Templates' }}
+              >
+                <span>
+                  <FileText />
+                  <span>Templates</span>
                 </span>
               </SidebarMenuButton>
             </Link>
