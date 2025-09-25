@@ -39,6 +39,7 @@ export type Proposal = {
   scorecard?: Scorecard;
   proposalDocumentUrl?: string;
   proposalText?: string;
+  bidAmount?: number;
 };
 
 export type Scorecard = {

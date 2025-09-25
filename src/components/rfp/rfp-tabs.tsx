@@ -22,10 +22,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo } from "react";
 import { analyzeAndScoreProposals, AnalyzeAndScoreProposalsOutput } from "@/ai/flows/analyze-and-score-proposals";
+import { generateComparativeAnalysis, GenerateComparativeAnalysisOutput } from "@/ai/flows/generate-comparative-analysis";
 import Link from "next/link";
 import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp } from "@/lib/data";
 import { RfpInvitationDialog } from "./rfp-invitation-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Checkbox } from "../ui/checkbox";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+
 
 type RfpTabsProps = {
   rfp: RFP;
@@ -48,6 +52,10 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
   const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
 
+  const [selectedProposals, setSelectedProposals] = useState<string[]>([]);
+  const [comparativeAnalysisResult, setComparativeAnalysisResult] = useState<GenerateComparativeAnalysisOutput | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   const loadInvited = async () => {
     if (isDraft) return;
     setInvitedLoading(true);
@@ -69,7 +77,9 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     async function loadProposals() {
       setProposalsLoading(true);
       const props = await getProposalsForRfp(rfp.id);
-      setProposals(props);
+      // Add a dummy bid amount for charting
+      const propsWithBids = props.map(p => ({...p, bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8 }));
+      setProposals(propsWithBids);
       setProposalsLoading(false);
     }
     
@@ -106,36 +116,47 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     return statusMap;
   }, [invitedContractors, proposals]);
   
-  const [analysisResult, setAnalysisResult] = useState<AnalyzeAndScoreProposalsOutput | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
   const handleInviteClick = (contractor: Contractor) => {
     setSelectedContractor(contractor);
     setIsInvitationDialogOpen(true);
   };
 
-  const handleAnalyze = async (proposal: Proposal) => {
-    if (!proposal.proposalText) {
-        alert("This proposal has no text to analyze.");
-        return;
+  const handleAnalyze = async () => {
+    const proposalsToAnalyze = proposals.filter(p => selectedProposals.includes(p.id));
+    if (proposalsToAnalyze.length === 0) {
+      alert("Please select at least one proposal to analyze.");
+      return;
     }
+
     setIsAnalyzing(true);
-    setAnalysisResult(null);
+    setComparativeAnalysisResult(null);
+
+    const proposalInputs = proposalsToAnalyze.map(p => ({
+      contractorName: getContractorById(p.contractorId)?.name || 'Unknown',
+      proposalText: p.proposalText || '',
+    }));
+
     try {
-        const result = await analyzeAndScoreProposals({
-            proposalText: proposal.proposalText,
-            rfpRequirements: rfp.scopeOfWork,
-            technicalDocuments: '', // Assuming no technical docs for now
-        });
-        setAnalysisResult(result);
+      const result = await generateComparativeAnalysis({
+        rfpScope: rfp.scopeOfWork,
+        proposals: proposalInputs,
+      });
+      setComparativeAnalysisResult(result);
     } catch (error) {
-        console.error("Analysis failed:", error);
-        alert("There was an error analyzing the proposal.");
+      console.error("Analysis failed:", error);
+      alert("There was an error running the comparative analysis.");
     } finally {
-        setIsAnalyzing(false);
+      setIsAnalyzing(false);
     }
   };
 
+  const handleProposalSelection = (proposalId: string) => {
+    setSelectedProposals(prev => 
+      prev.includes(proposalId) 
+        ? prev.filter(id => id !== proposalId)
+        : [...prev, proposalId]
+    );
+  };
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
@@ -154,6 +175,16 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     const invitedIds = new Set(invitedContractors.map(c => c.id));
     return allContractors.filter(c => !invitedIds.has(c.id));
   }, [allContractors, invitedContractors]);
+
+  const analysisChartData = useMemo(() => {
+    return proposals
+      .filter(p => selectedProposals.includes(p.id))
+      .map(p => ({
+        name: getContractorById(p.contractorId)?.name || 'Unknown',
+        value: p.bidAmount,
+      }));
+  }, [proposals, selectedProposals]);
+
 
   return (
     <>
@@ -330,40 +361,80 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
           <Card>
               <CardHeader>
                   <CardTitle>AI-Driven Proposal Analysis</CardTitle>
-                  <CardDescription>Analyze submitted proposals and generate preliminary scorecard entries for review.</CardDescription>
+                  <CardDescription>Select submitted proposals to generate a comparative analysis and budget visualization.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    {proposals?.map(p => (
-                      <div key={p.id} className="flex justify-between items-center p-3 border rounded-lg">
-                        <p>Proposal from <strong>{getContractorById(p.contractorId)?.name}</strong></p>
-                        <Button onClick={() => handleAnalyze(p)} disabled={isAnalyzing || !p.proposalText}>
-                          {isAnalyzing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Analyze
-                        </Button>
-                      </div>
-                    ))}
-                    {proposals?.length === 0 && !proposalsLoading && <p className="text-muted-foreground text-center py-8">No proposals submitted yet to analyze.</p>}
+                  <div className="border rounded-lg p-4">
+                    <h3 className="font-semibold mb-3">1. Select Proposals for Analysis</h3>
+                    <div className="space-y-3">
+                      {proposals?.length > 0 ? proposals.map(p => (
+                        <div key={p.id} className="flex items-center space-x-3">
+                          <Checkbox 
+                            id={`proposal-${p.id}`}
+                            checked={selectedProposals.includes(p.id)}
+                            onCheckedChange={() => handleProposalSelection(p.id)}
+                            disabled={!p.proposalText}
+                          />
+                          <label htmlFor={`proposal-${p.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Proposal from <strong>{getContractorById(p.contractorId)?.name}</strong>
+                          </label>
+                          {!p.proposalText && <Badge variant="outline">No text</Badge>}
+                        </div>
+                      )) : (
+                        <p className="text-muted-foreground text-center py-4">No proposals submitted yet.</p>
+                      )}
+                    </div>
                   </div>
                   
-                  {isAnalyzing && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /><p className="ml-2">Analyzing...</p></div>}
+                  <div className="text-center">
+                    <Button onClick={handleAnalyze} disabled={isAnalyzing || selectedProposals.length === 0}>
+                      {isAnalyzing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Run AI Evaluation
+                    </Button>
+                  </div>
                   
-                  {analysisResult && (
+                  {isAnalyzing && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /><p className="ml-2">Generating comparative analysis...</p></div>}
+                  
+                  {comparativeAnalysisResult && (
+                    <div className="space-y-6">
                       <Card>
                           <CardHeader>
-                              <CardTitle>Analysis Scorecard</CardTitle>
+                              <CardTitle>Comparative Analysis</CardTitle>
                           </CardHeader>
-                          <CardContent>
-                              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {Object.entries(analysisResult.scorecardEntries).map(([key, value]) => (
-                                      <div key={key} className="p-3 bg-muted rounded-lg">
-                                          <dt className="font-semibold capitalize">{key.replace(/([A-Z])/g, ' $1')}</dt>
-                                          <dd className="text-sm">{value}</dd>
-                                      </div>
-                                  ))}
-                              </dl>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <h4 className="font-semibold">Commercial</h4>
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{comparativeAnalysisResult.commercialAnalysis}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">Technical</h4>
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{comparativeAnalysisResult.technicalAnalysis}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">Presentation</h4>
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{comparativeAnalysisResult.presentationAnalysis}</p>
+                            </div>
                           </CardContent>
                       </Card>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Proposal Bids vs. Budget</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={analysisChartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="name" />
+                              <YAxis tickFormatter={(value) => `$${(value/1000000).toFixed(1)}M`} />
+                              <Tooltip formatter={(value:any) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)} />
+                              <Legend />
+                              <ReferenceLine y={rfp.estimatedBudget} label={{ value: "Budget", position: "insideTopLeft" }} stroke="red" strokeDasharray="3 3" />
+                              <Bar dataKey="value" fill="#8884d8" name="Bid Amount" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    </div>
                   )}
               </CardContent>
           </Card>
