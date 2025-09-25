@@ -59,7 +59,8 @@
         "invitedContractors": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "description": "Contractor ID"
           },
           "description": "List of contractor IDs who have been invited to submit a proposal."
         }
@@ -105,15 +106,39 @@
         "region": {
           "type": "string",
           "description": "The region the contractor operates in."
+        },
+        "hqAddress": {
+          "type": "string",
+          "description": "The contractor's headquarter address."
+        },
+        "nda": {
+          "type": "string",
+          "description": "NDA status."
+        },
+        "gval": {
+          "type": "string",
+          "description": "GVAL status."
+        },
+        "preferredStatus": {
+          "type": "string",
+          "description": "Preferred status."
+        },
+        "metroSite": {
+          "type": "string",
+          "description": "Metro/Site location."
         }
       },
       "required": [
         "name",
         "contactName",
         "contactEmail",
-        "metroCodes",
         "type",
-        "performance"
+        "hqAddress",
+        "nda",
+        "gval",
+        "preferredStatus",
+        "region",
+        "metroSite"
       ]
     },
     "Proposal": {

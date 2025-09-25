@@ -21,11 +21,16 @@ export type Contractor = {
   name: string;
   contactName: string;
   contactEmail: string;
-  metroCodes: string[];
   type: string;
-  preference?: number;
+  hqAddress: string;
+  nda: string;
+  gval: string;
+  preferredStatus: string;
+  region: string;
+  metroSite: string;
   performance: number;
-  region?: string;
+  metroCodes: string[];
+  preference?: number;
 };
 
 export type Proposal = {

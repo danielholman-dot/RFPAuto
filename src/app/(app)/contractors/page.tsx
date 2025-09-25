@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -30,7 +29,7 @@ function ContractorsList() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'contractors'),
-      orderBy('preference', 'asc')
+      orderBy('name', 'asc')
     );
   }, [firestore]);
 
@@ -46,12 +45,6 @@ function ContractorsList() {
     );
   }
 
-  const getPreferenceLabel = (preference?: number) => {
-    if (preference === 1) return 'Most Preferred';
-    if (preference && preference > 1 && preference <= 5) return 'Preferred';
-    return 'N/A';
-  }
-
   return (
     <Table>
       <TableHeader>
@@ -59,8 +52,11 @@ function ContractorsList() {
           <TableHead>Contractor Name</TableHead>
           <TableHead>POC Name</TableHead>
           <TableHead>POC Email</TableHead>
-          <TableHead>Contractor Type</TableHead>
-          <TableHead>Most Preferred/Preferred</TableHead>
+          <TableHead>Type</TableHead>
+          <TableHead>HQ Address</TableHead>
+          <TableHead>NDA</TableHead>
+          <TableHead>GVAL</TableHead>
+          <TableHead>Preferred Status</TableHead>
           <TableHead>Region</TableHead>
           <TableHead>Metro/Site</TableHead>
         </TableRow>
@@ -70,23 +66,14 @@ function ContractorsList() {
           <TableRow key={contractor.id}>
             <TableCell className="font-medium">{contractor.name}</TableCell>
             <TableCell>{contractor.contactName}</TableCell>
-            <TableCell>
-              <div className="text-sm text-muted-foreground">
-                {contractor.contactEmail}
-              </div>
-            </TableCell>
+            <TableCell>{contractor.contactEmail}</TableCell>
             <TableCell>{contractor.type}</TableCell>
-            <TableCell>{getPreferenceLabel(contractor.preference)}</TableCell>
-            <TableCell>{contractor.region || 'N/A'}</TableCell>
-            <TableCell>
-              <div className="flex flex-wrap gap-1">
-                {contractor.metroCodes.map((code) => (
-                  <Badge key={code} variant="outline">
-                    {code}
-                  </Badge>
-                ))}
-              </div>
-            </TableCell>
+            <TableCell>{contractor.hqAddress}</TableCell>
+            <TableCell>{contractor.nda}</TableCell>
+            <TableCell>{contractor.gval}</TableCell>
+            <TableCell>{contractor.preferredStatus}</TableCell>
+            <TableCell>{contractor.region}</TableCell>
+            <TableCell>{contractor.metroSite}</TableCell>
           </TableRow>
         ))}
       </TableBody>
