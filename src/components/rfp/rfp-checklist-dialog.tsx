@@ -40,14 +40,26 @@ const initialChecklistData = [
   { criterion: 'FEP/MARCUS PMO', weight: 5.0 },
 ];
 
+const LOCAL_STORAGE_KEY = 'rfpChecklistConfig';
+
 export function RfpChecklistDialog({ isOpen, onOpenChange }: RfpChecklistDialogProps) {
-  const [checklist, setChecklist] = useState(initialChecklistData.map(item => ({...item, weight: String(item.weight)})));
+  const [checklist, setChecklist] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    return initialChecklistData.map(item => ({...item, weight: String(item.weight)}));
+  });
   const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
-      // Reset to initial state when dialog opens
-      setChecklist(initialChecklistData.map(item => ({...item, weight: String(item.weight)})));
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+        setChecklist(saved ? JSON.parse(saved) : initialChecklistData.map(item => ({...item, weight: String(item.weight)})));
+      }
     }
   }, [isOpen]);
 
@@ -55,7 +67,7 @@ export function RfpChecklistDialog({ isOpen, onOpenChange }: RfpChecklistDialogP
     return checklist.reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0);
   }, [checklist]);
 
-  const isTotalValid = useMemo(() => totalWeight === 100, [totalWeight]);
+  const isTotalValid = useMemo(() => Math.abs(totalWeight - 100) < 0.01, [totalWeight]);
 
   const handleWeightChange = (index: number, value: string) => {
     const newChecklist = [...checklist];
@@ -72,8 +84,11 @@ export function RfpChecklistDialog({ isOpen, onOpenChange }: RfpChecklistDialogP
         });
       return;
     }
-    // Logic to save the new checklist configuration would go here
-    console.log("Saving new checklist configuration:", checklist);
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(checklist));
+    }
+
     toast({
         title: "Configuration Saved",
         description: "The RFP checklist weighting has been updated.",
