@@ -81,11 +81,9 @@ const getIconForType = (type: string) => {
 export default function ContractorsPage() {
   const [allContractors, setAllContractors] = useState<Contractor[]>([]);
   const [contractorTypes, setContractorTypes] = useState<string[]>([]);
-  const [regions, setRegions] = useState<string[]>([]);
   const [metroSites, setMetroSites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
-  const [regionFilter, setRegionFilter] = useState('all');
   const [metroSiteFilter, setMetroSiteFilter] = useState('all');
 
   useEffect(() => {
@@ -98,9 +96,6 @@ export default function ContractorsPage() {
       setAllContractors(data);
       setContractorTypes(['all', ...types]);
       
-      const uniqueRegions = ['all', ...Array.from(new Set(data.map(c => c.region)))];
-      setRegions(uniqueRegions);
-
       const uniqueMetroSites = ['all', ...Array.from(new Set(data.map(c => c.metroSite)))];
       setMetroSites(uniqueMetroSites);
 
@@ -120,11 +115,10 @@ export default function ContractorsPage() {
   const filteredContractors = useMemo(() => {
     return allContractors.filter(contractor => {
       const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
-      const regionMatch = regionFilter === 'all' || contractor.region === regionFilter;
       const metroSiteMatch = metroSiteFilter === 'all' || contractor.metroSite === metroSiteFilter;
-      return typeMatch && regionMatch && metroSiteMatch;
+      return typeMatch && metroSiteMatch;
     });
-  }, [allContractors, typeFilter, regionFilter, metroSiteFilter]);
+  }, [allContractors, typeFilter, metroSiteFilter]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -176,16 +170,6 @@ export default function ContractorsPage() {
                 <SelectContent>
                     {contractorTypes.map(type => (
                         <SelectItem key={type} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            <Select value={regionFilter} onValueChange={setRegionFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by Region" />
-                </SelectTrigger>
-                <SelectContent>
-                    {regions.map(region => (
-                        <SelectItem key={region} value={region}>{region === 'all' ? 'All Regions' : region}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
