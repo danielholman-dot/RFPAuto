@@ -52,8 +52,8 @@ function ContractorsList() {
           <TableHead>Contractor Name</TableHead>
           <TableHead>POC Name</TableHead>
           <TableHead>POC Email</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Preferred Status</TableHead>
+          <TableHead>Contractor Type</TableHead>
+          <TableHead>Most Preferred/Preferred</TableHead>
           <TableHead>Region</TableHead>
           <TableHead>Metro/Site</TableHead>
         </TableRow>
