@@ -6,7 +6,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import type { RFP, Contractor } from "@/lib/types"
+import type { RFP, Contractor, Proposal } from "@/lib/types"
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
@@ -22,7 +22,9 @@ import { Button } from "../ui/button"
 import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { analyzeAndScoreProposals, AnalyzeAndScoreProposalsOutput } from "@/ai/flows/analyze-and-score-proposals";
+import Link from "next/link";
 
 type RfpTabsProps = {
   rfp: RFP;
@@ -47,10 +49,43 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
 
   const invitedContractorsQuery = useMemo(() => {
     if (isDraft || !rfp.invitedContractors || rfp.invitedContractors.length === 0) return null;
-    return query(collection(firestore, 'contractors'), where('id', 'in', rfp.invitedContractors));
+    return query(collection(firestore, 'contractors'), where('__name__', 'in', rfp.invitedContractors));
   }, [firestore, rfp.invitedContractors, isDraft]);
 
   const { data: invitedContractors, loading: invitedLoading } = useCollection<Contractor>(invitedContractorsQuery);
+
+  const proposalsQuery = useMemo(() => {
+    if (isDraft) return null;
+    return query(collection(firestore, 'rfps', rfp.id, 'proposals'));
+  }, [firestore, rfp.id, isDraft]);
+
+  const { data: proposals, loading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
+  
+  const [analysisResult, setAnalysisResult] = useState<AnalyzeAndScoreProposalsOutput | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleAnalyze = async (proposal: Proposal) => {
+    if (!proposal.proposalText) {
+        alert("This proposal has no text to analyze.");
+        return;
+    }
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    try {
+        const result = await analyzeAndScoreProposals({
+            proposalText: proposal.proposalText,
+            rfpRequirements: rfp.scopeOfWork,
+            technicalDocuments: '', // Assuming no technical docs for now
+        });
+        setAnalysisResult(result);
+    } catch (error) {
+        console.error("Analysis failed:", error);
+        alert("There was an error analyzing the proposal.");
+    } finally {
+        setIsAnalyzing(false);
+    }
+  };
+
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
@@ -60,7 +95,9 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     return new Date(date).toLocaleDateString();
   };
 
-  const proposals = rfp.proposals || [];
+  const getContractorById = (id: string) => {
+    return invitedContractors?.find(c => c.id === id);
+  }
 
   return (
     <Tabs defaultValue="selection" className="w-full">
@@ -160,26 +197,35 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
             <CardDescription>Track proposal submissions from invited contractors and send reminders.</CardDescription>
           </CardHeader>
           <CardContent>
-            {proposals.length === 0 ? <p className="text-muted-foreground text-center py-8">No proposals submitted yet.</p> :
+            {proposalsLoading ? <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div> :
+            proposals && proposals.length === 0 ? <p className="text-muted-foreground text-center py-8">No proposals submitted yet.</p> :
             <Table>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Contractor</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Submitted On</TableHead>
+                        <TableHead>Document</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {invitedContractors?.map(contractor => {
-                        const proposal = proposals.find(p => p.contractorId === contractor.id);
+                    {proposals?.map(proposal => {
+                        const contractor = getContractorById(proposal.contractorId);
                         return (
-                            <TableRow key={contractor.id}>
-                                <TableCell className="font-medium">{contractor?.name}</TableCell>
+                            <TableRow key={proposal.id}>
+                                <TableCell className="font-medium">{contractor?.name || 'Unknown Contractor'}</TableCell>
                                 <TableCell>
                                     <Badge variant={proposal?.status === 'Submitted' || proposal?.status === 'Under Review' ? 'default' : 'outline'}>{proposal?.status || 'Not Submitted'}</Badge>
                                 </TableCell>
                                 <TableCell>{proposal ? formatDate(proposal.submittedDate) : 'N/A'}</TableCell>
+                                <TableCell>
+                                    {proposal.proposalDocumentUrl && (
+                                        <Link href={proposal.proposalDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                            View Document
+                                        </Link>
+                                    )}
+                                </TableCell>
                                 <TableCell className="text-right">
                                     {!proposal && <Button variant="outline" size="sm">Send Reminder</Button>}
                                 </TableCell>
@@ -199,8 +245,39 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                 <CardTitle>AI-Driven Proposal Analysis</CardTitle>
                 <CardDescription>Analyze submitted proposals and generate preliminary scorecard entries for review.</CardDescription>
             </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground text-center py-8">Analysis tools will be available here once proposals are submitted and ready for review.</p>
+            <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  {proposals?.map(p => (
+                    <div key={p.id} className="flex justify-between items-center p-3 border rounded-lg">
+                      <p>Proposal from <strong>{getContractorById(p.contractorId)?.name}</strong></p>
+                      <Button onClick={() => handleAnalyze(p)} disabled={isAnalyzing || !p.proposalText}>
+                        {isAnalyzing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Analyze
+                      </Button>
+                    </div>
+                  ))}
+                  {proposals?.length === 0 && !proposalsLoading && <p className="text-muted-foreground text-center py-8">No proposals submitted yet to analyze.</p>}
+                </div>
+                
+                {isAnalyzing && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /><p className="ml-2">Analyzing...</p></div>}
+                
+                {analysisResult && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Analysis Scorecard</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {Object.entries(analysisResult.scorecardEntries).map(([key, value]) => (
+                                    <div key={key} className="p-3 bg-muted rounded-lg">
+                                        <dt className="font-semibold capitalize">{key.replace(/([A-Z])/g, ' $1')}</dt>
+                                        <dd className="text-sm">{value}</dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        </CardContent>
+                    </Card>
+                )}
             </CardContent>
         </Card>
       </TabsContent>

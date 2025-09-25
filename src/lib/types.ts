@@ -12,7 +12,6 @@ export type RFP = {
   projectStartDate?: Timestamp | Date;
   projectEndDate?: Timestamp | Date;
   status: 'Draft' | 'Sent' | 'In Progress' | 'Awarded' | 'Completed';
-  proposals?: Proposal[];
   invitedContractors?: string[];
 };
 
@@ -34,6 +33,8 @@ export type Proposal = {
   submittedDate: Timestamp | Date;
   status: 'Pending' | 'Submitted' | 'Under Review' | 'Awarded' | 'Rejected';
   scorecard?: Scorecard;
+  proposalDocumentUrl?: string;
+  proposalText?: string;
 };
 
 export type Scorecard = {

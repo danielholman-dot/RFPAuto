@@ -139,6 +139,14 @@
             "Awarded",
             "Rejected"
           ]
+        },
+        "proposalDocumentUrl": {
+          "type": "string",
+          "description": "URL to the uploaded proposal document."
+        },
+        "proposalText": {
+          "type": "string",
+          "description": "The extracted text from the proposal document."
         }
       },
       "required": [
