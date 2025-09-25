@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Table,
@@ -17,14 +18,16 @@ import {
 } from '@/components/ui/card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FilePlus2 } from 'lucide-react';
+import { FilePlus2, Pencil } from 'lucide-react';
 import type { RFP } from '@/lib/types';
 import { getRfps } from '@/lib/data';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function RfpRegistryPage() {
   const [rfps, setRfps] = useState<RFP[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     async function loadData() {
@@ -46,6 +49,10 @@ export default function RfpRegistryPage() {
   if (loading) {
     return <div>Loading...</div>;
   }
+
+  const handleEdit = (rfpId: string) => {
+    router.push(`/rfp/${rfpId}`);
+  };
 
   return (
     <Card>
@@ -72,6 +79,7 @@ export default function RfpRegistryPage() {
               <TableHead>Status</TableHead>
               <TableHead>Project Start Date</TableHead>
               <TableHead className="text-right">Budget</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -100,6 +108,12 @@ export default function RfpRegistryPage() {
                 <TableCell>{formatDate(rfp.projectStartDate)}</TableCell>
                 <TableCell className="text-right">
                   ${rfp.estimatedBudget.toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(rfp.id)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
