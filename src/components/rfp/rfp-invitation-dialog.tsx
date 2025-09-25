@@ -82,7 +82,9 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="body" className="text-right mt-2">Body</Label>
-                <Textarea id="body" value={emailContent.body} className="col-span-3 h-64" />
+                <div id="body" className="col-span-3 h-64 border rounded-md p-2 text-sm whitespace-pre-wrap overflow-auto">
+                    {emailContent.body}
+                </div>
             </div>
           </div>
         ) : (
