@@ -174,7 +174,7 @@ export default function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{filteredContractors?.length || 0}</div>
+            <div className="text-2xl font-bold">{filteredContractors?.length || 0}</div>
             <p className="text-xs text-muted-foreground">
               In the preferred list
             </p>
@@ -186,7 +186,7 @@ export default function Dashboard() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{filteredRfps?.length || 0}</div>
+            <div className="text-2xl font-bold">{filteredRfps?.length || 0}</div>
             <p className="text-xs text-muted-foreground">
               Matching current filters
             </p>
@@ -198,7 +198,7 @@ export default function Dashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{activeRFPs.length}</div>
+            <div className="text-2xl font-bold">{activeRFPs.length}</div>
             <p className="text-xs text-muted-foreground">
               Currently in progress or sent
             </p>
