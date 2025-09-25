@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Activity,
@@ -26,6 +27,7 @@ import {
 } from '@/components/ui/table';
 import type { RFP, Contractor } from '@/lib/types';
 import { RfpVolumeChart } from '@/components/dashboard/rfp-volume-chart';
+import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
 import { getContractors, getRfps } from '@/lib/data';
 import { useEffect, useState } from 'react';
 
@@ -118,6 +120,19 @@ export default function Dashboard() {
               </p>
             </CardContent>
           </Card>
+        </div>
+        <div className="grid gap-4 md:gap-8 lg:grid-cols-1">
+            <Card className="col-span-1">
+                <CardHeader>
+                <CardTitle>RFP & Project Timelines</CardTitle>
+                <CardDescription>
+                    Gantt chart showing the duration of the RFP and project phases for each initiative.
+                </CardDescription>
+                </CardHeader>
+                <CardContent className="pl-2">
+                    <RfpGanttChart rfps={rfps} />
+                </CardContent>
+            </Card>
         </div>
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
           <Card className="xl:col-span-2">
