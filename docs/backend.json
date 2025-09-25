@@ -48,16 +48,7 @@
           },
           "description": "List of contractor IDs who have been invited to submit a proposal."
         }
-      },
-      "required": [
-        "projectName",
-        "scopeOfWork",
-        "metroCode",
-        "contractorType",
-        "estimatedBudget",
-        "startDate",
-        "status"
-      ]
+      }
     },
     "Contractor": {
       "title": "Contractor",
