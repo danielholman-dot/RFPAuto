@@ -82,9 +82,11 @@ export default function ContractorsPage() {
   const [allContractors, setAllContractors] = useState<Contractor[]>([]);
   const [contractorTypes, setContractorTypes] = useState<string[]>([]);
   const [regions, setRegions] = useState<string[]>([]);
+  const [metroSites, setMetroSites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
   const [regionFilter, setRegionFilter] = useState('all');
+  const [metroSiteFilter, setMetroSiteFilter] = useState('all');
 
   useEffect(() => {
     async function loadData() {
@@ -98,6 +100,9 @@ export default function ContractorsPage() {
       
       const uniqueRegions = ['all', ...Array.from(new Set(data.map(c => c.region)))];
       setRegions(uniqueRegions);
+
+      const uniqueMetroSites = ['all', ...Array.from(new Set(data.map(c => c.metroSite)))];
+      setMetroSites(uniqueMetroSites);
 
       setLoading(false);
     }
@@ -116,9 +121,10 @@ export default function ContractorsPage() {
     return allContractors.filter(contractor => {
       const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
       const regionMatch = regionFilter === 'all' || contractor.region === regionFilter;
-      return typeMatch && regionMatch;
+      const metroSiteMatch = metroSiteFilter === 'all' || contractor.metroSite === metroSiteFilter;
+      return typeMatch && regionMatch && metroSiteMatch;
     });
-  }, [allContractors, typeFilter, regionFilter]);
+  }, [allContractors, typeFilter, regionFilter, metroSiteFilter]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -162,9 +168,9 @@ export default function ContractorsPage() {
             <CardTitle>Contractor List</CardTitle>
             <CardDescription>A list of all preferred contractors.</CardDescription>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,12 +180,22 @@ export default function ContractorsPage() {
                 </SelectContent>
             </Select>
             <Select value={regionFilter} onValueChange={setRegionFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by Region" />
                 </SelectTrigger>
                 <SelectContent>
                     {regions.map(region => (
                         <SelectItem key={region} value={region}>{region === 'all' ? 'All Regions' : region}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <Select value={metroSiteFilter} onValueChange={setMetroSiteFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by Metro/Site" />
+                </SelectTrigger>
+                <SelectContent>
+                    {metroSites.map(metro => (
+                        <SelectItem key={metro} value={metro}>{metro === 'all' ? 'All Metro/Sites' : metro}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
