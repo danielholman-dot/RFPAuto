@@ -29,7 +29,7 @@ function ContractorsList() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'contractors'),
-      orderBy('name', 'asc')
+      orderBy('contractor name', 'asc')
     );
   }, [firestore]);
 
@@ -61,7 +61,7 @@ function ContractorsList() {
       <TableBody>
         {contractors?.map((contractor) => (
           <TableRow key={contractor.id}>
-            <TableCell className="font-medium">{contractor.name}</TableCell>
+            <TableCell className="font-medium">{contractor['contractor name']}</TableCell>
             <TableCell>{contractor.contactName}</TableCell>
             <TableCell>{contractor.contactEmail}</TableCell>
             <TableCell>{contractor.type}</TableCell>

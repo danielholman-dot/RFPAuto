@@ -1,9 +1,9 @@
 import { collection, writeBatch, getDocs, Firestore } from 'firebase/firestore';
 import { metroCodes } from './data';
 
-const newContractorsData = [
+const ContractorsData = [
     {
-        "name": "Ascension Construction Solutions LLC",
+        "contractor name": "Ascension Construction Solutions LLC",
         "contactName": "Jeanna Hondel; Michael Hondel",
         "contactEmail": "jhondel@ascension-cs.com; mhondel@ascension-cs.com",
         "type": "General Contractor",
@@ -12,7 +12,7 @@ const newContractorsData = [
         "metroSite": "CMH (Columbus)"
     },
     {
-        "name": "Bremik Construction",
+        "contractor name": "Bremik Construction",
         "contactName": "Brent Parry; Vijay Daniel; Trang Pham",
         "contactEmail": "bp@bremik.com; vdaniel@bremik.com; tpham@bremik.com",
         "type": "General Contractor",
@@ -21,7 +21,7 @@ const newContractorsData = [
         "metroSite": "TBD"
     },
     {
-        "name": "Century Contractors, Inc.",
+        "contractor name": "Century Contractors, Inc.",
         "contactName": "Howard Smith; Johnny Dotson; Jim Kick",
         "contactEmail": "hsmith@centurycontractors.com; jdotson@centurycontractors.com; jkick@centurycontractors.com",
         "type": "General Contractor",
@@ -30,7 +30,7 @@ const newContractorsData = [
         "metroSite": "TBD"
     },
     {
-        "name": "Custom Computer Cable, Inc.",
+        "contractor name": "Custom Computer Cable, Inc.",
         "contactName": "Michael Evans; Jeff Watson",
         "contactEmail": "Mevans@cccincorp.com; jwatson@cccincorp.com",
         "type": "Electrical / NICON",
