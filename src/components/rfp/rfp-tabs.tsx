@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, CheckSquare } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, CheckSquare, Settings } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo } from "react";
@@ -27,7 +27,6 @@ import { RfpInvitationDialog } from "./rfp-invitation-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { RfpEvaluation } from "./rfp-evaluation";
 
 
 type RfpTabsProps = {
@@ -188,7 +187,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   return (
     <>
       <Tabs defaultValue="selection" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
           <TabsTrigger value="selection">
             <Users className="w-4 h-4 mr-2"/> Selection
           </TabsTrigger>
@@ -197,9 +196,6 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
           </TabsTrigger>
           <TabsTrigger value="proposals">
             <FileText className="w-4 h-4 mr-2"/> Proposals
-          </TabsTrigger>
-          <TabsTrigger value="evaluation">
-            <CheckSquare className="w-4 h-4 mr-2"/> Evaluation
           </TabsTrigger>
           <TabsTrigger value="analysis">
             <Bot className="w-4 h-4 mr-2"/> Analysis
@@ -282,9 +278,15 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
 
         <TabsContent value="proposals" className="mt-4">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
                 <CardTitle>Proposal Submissions</CardTitle>
                 <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
+              </div>
+              <Button variant="outline">
+                <Settings className="mr-2 h-4 w-4" />
+                Configure Checklist
+              </Button>
             </CardHeader>
             <CardContent>
                 <div className="flex items-center gap-4 mb-6 p-4 border rounded-lg">
@@ -359,12 +361,6 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="evaluation" className="mt-4">
-          <RfpEvaluation 
-            proposals={proposals}
-            getContractorNameById={(id) => getContractorById(id)?.name || 'Unknown'}
-          />
-        </TabsContent>
         
         <TabsContent value="analysis" className="mt-4">
           <Card>
@@ -484,5 +480,3 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
-
-    
