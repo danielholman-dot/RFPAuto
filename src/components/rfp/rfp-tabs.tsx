@@ -285,7 +285,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
               </div>
               <Button variant="outline">
                 <Settings className="mr-2 h-4 w-4" />
-                Configure Checklist
+                Configure RFP Checklist
               </Button>
             </CardHeader>
             <CardContent>
