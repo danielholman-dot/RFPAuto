@@ -107,18 +107,6 @@
           "type": "string",
           "description": "The region the contractor operates in."
         },
-        "hqAddress": {
-          "type": "string",
-          "description": "The contractor's headquarter address."
-        },
-        "nda": {
-          "type": "string",
-          "description": "NDA status."
-        },
-        "gval": {
-          "type": "string",
-          "description": "GVAL status."
-        },
         "preferredStatus": {
           "type": "string",
           "description": "Preferred status."
@@ -133,9 +121,6 @@
         "contactName",
         "contactEmail",
         "type",
-        "hqAddress",
-        "nda",
-        "gval",
         "preferredStatus",
         "region",
         "metroSite"

@@ -22,9 +22,6 @@ export type Contractor = {
   contactName: string;
   contactEmail: string;
   type: string;
-  hqAddress: string;
-  nda: string;
-  gval: string;
   preferredStatus: string;
   region: string;
   metroSite: string;

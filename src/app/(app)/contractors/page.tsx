@@ -53,9 +53,6 @@ function ContractorsList() {
           <TableHead>POC Name</TableHead>
           <TableHead>POC Email</TableHead>
           <TableHead>Type</TableHead>
-          <TableHead>HQ Address</TableHead>
-          <TableHead>NDA</TableHead>
-          <TableHead>GVAL</TableHead>
           <TableHead>Preferred Status</TableHead>
           <TableHead>Region</TableHead>
           <TableHead>Metro/Site</TableHead>
@@ -68,9 +65,6 @@ function ContractorsList() {
             <TableCell>{contractor.contactName}</TableCell>
             <TableCell>{contractor.contactEmail}</TableCell>
             <TableCell>{contractor.type}</TableCell>
-            <TableCell>{contractor.hqAddress}</TableCell>
-            <TableCell>{contractor.nda}</TableCell>
-            <TableCell>{contractor.gval}</TableCell>
             <TableCell>{contractor.preferredStatus}</TableCell>
             <TableCell>{contractor.region}</TableCell>
             <TableCell>{contractor.metroSite}</TableCell>
