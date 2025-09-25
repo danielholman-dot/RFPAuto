@@ -83,6 +83,32 @@ Sincerely,
 [Your Position]`,
   };
 
+  const awardTemplate = {
+    subject: 'Award Notification: MARCUS Project/Site Name',
+    body: `Dear [Supplier Name],
+
+We are pleased to announce that [Supplier Name] has been awarded the MARCUS Project/Site Name RFP after a comprehensive review and assessment of your proposal. Congratulations on your successful selection to move forward in this exciting opportunity!
+
+Please find attached the formal award letter, which outlines the conditions of the award and the required next steps. Highlights include:
+- Final Confirmation of Onsite Project Personnel: Please upload the appropriate resumes to your designated folder [LINK], detailing the site-specific staffing roster for Google's final project team approval.
+- Project Team Meeting: Join GPO and the XX Project Team for a meeting on [Month/Day/Year] at [Time] PST. A separate calendar invite will be sent for this meeting—please let us know if you do not receive it. All proposed onsite personnel are expected to attend.
+
+Your points of contact for the next phase will be:
+- Program Lead: XX
+- Site MARCUS Lead: XX
+- Regional Contract Manager: XX
+
+Please respond to the email containing this notice to confirm your acceptance of the award and the specified conditions by no later than [Month/Day/Year] at [Time] PST, by “Replying All” to this email. 
+
+We deeply appreciate your participation in the RFP process and look forward to a successful partnership with [Supplier Name] as we move into the next phase of the MARCUS [Project name] initiative.
+
+Best regards,
+
+[Your Name]
+[Your Position]
+[Your Company]`,
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -122,6 +148,39 @@ Sincerely,
                   </h3>
                   <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
                     {eoiTemplate.body}
+                  </div>
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+        <AccordionItem value="item-4">
+          <Card>
+            <AccordionTrigger className="p-6">
+              <div>
+                <CardTitle className="text-left">Notice of Award</CardTitle>
+                <CardDescription className="text-left">
+                  Template for notifying a contractor that they were selected for a project.
+                </CardDescription>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">
+                    Subject
+                  </h3>
+                  <p className="text-sm p-3 bg-muted rounded-md mt-1">
+                    {awardTemplate.subject}
+                  </p>
+                </div>
+                <Separator />
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">
+                    Body
+                  </h3>
+                  <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
+                    {awardTemplate.body}
                   </div>
                 </div>
               </CardContent>
