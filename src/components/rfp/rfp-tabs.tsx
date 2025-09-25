@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, CheckSquare, Settings } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo } from "react";
@@ -27,6 +27,7 @@ import { RfpInvitationDialog } from "./rfp-invitation-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { RfpChecklistDialog } from "./rfp-checklist-dialog";
 
 
 type RfpTabsProps = {
@@ -48,6 +49,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   const [proposalsLoading, setProposalsLoading] = useState(!isDraft);
 
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
+  const [isChecklistDialogOpen, setIsChecklistDialogOpen] = useState(false);
   const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
 
   const [selectedProposals, setSelectedProposals] = useState<string[]>([]);
@@ -283,7 +285,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                 <CardTitle>Proposal Submissions</CardTitle>
                 <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
               </div>
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => setIsChecklistDialogOpen(true)}>
                 <Settings className="mr-2 h-4 w-4" />
                 Configure RFP Checklist
               </Button>
@@ -477,6 +479,10 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
           contractor={selectedContractor}
         />
       )}
+      <RfpChecklistDialog
+        isOpen={isChecklistDialogOpen}
+        onOpenChange={setIsChecklistDialogOpen}
+      />
     </>
   )
 }
