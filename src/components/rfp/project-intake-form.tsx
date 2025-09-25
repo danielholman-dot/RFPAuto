@@ -124,8 +124,8 @@ export function ProjectIntakeForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {metroCodes.map(code => (
-                      <SelectItem key={code} value={code}>{code}</SelectItem>
+                    {metroCodes.map(metro => (
+                      <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
