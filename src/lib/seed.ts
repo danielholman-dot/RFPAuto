@@ -1,9 +1,7 @@
-import { collection, writeBatch, getDocs, Firestore } from 'firebase/firestore';
-import { metroCodes } from './data';
 
-const ContractorsData = [
+export const ContractorsData = [
     {
-        "contractor name": "Ascension Construction Solutions LLC",
+        "name": "Ascension Construction Solutions LLC",
         "contactName": "Jeanna Hondel; Michael Hondel",
         "contactEmail": "jhondel@ascension-cs.com; mhondel@ascension-cs.com",
         "type": "General Contractor",
@@ -12,7 +10,7 @@ const ContractorsData = [
         "metroSite": "CMH (Columbus)"
     },
     {
-        "contractor name": "Bremik Construction",
+        "name": "Bremik Construction",
         "contactName": "Brent Parry; Vijay Daniel; Trang Pham",
         "contactEmail": "bp@bremik.com; vdaniel@bremik.com; tpham@bremik.com",
         "type": "General Contractor",
@@ -21,7 +19,7 @@ const ContractorsData = [
         "metroSite": "TBD"
     },
     {
-        "contractor name": "Century Contractors, Inc.",
+        "name": "Century Contractors, Inc.",
         "contactName": "Howard Smith; Johnny Dotson; Jim Kick",
         "contactEmail": "hsmith@centurycontractors.com; jdotson@centurycontractors.com; jkick@centurycontractors.com",
         "type": "General Contractor",
@@ -30,7 +28,7 @@ const ContractorsData = [
         "metroSite": "TBD"
     },
     {
-        "contractor name": "Custom Computer Cable, Inc.",
+        "name": "Custom Computer Cable, Inc.",
         "contactName": "Michael Evans; Jeff Watson",
         "contactEmail": "Mevans@cccincorp.com; jwatson@cccincorp.com",
         "type": "Electrical / NICON",
@@ -470,50 +468,67 @@ const ContractorsData = [
         "region": "East",
         "metroSite": "TBD"
     }
-]
-
-export async function seedContractors(db: Firestore, setStatus: (status: string) => void) {
-    const contractorsCollection = collection(db, 'contractors');
+].map(c => {
+    const allMetroCodes = ['CMH', 'IAD', 'LNK/CBF', 'DFW', 'DLS', 'TUL', 'CKV', 'RIC', 'CHS', 'RNO', 'SLC', 'MCI', 'PHX', 'YUL', 'FWA', 'CLT', 'AUS', 'HSV', 'BMI', 'CID', 'FDY', 'SWO', 'AMW', 'LAS', 'LAX', 'ATL', 'MSP', 'MRN', 'MEM', 'PHN', 'ROA', 'DYS', 'HOU'];
+    const numMetroCodes = Math.floor(Math.random() * 3) + 1;
+    const contractorMetroCodes = [...new Array(numMetroCodes)].map(() => allMetroCodes[Math.floor(Math.random() * allMetroCodes.length)]);
     
-    try {
-        setStatus('Deleting existing contractors...');
-        const existingContractors = await getDocs(contractorsCollection);
-        const deleteBatch = writeBatch(db);
-        existingContractors.forEach(doc => {
-            deleteBatch.delete(doc.ref);
-        });
-        await deleteBatch.commit();
-        setStatus('Existing contractors deleted.');
+    let preference = 3;
+    if (c.preferredStatus === 'Most Preferred') preference = 1;
+    if (c.preferredStatus === 'Preferred') preference = 2;
 
-        setStatus(`Seeding ${newContractorsData.length} new contractors...`);
-        const addBatch = writeBatch(db);
-        
-        const allMetroCodes = metroCodes.map(m => m.code);
+    return {
+        ...c,
+        metroCodes: Array.from(new Set(contractorMetroCodes)),
+        performance: Math.floor(Math.random() * 21) + 80, // 80 to 100
+        preference,
+    };
+});
 
-        newContractorsData.forEach(contractor => {
-            const docRef = collection(db, 'contractors').doc();
-            
-            // Assign some random metro codes
-            const numMetroCodes = Math.floor(Math.random() * 3) + 1;
-            const contractorMetroCodes = [...new Array(numMetroCodes)].map(() => allMetroCodes[Math.floor(Math.random() * allMetroCodes.length)]);
-            
-            let preference = 3;
-            if (contractor.preferredStatus === 'Most Preferred') preference = 1;
-            if (contractor.preferredStatus === 'Preferred') preference = 2;
-
-            addBatch.set(docRef, {
-                ...contractor,
-                metroCodes: Array.from(new Set(contractorMetroCodes)), // Ensure unique metro codes
-                performance: Math.floor(Math.random() * 21) + 80, // 80 to 100
-                preference,
-            });
-        });
-
-        await addBatch.commit();
-        setStatus('Seeding complete!');
-
-    } catch (error) {
-        console.error("Error seeding contractors: ", error);
-        setStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-}
+export const RFPData = [
+  {
+    projectName: 'Data Center HVAC Upgrade',
+    scopeOfWork: 'Upgrade the existing HVAC system to a more energy-efficient solution.',
+    metroCode: 'DFW',
+    contractorType: 'Mechanical',
+    estimatedBudget: 2500000,
+    projectStartDate: new Date('2024-08-01'),
+    status: 'In Progress'
+  },
+  {
+    projectName: 'West Coast Fiber Network Expansion',
+    scopeOfWork: 'Lay new fiber optic cables to expand network capacity in key western metro areas.',
+    metroCode: 'LAX',
+    contractorType: 'NICON',
+    estimatedBudget: 15000000,
+    projectStartDate: new Date('2024-09-15'),
+    status: 'Awarded'
+  },
+  {
+    projectName: 'Columbus Campus Security System Overhaul',
+    scopeOfWork: 'Full replacement of all security cameras, access control systems, and monitoring software.',
+    metroCode: 'CMH',
+    contractorType: 'Electrical / NICON',
+    estimatedBudget: 5000000,
+    projectStartDate: new Date('2024-10-01'),
+    status: 'Sent'
+  },
+  {
+    projectName: 'Council Bluffs Power Distribution Unit Refresh',
+    scopeOfWork: 'Replace and upgrade all PDUs in the data hall to support higher density racks.',
+    metroCode: 'LNK/CBF',
+    contractorType: 'Electrical',
+    estimatedBudget: 7500000,
+    projectStartDate: new Date('2024-07-20'),
+    status: 'Completed'
+  },
+  {
+    projectName: 'New Office Build-out in Austin',
+    scopeOfWork: 'Complete interior construction for a new 50,000 sq ft office space.',
+    metroCode: 'AUS',
+    contractorType: 'General Contractor',
+    estimatedBudget: 12000000,
+    projectStartDate: new Date('2025-01-10'),
+    status: 'Draft'
+  },
+];

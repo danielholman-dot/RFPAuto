@@ -24,21 +24,27 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useCollection } from '@/firebase/firestore/use-collection';
 import type { RFP, Contractor } from '@/lib/types';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { RfpVolumeChart } from '@/components/dashboard/rfp-volume-chart';
+import { getContractors, getRfps } from '@/lib/data';
+import { useEffect, useState } from 'react';
 
 export default function Dashboard() {
-  const firestore = useFirestore();
-  const { data: rfps, loading: rfpsLoading } = useCollection<RFP>(
-    query(collection(firestore, 'rfps'), orderBy('projectStartDate', 'desc'))
-  );
-  const { data: contractors, loading: contractorsLoading } =
-    useCollection<Contractor>(collection(firestore, 'contractors'));
+  const [rfps, setRfps] = useState<RFP[]>([]);
+  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (rfpsLoading || contractorsLoading) {
+  useEffect(() => {
+    async function loadData() {
+      const [rfpsData, contractorsData] = await Promise.all([getRfps(), getContractors()]);
+      setRfps(rfpsData);
+      setContractors(contractorsData);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
     return <div>Loading...</div>;
   }
 

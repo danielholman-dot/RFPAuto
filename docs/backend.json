@@ -174,24 +174,5 @@
   "auth": {
     "providers": []
   },
-  "firestore": {
-    "/rfps/{rfpId}": {
-      "schema": {
-        "$ref": "#/entities/RFP"
-      },
-      "description": "Stores all Request for Proposal documents."
-    },
-    "/rfps/{rfpId}/proposals/{proposalId}": {
-      "schema": {
-        "$ref": "#/entities/Proposal"
-      },
-      "description": "Stores all proposals for a specific RFP."
-    },
-    "/contractors/{contractorId}": {
-      "schema": {
-        "$ref": "#/entities/Contractor"
-      },
-      "description": "Stores information about preferred contractors."
-    }
-  }
+  "firestore": {}
 }

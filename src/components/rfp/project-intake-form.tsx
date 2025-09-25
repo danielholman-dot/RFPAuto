@@ -6,8 +6,6 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
 import { CalendarIcon, Loader2 } from "lucide-react"
-import { addDoc, collection } from "firebase/firestore";
-import { useFirestore } from "@/firebase";
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -23,12 +21,11 @@ import Textarea from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { contractorTypes, metroCodes } from "@/lib/data"
+import { getContractorTypes, getMetroCodes, addRfp } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { serverTimestamp } from "firebase/firestore";
+import { useState, useEffect } from "react"
 
 const formSchema = z.object({
   projectName: z.string().optional(),
@@ -47,7 +44,17 @@ export function ProjectIntakeForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const firestore = useFirestore();
+  const [metroCodes, setMetroCodes] = useState<{code: string, city: string}[]>([]);
+  const [contractorTypes, setContractorTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      const [metros, types] = await Promise.all([getMetroCodes(), getContractorTypes()]);
+      setMetroCodes(metros);
+      setContractorTypes(types);
+    }
+    loadData();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,7 +68,7 @@ export function ProjectIntakeForm() {
     setIsSubmitting(true);
     
     try {
-      const docRef = await addDoc(collection(firestore, "rfps"), {
+      const newRfp = {
         projectName: values.projectName || "Untitled RFP",
         scopeOfWork: values.scopeOfWork || "",
         metroCode: values.metroCode || "",
@@ -72,14 +79,16 @@ export function ProjectIntakeForm() {
         projectStartDate: values.projectStartDate,
         projectEndDate: values.projectEndDate,
         status: "Draft",
-        createdAt: serverTimestamp(),
-      });
+        createdAt: new Date(),
+      };
+      
+      const docId = await addRfp(newRfp);
 
       toast({
         title: "RFP Draft Created",
         description: `Project "${values.projectName || "Untitled RFP"}" has been saved as a draft.`,
       });
-      router.push(`/rfp/${docRef.id}`);
+      router.push(`/rfp/${docId}`);
 
     } catch (error) {
       console.error("Error creating RFP: ", error);

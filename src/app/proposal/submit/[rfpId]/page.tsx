@@ -1,35 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useDoc } from '@/firebase';
-import { doc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import type { RFP } from '@/lib/types';
+import { getRfpById, getContractors, addProposal } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 function ProposalSubmitForm() {
   const { rfpId } = useParams();
   const router = useRouter();
-  const firestore = useFirestore();
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contractorId, setContractorId] = useState('');
+  const [rfp, setRfp] = useState<RFP | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Dummy implementation for getting a contractor ID.
-  // In a real app, you would get this from the authenticated user.
-  if (!contractorId) {
-    const randomId = Math.random().toString(36).substring(2);
-    // A list of some contractor IDs that exist in firestore from seeding.
-    const contractorIds = ['0yPAa7sLcb08n4s8iLfL', '5aITH6T7nifYmU5tKq2T', '6U4YpYq6y1h3f2C2gN3q'];
-    setContractorId(contractorIds[Math.floor(Math.random() * contractorIds.length)]);
-  }
+  useEffect(() => {
+    async function loadData() {
+      const rfpData = await getRfpById(rfpId as string);
+      setRfp(rfpData);
 
-  const { data: rfp, loading } = useDoc<RFP>(doc(firestore, 'rfps', rfpId as string));
+      // Dummy implementation for getting a contractor ID.
+      // In a real app, you would get this from the authenticated user.
+      const contractors = await getContractors();
+      if (contractors.length > 0) {
+        const randomContractor = contractors[Math.floor(Math.random() * contractors.length)];
+        setContractorId(randomContractor.id);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, [rfpId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -51,10 +56,10 @@ function ProposalSubmitForm() {
       const proposalDocumentUrl = `https://example.com/proposals/${rfpId}/${file.name}`;
       const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
 
-      await addDoc(collection(firestore, 'rfps', rfpId as string, 'proposals'), {
+      await addProposal(rfpId as string, {
         contractorId: contractorId,
-        rfpId: rfpId,
-        submittedDate: serverTimestamp(),
+        rfpId: rfpId as string,
+        submittedDate: new Date(),
         status: 'Submitted',
         proposalDocumentUrl,
         proposalText,
@@ -104,8 +109,6 @@ function ProposalSubmitForm() {
 
 export default function ProposalSubmitPage() {
     return (
-        <FirebaseClientProvider>
-            <ProposalSubmitForm />
-        </FirebaseClientProvider>
+      <ProposalSubmitForm />
     )
 }

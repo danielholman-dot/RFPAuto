@@ -3,10 +3,9 @@ import { notFound } from 'next/navigation';
 import { RfpTabs } from '@/components/rfp/rfp-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { doc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import type { RFP } from '@/lib/types';
+import { getRfpById } from '@/lib/data';
+import { useEffect, useState } from 'react';
 
 type RfpDetailPageProps = {
   params: {
@@ -15,8 +14,17 @@ type RfpDetailPageProps = {
 };
 
 export default function RfpDetailPage({ params }: RfpDetailPageProps) {
-  const firestore = useFirestore();
-  const { data: rfp, loading } = useDoc<RFP>(doc(firestore, 'rfps', params.id));
+  const [rfp, setRfp] = useState<RFP | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      const data = await getRfpById(params.id);
+      setRfp(data);
+      setLoading(false);
+    }
+    loadData();
+  }, [params.id]);
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';

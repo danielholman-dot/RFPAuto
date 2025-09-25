@@ -18,15 +18,22 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { FilePlus2 } from 'lucide-react';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import type { RFP } from '@/lib/types';
+import { getRfps } from '@/lib/data';
+import { useEffect, useState } from 'react';
 
 export default function RfpRegistryPage() {
-  const firestore = useFirestore();
-  const rfpsQuery = query(collection(firestore, 'rfps'), orderBy('projectStartDate', 'desc'));
-  const { data: rfps, loading } = useCollection<RFP>(rfpsQuery);
+  const [rfps, setRfps] = useState<RFP[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      const data = await getRfps();
+      setRfps(data);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';

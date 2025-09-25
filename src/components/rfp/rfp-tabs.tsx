@@ -7,9 +7,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import type { RFP, Contractor, Proposal } from "@/lib/types"
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import {
   Table,
   TableBody,
@@ -22,9 +19,10 @@ import { Button } from "../ui/button"
 import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { analyzeAndScoreProposals, AnalyzeAndScoreProposalsOutput } from "@/ai/flows/analyze-and-score-proposals";
 import Link from "next/link";
+import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors } from "@/lib/data";
 
 type RfpTabsProps = {
   rfp: RFP;
@@ -32,34 +30,44 @@ type RfpTabsProps = {
 }
 
 export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
-  const firestore = useFirestore();
+  const [suggestedContractors, setSuggestedContractors] = useState<Contractor[]>([]);
+  const [suggestedLoading, setSuggestedLoading] = useState(!isDraft);
 
-  const suggestedContractorsQuery = useMemo(() => {
-    if (isDraft || !rfp.metroCode || !rfp.contractorType) return null;
-    return query(
-      collection(firestore, 'contractors'),
-      where('metroCodes', 'array-contains', rfp.metroCode),
-      where('type', '==', rfp.contractorType),
-      orderBy('preference', 'asc'),
-      limit(5)
-    );
-  }, [firestore, rfp, isDraft]);
-  
-  const { data: suggestedContractors, loading: suggestedLoading } = useCollection<Contractor>(suggestedContractorsQuery);
+  const [invitedContractors, setInvitedContractors] = useState<Contractor[]>([]);
+  const [invitedLoading, setInvitedLoading] = useState(!isDraft);
 
-  const invitedContractorsQuery = useMemo(() => {
-    if (isDraft || !rfp.invitedContractors || rfp.invitedContractors.length === 0) return null;
-    return query(collection(firestore, 'contractors'), where('__name__', 'in', rfp.invitedContractors));
-  }, [firestore, rfp.invitedContractors, isDraft]);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [proposalsLoading, setProposalsLoading] = useState(!isDraft);
 
-  const { data: invitedContractors, loading: invitedLoading } = useCollection<Contractor>(invitedContractorsQuery);
+  useEffect(() => {
+    if (isDraft) return;
 
-  const proposalsQuery = useMemo(() => {
-    if (isDraft) return null;
-    return query(collection(firestore, 'rfps', rfp.id, 'proposals'));
-  }, [firestore, rfp.id, isDraft]);
+    async function loadSuggestions() {
+      setSuggestedLoading(true);
+      const contractors = await getSuggestedContractors(rfp.metroCode, rfp.contractorType);
+      setSuggestedContractors(contractors);
+      setSuggestedLoading(false);
+    }
 
-  const { data: proposals, loading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
+    async function loadInvited() {
+      setInvitedLoading(true);
+      const contractors = await getInvitedContractors(rfp.invitedContractors || []);
+      setInvitedContractors(contractors);
+      setInvitedLoading(false);
+    }
+    
+    async function loadProposals() {
+      setProposalsLoading(true);
+      const props = await getProposalsForRfp(rfp.id);
+      setProposals(props);
+      setProposalsLoading(false);
+    }
+
+    loadSuggestions();
+    loadInvited();
+    loadProposals();
+
+  }, [rfp, isDraft]);
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeAndScoreProposalsOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);

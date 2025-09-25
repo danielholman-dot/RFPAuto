@@ -15,34 +15,26 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { getContractors } from '@/lib/data';
 import type { Contractor } from '@/lib/types';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 function ContractorsList() {
-  const firestore = useFirestore();
+  const [contractors, setContractors] = useState<Contractor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const contractorsQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(
-      collection(firestore, 'contractors'),
-      orderBy('contractor name', 'asc')
-    );
-  }, [firestore]);
+  useEffect(() => {
+    async function loadData() {
+      const data = await getContractors();
+      setContractors(data);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
-  const { data: contractors, loading } = useCollection<Contractor>(
-    contractorsQuery
-  );
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (
@@ -61,7 +53,7 @@ function ContractorsList() {
       <TableBody>
         {contractors?.map((contractor) => (
           <TableRow key={contractor.id}>
-            <TableCell className="font-medium">{contractor['contractor name']}</TableCell>
+            <TableCell className="font-medium">{contractor.name}</TableCell>
             <TableCell>{contractor.contactName}</TableCell>
             <TableCell>{contractor.contactEmail}</TableCell>
             <TableCell>{contractor.type}</TableCell>
@@ -77,8 +69,6 @@ function ContractorsList() {
 
 
 export default function ContractorsPage() {
-  const firestore = useFirestore();
-
   return (
     <Card>
       <CardHeader>
@@ -86,13 +76,7 @@ export default function ContractorsPage() {
         <CardDescription>A list of all preferred contractors.</CardDescription>
       </CardHeader>
       <CardContent>
-        {!firestore ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <ContractorsList />
-        )}
+        <ContractorsList />
       </CardContent>
     </Card>
   );
