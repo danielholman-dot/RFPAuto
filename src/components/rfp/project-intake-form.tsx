@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -30,12 +31,12 @@ import { useState } from "react"
 import { serverTimestamp } from "firebase/firestore";
 
 const formSchema = z.object({
-  projectName: z.string().min(5, { message: "Project name must be at least 5 characters." }),
-  scopeOfWork: z.string().min(20, { message: "Scope of work must be detailed." }),
-  metroCode: z.string({ required_error: "Please select a metro code." }),
-  contractorType: z.string({ required_error: "Please select a contractor type." }),
-  estimatedBudget: z.coerce.number().min(1, { message: "Estimated budget is required." }),
-  startDate: z.date({ required_error: "A start date is required." }),
+  projectName: z.string().optional(),
+  scopeOfWork: z.string().optional(),
+  metroCode: z.string().optional(),
+  contractorType: z.string().optional(),
+  estimatedBudget: z.coerce.number().optional(),
+  startDate: z.date().optional(),
   technicalDocuments: z.any().optional(),
 })
 
@@ -58,14 +59,19 @@ export function ProjectIntakeForm() {
     
     try {
       const docRef = await addDoc(collection(firestore, "rfps"), {
-        ...values,
+        projectName: values.projectName || "Untitled RFP",
+        scopeOfWork: values.scopeOfWork || "",
+        metroCode: values.metroCode || "",
+        contractorType: values.contractorType || "",
+        estimatedBudget: values.estimatedBudget || 0,
+        startDate: values.startDate || new Date(),
         status: "Draft",
         createdAt: serverTimestamp(),
       });
 
       toast({
         title: "RFP Draft Created",
-        description: `Project "${values.projectName}" has been saved as a draft.`,
+        description: `Project "${values.projectName || "Untitled RFP"}" has been saved as a draft.`,
       });
       router.push(`/rfp/${docRef.id}`);
 
