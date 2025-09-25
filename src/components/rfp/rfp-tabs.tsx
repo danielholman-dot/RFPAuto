@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -16,10 +17,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2 } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { analyzeAndScoreProposals, AnalyzeAndScoreProposalsOutput } from "@/ai/flows/analyze-and-score-proposals";
 import Link from "next/link";
 import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors } from "@/lib/data";
@@ -72,6 +73,15 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     loadProposals();
 
   }, [rfp, isDraft]);
+
+  const proposalStatusByContractor = useMemo(() => {
+    const statusMap = new Map<string, Proposal | null>();
+    invitedContractors.forEach(c => {
+      const proposal = proposals.find(p => p.contractorId === c.id);
+      statusMap.set(c.id, proposal || null);
+    });
+    return statusMap;
+  }, [invitedContractors, proposals]);
   
   const [analysisResult, setAnalysisResult] = useState<AnalyzeAndScoreProposalsOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -213,47 +223,58 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
           <Card>
             <CardHeader>
               <CardTitle>Proposal Submissions</CardTitle>
-              <CardDescription>Track proposal submissions from invited contractors and send reminders.</CardDescription>
+              <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
             </CardHeader>
             <CardContent>
-              {proposalsLoading ? <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div> :
-              proposals && proposals.length === 0 ? <p className="text-muted-foreground text-center py-8">No proposals submitted yet.</p> :
-              <Table>
+              {proposalsLoading ? (
+                <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
+              ) : invitedContractors.length === 0 && !invitedLoading ? (
+                <p className="text-muted-foreground text-center py-8">No contractors have been invited to submit proposals yet.</p>
+              ) : (
+                <Table>
                   <TableHeader>
-                      <TableRow>
-                          <TableHead>Contractor</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Submitted On</TableHead>
-                          <TableHead>Document</TableHead>
-                          <TableHead className="text-right">Action</TableHead>
-                      </TableRow>
+                    <TableRow>
+                      <TableHead>Contractor</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Documents</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {proposals?.map(proposal => {
-                          const contractor = getContractorById(proposal.contractorId);
-                          return (
-                              <TableRow key={proposal.id}>
-                                  <TableCell className="font-medium">{contractor?.name || 'Unknown Contractor'}</TableCell>
-                                  <TableCell>
-                                      <Badge variant={proposal?.status === 'Submitted' || proposal?.status === 'Under Review' ? 'default' : 'outline'}>{proposal?.status || 'Not Submitted'}</Badge>
-                                  </TableCell>
-                                  <TableCell>{proposal ? formatDate(proposal.submittedDate) : 'N/A'}</TableCell>
-                                  <TableCell>
-                                      {proposal.proposalDocumentUrl && (
-                                          <Link href={proposal.proposalDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                              View Document
-                                          </Link>
-                                      )}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                      {!proposal && <Button variant="outline" size="sm">Send Reminder</Button>}
-                                  </TableCell>
-                              </TableRow>
-                          )
-                      })}
+                    {invitedContractors.map(contractor => {
+                      const proposal = proposalStatusByContractor.get(contractor.id);
+                      const hasSubmitted = !!proposal;
+                      return (
+                        <TableRow key={contractor.id}>
+                          <TableCell className="font-medium">{contractor.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={hasSubmitted ? 'default' : 'outline'}>
+                              {hasSubmitted ? 'Submitted' : 'Pending'}
+                            </Badge>
+                             {hasSubmitted && <div className="text-xs text-muted-foreground mt-1">on {formatDate(proposal.submittedDate)}</div>}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" className="h-8">
+                                <UploadCloud className="mr-2 h-4 w-4"/> Commercial
+                              </Button>
+                              <Button variant="outline" size="sm" className="h-8">
+                                <UploadCloud className="mr-2 h-4 w-4"/> Technical
+                              </Button>
+                              <Button variant="outline" size="sm" className="h-8">
+                                <UploadCloud className="mr-2 h-4 w-4"/> Presentation
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {!hasSubmitted && <Button variant="outline" size="sm">Send Reminder</Button>}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
-              </Table>
-              }
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
