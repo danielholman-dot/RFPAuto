@@ -1,0 +1,169 @@
+{
+  "entities": {
+    "RFP": {
+      "title": "RFP",
+      "description": "Represents a Request for Proposal.",
+      "type": "object",
+      "properties": {
+        "projectName": {
+          "type": "string",
+          "description": "The name of the project."
+        },
+        "scopeOfWork": {
+          "type": "string",
+          "description": "A detailed description of the work to be performed."
+        },
+        "metroCode": {
+          "type": "string",
+          "description": "The metro code where the project is located."
+        },
+        "contractorType": {
+          "type": "string",
+          "description": "The type of contractor required."
+        },
+        "estimatedBudget": {
+          "type": "number",
+          "description": "The estimated budget for the project."
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The target start date for the project."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Draft",
+            "Sent",
+            "In Progress",
+            "Awarded",
+            "Completed"
+          ],
+          "description": "The current status of the RFP."
+        },
+        "invitedContractors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of contractor IDs who have been invited to submit a proposal."
+        }
+      },
+      "required": [
+        "projectName",
+        "scopeOfWork",
+        "metroCode",
+        "contractorType",
+        "estimatedBudget",
+        "startDate",
+        "status"
+      ]
+    },
+    "Contractor": {
+      "title": "Contractor",
+      "description": "Represents a contractor company.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the contractor company."
+        },
+        "contactName": {
+          "type": "string",
+          "description": "The name of the primary contact person."
+        },
+        "contactEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The email of the primary contact person."
+        },
+        "metroCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of metro codes the contractor operates in."
+        },
+        "type": {
+          "type": "string",
+          "description": "The contractor's specialization."
+        },
+        "preference": {
+          "type": "number",
+          "description": "Preference ranking for the contractor."
+        },
+        "performance": {
+          "type": "number",
+          "description": "A score representing the contractor's past performance."
+        }
+      },
+      "required": [
+        "name",
+        "contactName",
+        "contactEmail",
+        "metroCodes",
+        "type",
+        "performance"
+      ]
+    },
+    "Proposal": {
+      "title": "Proposal",
+      "description": "Represents a proposal submitted by a contractor for an RFP.",
+      "type": "object",
+      "properties": {
+        "contractorId": {
+          "type": "string",
+          "description": "The ID of the contractor who submitted the proposal."
+        },
+        "rfpId": {
+          "type": "string",
+          "description": "The ID of the RFP the proposal is for."
+        },
+        "submittedDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the proposal was submitted."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending",
+            "Submitted",
+            "Under Review",
+            "Awarded",
+            "Rejected"
+          ]
+        }
+      },
+      "required": [
+        "contractorId",
+        "rfpId",
+        "submittedDate",
+        "status"
+      ]
+    }
+  },
+  "auth": {
+    "providers": []
+  },
+  "firestore": {
+    "/rfps/{rfpId}": {
+      "schema": {
+        "$ref": "#/entities/RFP"
+      },
+      "description": "Stores all Request for Proposal documents."
+    },
+    "/rfps/{rfpId}/proposals/{proposalId}": {
+      "schema": {
+        "$ref": "#/entities/Proposal"
+      },
+      "description": "Stores all proposals for a specific RFP."
+    },
+    "/contractors/{contractorId}": {
+      "schema": {
+        "$ref": "#/entities/Contractor"
+      },
+      "description": "Stores information about preferred contractors."
+    }
+  }
+}

@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
 import { CalendarIcon, Loader2 } from "lucide-react"
-
+import { addDoc, collection } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -26,6 +27,7 @@ import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { serverTimestamp } from "firebase/firestore";
 
 const formSchema = z.object({
   projectName: z.string().min(5, { message: "Project name must be at least 5 characters." }),
@@ -41,6 +43,7 @@ export function ProjectIntakeForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,21 +53,31 @@ export function ProjectIntakeForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    // In a real app, you'd send this to your backend.
-    // Here we'll simulate a delay and then redirect.
-    console.log(values);
+    
+    try {
+      const docRef = await addDoc(collection(firestore, "rfps"), {
+        ...values,
+        status: "Draft",
+        createdAt: serverTimestamp(),
+      });
 
-    setTimeout(() => {
       toast({
         title: "RFP Draft Created",
         description: `Project "${values.projectName}" has been saved as a draft.`,
       });
-      // A real app would get an ID from the backend.
-      const newRfpId = `rfp-${Math.random().toString(36).substr(2, 9)}`;
-      router.push(`/rfp/${newRfpId}`);
-    }, 1500);
+      router.push(`/rfp/${docRef.id}`);
+
+    } catch (error) {
+      console.error("Error creating RFP: ", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create RFP draft. Please try again.",
+      });
+      setIsSubmitting(false);
+    }
   }
 
   return (

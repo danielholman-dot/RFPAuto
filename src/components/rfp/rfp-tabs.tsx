@@ -7,7 +7,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import type { RFP, Contractor } from "@/lib/types"
-import { contractors as allContractors } from "@/lib/data"
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 import {
   Table,
   TableBody,
@@ -17,20 +19,48 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { Badge } from "../ui/badge";
+import { useMemo } from "react";
 
 type RfpTabsProps = {
   rfp: RFP;
+  isDraft?: boolean;
 }
 
-export function RfpTabs({ rfp }: RfpTabsProps) {
-  const suggestedContractors = allContractors
-    .filter(c => c.metroCodes.includes(rfp.metroCode) && c.type === rfp.contractorType)
-    .sort((a, b) => a.preference - b.preference)
-    .slice(0, 5);
+export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
+  const firestore = useFirestore();
 
-  const invitedContractors = allContractors.filter(c => rfp.invitedContractors.includes(c.id));
+  const suggestedContractorsQuery = useMemo(() => {
+    if (isDraft || !rfp.metroCode || !rfp.contractorType) return null;
+    return query(
+      collection(firestore, 'contractors'),
+      where('metroCodes', 'array-contains', rfp.metroCode),
+      where('type', '==', rfp.contractorType),
+      orderBy('preference', 'asc'),
+      limit(5)
+    );
+  }, [firestore, rfp, isDraft]);
+  
+  const { data: suggestedContractors, loading: suggestedLoading } = useCollection<Contractor>(suggestedContractorsQuery);
+
+  const invitedContractorsQuery = useMemo(() => {
+    if (isDraft || !rfp.invitedContractors || rfp.invitedContractors.length === 0) return null;
+    return query(collection(firestore, 'contractors'), where('id', 'in', rfp.invitedContractors));
+  }, [firestore, rfp.invitedContractors, isDraft]);
+
+  const { data: invitedContractors, loading: invitedLoading } = useCollection<Contractor>(invitedContractorsQuery);
+
+  const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (date.toDate) { // Firebase Timestamp
+      return date.toDate().toLocaleDateString();
+    }
+    return new Date(date).toLocaleDateString();
+  };
+
+  const proposals = rfp.proposals || [];
 
   return (
     <Tabs defaultValue="selection" className="w-full">
@@ -60,34 +90,38 @@ export function RfpTabs({ rfp }: RfpTabsProps) {
           <CardHeader>
             <CardTitle>Contractor Selection</CardTitle>
             <CardDescription>
-              Based on the project's metro code ({rfp.metroCode}) and contractor type ({rfp.contractorType}), here are the top suggested contractors.
+              {isDraft ? "Complete the RFP draft to see contractor suggestions." : `Based on the project's metro code (${rfp.metroCode}) and contractor type (${rfp.contractorType}), here are the top suggested contractors.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Contractor</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Performance</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {suggestedContractors.map(contractor => (
-                  <TableRow key={contractor.id}>
-                    <TableCell className="font-medium">{contractor.name}</TableCell>
-                    <TableCell>{contractor.contactName} ({contractor.contactEmail})</TableCell>
-                    <TableCell className="flex items-center">
-                      {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500" />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm">Invite</Button>
-                    </TableCell>
+            {suggestedLoading && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>}
+            {!suggestedLoading && !suggestedContractors?.length && <p className="text-center text-muted-foreground py-8">No matching contractors found for this RFP's criteria.</p>}
+            {suggestedContractors && suggestedContractors.length > 0 && (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Contractor</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Performance</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {suggestedContractors.map(contractor => (
+                    <TableRow key={contractor.id}>
+                      <TableCell className="font-medium">{contractor.name}</TableCell>
+                      <TableCell>{contractor.contactName} ({contractor.contactEmail})</TableCell>
+                      <TableCell className="flex items-center">
+                        {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm">Invite</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
@@ -101,7 +135,9 @@ export function RfpTabs({ rfp }: RfpTabsProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {invitedContractors.length > 0 ? invitedContractors.map(c => (
+            {invitedLoading && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>}
+            {!invitedLoading && !invitedContractors?.length && <p className="text-muted-foreground text-center py-8">No contractors have been invited yet.</p>}
+            {invitedContractors && invitedContractors.map(c => (
               <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div>
                   <p className="font-medium">{c.name}</p>
@@ -112,7 +148,7 @@ export function RfpTabs({ rfp }: RfpTabsProps) {
                   <Button><Send className="mr-2 h-4 w-4"/> Send RFP</Button>
                 </div>
               </div>
-            )) : <p className="text-muted-foreground text-center py-8">No contractors have been invited yet.</p>}
+            ))}
           </CardContent>
         </Card>
       </TabsContent>
@@ -124,6 +160,7 @@ export function RfpTabs({ rfp }: RfpTabsProps) {
             <CardDescription>Track proposal submissions from invited contractors and send reminders.</CardDescription>
           </CardHeader>
           <CardContent>
+            {proposals.length === 0 ? <p className="text-muted-foreground text-center py-8">No proposals submitted yet.</p> :
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -134,23 +171,24 @@ export function RfpTabs({ rfp }: RfpTabsProps) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {rfp.proposals.map(proposal => {
-                        const contractor = allContractors.find(c => c.id === proposal.contractorId);
+                    {invitedContractors?.map(contractor => {
+                        const proposal = proposals.find(p => p.contractorId === contractor.id);
                         return (
-                            <TableRow key={proposal.id}>
+                            <TableRow key={contractor.id}>
                                 <TableCell className="font-medium">{contractor?.name}</TableCell>
                                 <TableCell>
-                                    <Badge variant={proposal.status === 'Submitted' || proposal.status === 'Under Review' ? 'default' : 'outline'}>{proposal.status}</Badge>
+                                    <Badge variant={proposal?.status === 'Submitted' || proposal?.status === 'Under Review' ? 'default' : 'outline'}>{proposal?.status || 'Not Submitted'}</Badge>
                                 </TableCell>
-                                <TableCell>{proposal.status === 'Pending' ? 'N/A' : proposal.submittedDate.toLocaleDateString()}</TableCell>
+                                <TableCell>{proposal ? formatDate(proposal.submittedDate) : 'N/A'}</TableCell>
                                 <TableCell className="text-right">
-                                    {proposal.status === 'Pending' && <Button variant="outline" size="sm">Send Reminder</Button>}
+                                    {!proposal && <Button variant="outline" size="sm">Send Reminder</Button>}
                                 </TableCell>
                             </TableRow>
                         )
                     })}
                 </TableBody>
             </Table>
+            }
           </CardContent>
         </Card>
       </TabsContent>
@@ -163,6 +201,30 @@ export function RfpTabs({ rfp }: RfpTabsProps) {
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground text-center py-8">Analysis tools will be available here once proposals are submitted and ready for review.</p>
+            </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="award" className="mt-4">
+        <Card>
+            <CardHeader>
+                <CardTitle>Award Recommendation</CardTitle>
+                <CardDescription>Review final scores and generate an award recommendation.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground text-center py-8">Award recommendation tools will be available after proposal analysis.</p>
+            </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="feedback" className="mt-4">
+        <Card>
+            <CardHeader>
+                <CardTitle>Stakeholder Feedback</CardTitle>
+                <CardDescription>Summarize feedback and generate a Lessons Learned report.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground text-center py-8">Feedback summary tools will be available after project completion.</p>
             </CardContent>
         </Card>
       </TabsContent>

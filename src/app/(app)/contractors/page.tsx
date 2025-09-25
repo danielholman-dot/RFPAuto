@@ -1,3 +1,4 @@
+'use client';
 import {
   Table,
   TableBody,
@@ -5,14 +6,36 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { contractors } from "@/lib/data"
-import { Star } from "lucide-react"
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Star } from 'lucide-react';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import type { Contractor } from '@/lib/types';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 export default function ContractorsPage() {
-  const sortedContractors = [...contractors].sort((a, b) => (b.performance ?? 0) - (a.performance ?? 0));
+  const firestore = useFirestore();
+  const contractorsCollection = collection(firestore, 'contractors');
+  const contractorsQuery = query(
+    contractorsCollection,
+    orderBy('performance', 'desc')
+  );
+
+  const { data: contractors, loading } = useCollection<Contractor>(
+    contractorsQuery
+  );
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Card>
@@ -32,18 +55,22 @@ export default function ContractorsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedContractors.map((contractor) => (
+            {contractors?.map((contractor) => (
               <TableRow key={contractor.id}>
                 <TableCell className="font-medium">{contractor.name}</TableCell>
                 <TableCell>{contractor.type}</TableCell>
                 <TableCell>
                   <div>{contractor.contactName}</div>
-                  <div className="text-sm text-muted-foreground">{contractor.contactEmail}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {contractor.contactEmail}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {contractor.metroCodes.map(code => (
-                      <Badge key={code} variant="outline">{code}</Badge>
+                    {contractor.metroCodes.map((code) => (
+                      <Badge key={code} variant="outline">
+                        {code}
+                      </Badge>
                     ))}
                   </div>
                 </TableCell>
@@ -57,5 +84,5 @@ export default function ContractorsPage() {
         </Table>
       </CardContent>
     </Card>
-  )
+  );
 }

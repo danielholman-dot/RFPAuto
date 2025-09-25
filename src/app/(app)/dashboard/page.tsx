@@ -1,20 +1,21 @@
+'use client';
 import {
   Activity,
   ArrowUpRight,
   CircleDollarSign,
   FileText,
   Users,
-} from "lucide-react"
-import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+} from 'lucide-react';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -22,13 +23,36 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { rfps, contractors } from "@/lib/data"
-import { RfpVolumeChart } from "@/components/dashboard/rfp-volume-chart"
+} from '@/components/ui/table';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import type { RFP, Contractor } from '@/lib/types';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { RfpVolumeChart } from '@/components/dashboard/rfp-volume-chart';
 
 export default function Dashboard() {
-  const activeRFPs = rfps.filter(r => r.status === 'In Progress' || r.status === 'Sent');
-  const totalBudget = rfps.reduce((sum, rfp) => sum + rfp.estimatedBudget, 0);
+  const firestore = useFirestore();
+  const { data: rfps, loading: rfpsLoading } = useCollection<RFP>(
+    query(collection(firestore, 'rfps'), orderBy('startDate', 'desc'))
+  );
+  const { data: contractors, loading: contractorsLoading } =
+    useCollection<Contractor>(collection(firestore, 'contractors'));
+
+  if (rfpsLoading || contractorsLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const activeRFPs =
+    rfps?.filter((r) => r.status === 'In Progress' || r.status === 'Sent') || [];
+  const totalBudget = rfps?.reduce((sum, rfp) => sum + rfp.estimatedBudget, 0) || 0;
+
+  const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (date.toDate) { // Firebase Timestamp
+      return date.toDate().toLocaleDateString();
+    }
+    return new Date(date).toLocaleDateString();
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -42,7 +66,9 @@ export default function Dashboard() {
               <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${(totalBudget / 1000000).toFixed(1)}M</div>
+              <div className="text-2xl font-bold">
+                ${(totalBudget / 1000000).toFixed(1)}M
+              </div>
               <p className="text-xs text-muted-foreground">
                 Sum of all RFP budgets
               </p>
@@ -56,7 +82,7 @@ export default function Dashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+{contractors.length}</div>
+              <div className="text-2xl font-bold">+{contractors?.length || 0}</div>
               <p className="text-xs text-muted-foreground">
                 In the preferred list
               </p>
@@ -68,7 +94,7 @@ export default function Dashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+{rfps.length}</div>
+              <div className="text-2xl font-bold">+{rfps?.length || 0}</div>
               <p className="text-xs text-muted-foreground">
                 +2 since last month
               </p>
@@ -108,14 +134,12 @@ export default function Dashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Project</TableHead>
-                    <TableHead>
-                      Status
-                    </TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rfps.slice(0, 5).map(rfp => (
+                  {rfps?.slice(0, 5).map((rfp) => (
                     <TableRow key={rfp.id}>
                       <TableCell>
                         <div className="font-medium">{rfp.projectName}</div>
@@ -124,7 +148,13 @@ export default function Dashboard() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={rfp.status === 'Awarded' ? 'default' : 'outline'}>{rfp.status}</Badge>
+                        <Badge
+                          variant={
+                            rfp.status === 'Awarded' ? 'default' : 'outline'
+                          }
+                        >
+                          {rfp.status}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         ${rfp.estimatedBudget.toLocaleString()}
@@ -149,5 +179,5 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }

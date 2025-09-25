@@ -1,3 +1,5 @@
+import type { Timestamp } from "firebase/firestore";
+
 export type RFP = {
   id: string;
   projectName: string;
@@ -5,10 +7,10 @@ export type RFP = {
   metroCode: string;
   contractorType: string;
   estimatedBudget: number;
-  startDate: Date;
+  startDate: Timestamp | Date;
   status: 'Draft' | 'Sent' | 'In Progress' | 'Awarded' | 'Completed';
-  proposals: Proposal[];
-  invitedContractors: string[];
+  proposals?: Proposal[];
+  invitedContractors?: string[];
 };
 
 export type Contractor = {
@@ -18,15 +20,15 @@ export type Contractor = {
   contactEmail: string;
   metroCodes: string[];
   type: string;
-  preference: number;
-  performance?: number;
+  preference?: number;
+  performance: number;
 };
 
 export type Proposal = {
   id: string;
   contractorId: string;
   rfpId: string;
-  submittedDate: Date;
+  submittedDate: Timestamp | Date;
   status: 'Pending' | 'Submitted' | 'Under Review' | 'Awarded' | 'Rejected';
   scorecard?: Scorecard;
 };
