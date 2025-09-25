@@ -14,20 +14,20 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { format }from 'date-fns';
 
 
 const GenerateRfpInvitationInputSchema = z.object({
   projectName: z.string().describe('The name of the project or RFP.'),
-  year: z.string().describe('The current year.'),
   contractorName: z.string().describe('The name of the contractor company (GC).'),
   campusLocation: z.string().describe('The operational data center site location.'),
-  eoiFormLink: z.string().describe('The link to the Expression of Interest form.'),
   eoiDueDate: z.string().describe('The due date for the EOI, e.g., Month/Day/Year at Time PST.'),
 });
 
 export type GenerateRfpInvitationInput = z.infer<typeof GenerateRfpInvitationInputSchema>;
 
 const GenerateRfpInvitationOutputSchema = z.object({
+  emailTo: z.string().describe('The recipient email address.'),
   emailSubject: z.string().describe('The subject of the email invitation.'),
   emailBody: z.string().describe('The body of the email invitation.'),
 });
@@ -50,16 +50,16 @@ const rfpInvitationPrompt = ai.definePrompt({
   The tone should be professional and formal.
 
   Project Name: {{{projectName}}}
-  Year: {{{year}}}
+  Year: ${new Date().getFullYear()}
   Contractor Name: {{{contractorName}}}
   Campus Location: {{{campusLocation}}}
-  EOI Form Link: {{{eoiFormLink}}}
+  EOI Form Link: [LINK]
   EOI Due Date: {{{eoiDueDate}}}
 
   Generate the email subject and body based on the template below. The To, Cc, and Bcc fields are for context and should not be part of the generated output.
 
   <template>
-  Subject: CONFIDENTIAL Expression of Interest - Google MARCUS {{{projectName}}} | {{{year}}} {{{contractorName}}}
+  Subject: CONFIDENTIAL Expression of Interest - Google MARCUS {{{projectName}}} | ${new Date().getFullYear()} {{{contractorName}}}
 
   Dear {{{contractorName}}} Team,
 
@@ -71,7 +71,7 @@ const rfpInvitationPrompt = ai.definePrompt({
   This Expression of Interest (EOI) aims to gather written submissions from qualified companies interested in participating in the upcoming RFP process.
 
   Action Required
-  If your company is interested in receiving more details about this upcoming RFP, please provide all details required in the following Expression of Interest form [{{{eoiFormLink}}}]. Due {{{eoiDueDate}}}.
+  If your company is interested in receiving more details about this upcoming RFP, please provide all details required in the following Expression of Interest form [LINK]. Due {{{eoiDueDate}}}.
 
   Thank you for your time and we appreciate your consideration as a potential partner.
 
@@ -86,8 +86,11 @@ const generateRfpInvitationFlow = ai.defineFlow(
     inputSchema: GenerateRfpInvitationInputSchema,
     outputSchema: GenerateRfpInvitationOutputSchema,
   },
-  async input => {
+  async (input) => {
     const {output} = await rfpInvitationPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('Failed to generate RFP invitation');
+    }
+    return output;
   }
 );
