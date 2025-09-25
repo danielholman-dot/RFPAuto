@@ -41,7 +41,7 @@ Best regards,`,
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Email Templates</CardTitle>
+          <CardTitle>Templates</CardTitle>
           <CardDescription>
             Standard templates for RFP-related communications.
           </CardDescription>
