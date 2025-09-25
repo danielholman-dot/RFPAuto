@@ -23,7 +23,6 @@ const GenerateRfpInvitationInputSchema = z.object({
   campusLocation: z.string().describe('The operational data center site location.'),
   eoiFormLink: z.string().describe('The link to the Expression of Interest form.'),
   eoiDueDate: z.string().describe('The due date for the EOI, e.g., Month/Day/Year at Time PST.'),
-  proposalSubmissionLink: z.string().describe('The link for the contractor to submit their proposal.'),
 });
 
 export type GenerateRfpInvitationInput = z.infer<typeof GenerateRfpInvitationInputSchema>;
@@ -56,9 +55,8 @@ const rfpInvitationPrompt = ai.definePrompt({
   Campus Location: {{{campusLocation}}}
   EOI Form Link: {{{eoiFormLink}}}
   EOI Due Date: {{{eoiDueDate}}}
-  Proposal Submission Link: {{{proposalSubmissionLink}}}
 
-  Generate the email subject and body based on the template below.
+  Generate the email subject and body based on the template below. The To, Cc, and Bcc fields are for context and should not be part of the generated output.
 
   <template>
   Subject: CONFIDENTIAL Expression of Interest - Google MARCUS {{{projectName}}} | {{{year}}} {{{contractorName}}}
@@ -72,10 +70,8 @@ const rfpInvitationPrompt = ai.definePrompt({
   Objectives:
   This Expression of Interest (EOI) aims to gather written submissions from qualified companies interested in participating in the upcoming RFP process.
 
-  Action Required:
+  Action Required
   If your company is interested in receiving more details about this upcoming RFP, please provide all details required in the following Expression of Interest form [{{{eoiFormLink}}}]. Due {{{eoiDueDate}}}.
-
-  To submit your proposal, please use the following link: [{{{proposalSubmissionLink}}}]
 
   Thank you for your time and we appreciate your consideration as a potential partner.
 
