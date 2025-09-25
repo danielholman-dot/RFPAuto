@@ -1,3 +1,4 @@
+
 // This is a temporary file to seed the database with contractor data.
 // It can be removed after the database has been seeded.
 'use client';
