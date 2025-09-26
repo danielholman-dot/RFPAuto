@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award, PencilRuler, CheckCircle, CheckCircle2, ArrowRight } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award, PencilRuler, CheckCircle, CheckCircle2, ArrowRight, Check } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -97,6 +97,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
   const [isAwardDialogOpen, setIsAwardDialogOpen] = useState(false);
   const [isNonAwardDialogOpen, setIsNonAwardDialogOpen] = useState(false);
   const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
+  const [sentEoiContractors, setSentEoiContractors] = useState<string[]>([]);
 
   const handleStageToggle = (stage: RfpStage) => {
     setCompletedStages(prev => {
@@ -173,6 +174,11 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     setIsInvitationDialogOpen(true);
   };
   
+  const handleEoiSent = (contractorId: string) => {
+    setSentEoiContractors(prev => [...prev, contractorId]);
+    setIsInvitationDialogOpen(false);
+  };
+
   const handleAwardLetterClick = (contractor: Contractor) => {
     setContractorForDialog(contractor);
     setIsAwardDialogOpen(true);
@@ -276,7 +282,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                             <TableRow>
                             <TableHead>Contractor</TableHead>
                             <TableHead>Performance</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-right">EOI Expression of Interest</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -287,7 +293,14 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                 {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
                                 </TableCell>
                                 <TableCell className="text-right">
-                                <Button variant="outline" size="sm" onClick={() => handleInviteClick(contractor)}>Invite</Button>
+                                    <div className="flex items-center justify-end gap-2">
+                                        <Button variant="outline" size="sm" onClick={() => handleInviteClick(contractor)}>
+                                            Send
+                                        </Button>
+                                        {sentEoiContractors.includes(contractor.id) && (
+                                            <Check className="h-5 w-5 text-green-600" />
+                                        )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                             ))}
@@ -576,6 +589,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
           onOpenChange={setIsInvitationDialogOpen}
           rfp={rfp}
           contractor={selectedContractor}
+          onEoiSent={handleEoiSent}
         />
       )}
       {contractorForDialog && (

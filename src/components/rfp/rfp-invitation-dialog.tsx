@@ -16,17 +16,20 @@ import { generateRfpInvitation } from "@/ai/flows/generate-rfp-invitations";
 import type { RFP, Contractor } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 type RfpInvitationDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   rfp: RFP;
   contractor: Contractor;
+  onEoiSent: (contractorId: string) => void;
 };
 
-export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: RfpInvitationDialogProps) {
+export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onEoiSent }: RfpInvitationDialogProps) {
   const [emailContent, setEmailContent] = useState<{ to: string, subject: string, body: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const formatDate = (date: any) => {
     if (!date) return 'TBD';
@@ -60,7 +63,6 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
       }).catch(err => {
         console.error("Failed to generate email:", err);
         setIsLoading(false);
-        // Optionally, show an error message to the user
       });
     }
   }, [isOpen, rfp, contractor]);
@@ -69,6 +71,15 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
     if (emailContent) {
       setEmailContent({ ...emailContent, subject: e.target.value });
     }
+  };
+
+  const handleSendEmail = () => {
+    // In a real app, this would integrate with an email sending service
+    toast({
+        title: "EOI Sent",
+        description: `Expression of Interest email sent to ${contractor.name}.`
+    });
+    onEoiSent(contractor.id);
   };
 
 
@@ -110,7 +121,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
         )}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={isLoading || !emailContent}>
+          <Button onClick={handleSendEmail} disabled={isLoading || !emailContent}>
             <Send className="mr-2 h-4 w-4" /> Send Email
           </Button>
         </DialogFooter>
