@@ -6,10 +6,11 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import Textarea from "../ui/textarea";
 import type { RFP } from "@/lib/types";
-import { generateProjectRFPInstructions, GenerateProjectRFPInstructionsOutput } from "@/ai/flows/generate-project-rfp-instructions";
-import { Bot, Edit, Loader2, Save, Sparkles, Eye } from "lucide-react";
+import { generateProjectRFPInstructions } from "@/ai/flows/generate-project-rfp-instructions";
+import { Bot, Edit, Loader2, Save, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { format } from 'date-fns';
 
 type RfpDraftingProps = {
     rfp: RFP;
@@ -25,13 +26,14 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
         setIsGenerating(true);
         setDraftContent(null);
         try {
+            const startDateValue = rfp.projectStartDate ? new Date(rfp.projectStartDate.toString()) : new Date();
             const result = await generateProjectRFPInstructions({
                 projectName: rfp.projectName,
                 scopeOfWork: rfp.scopeOfWork,
                 metroCode: rfp.metroCode,
                 contractorType: rfp.contractorType,
                 estimatedBudget: rfp.estimatedBudget,
-                startDate: rfp.projectStartDate?.toString() || new Date().toString(),
+                startDate: format(startDateValue, 'MM/dd/yyyy'),
                 technicalDocuments: "N/A"
             });
             setDraftContent(result.rfpInstructions);
