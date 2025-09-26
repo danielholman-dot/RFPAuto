@@ -703,17 +703,13 @@ export const ContractorsData = [
         "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.)"
     }
 ].map(c => {
-    const allMetroCodes = ['CMH', 'IAD', 'LNK/CBF', 'DFW', 'DLS', 'TUL', 'CKV', 'RIC', 'CHS', 'RNO', 'SLC', 'MCI', 'PHX', 'YUL', 'FWA', 'CLT', 'AUS', 'HSV', 'BMI', 'CID', 'FDY', 'SWO', 'AMW', 'LAS', 'LAX', 'ATL', 'MSP', 'MRN', 'MEM', 'PHN', 'ROA', 'DYS', 'HOU'];
-    
     // Extract metro codes from the metroSite string
     const metroSiteString = c.metroSite || '';
+    // This regex will find all 3-4 letter uppercase codes, handling cases like LNK/CBF by finding LNK and CBF
     const regex = /([A-Z]{3,4})/g;
     const matches = metroSiteString.match(regex) || [];
-
-    const numMetroCodes = Math.floor(Math.random() * 3) + 1;
-    const randomMetroCodes = [...new Array(numMetroCodes)].map(() => allMetroCodes[Math.floor(Math.random() * allMetroCodes.length)]);
     
-    const contractorMetroCodes = Array.from(new Set([...matches, ...randomMetroCodes]));
+    const contractorMetroCodes = Array.from(new Set(matches));
 
     let preference = 3;
     if (c.preferredStatus === 'Most Preferred') preference = 1;
@@ -789,5 +785,7 @@ export const RFPData = [
     status: 'Draft'
   },
 ];
+
+    
 
     
