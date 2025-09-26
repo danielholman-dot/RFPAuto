@@ -41,7 +41,10 @@ import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
 type MetroInfo = {
   code: string;
   city: string;
+  state: string;
   region: string;
+  lat: number;
+  lon: number;
 };
 
 type MetroOption = {
@@ -52,6 +55,7 @@ type MetroOption = {
 export default function Dashboard() {
   const [allRfps, setAllRfps] = useState<RFP[]>([]);
   const [allContractors, setAllContractors] = useState<Contractor[]>([]);
+  const [allMetroInfo, setAllMetroInfo] = useState<MetroInfo[]>([]);
   
   const [regions, setRegions] = useState<string[]>([]);
   const [metros, setMetros] = useState<MetroOption[]>([]);
@@ -62,14 +66,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadData() {
-      const [rfpsData, contractorsData, regionData] = await Promise.all([
+      const [rfpsData, contractorsData, regionData, metroInfoData] = await Promise.all([
         getRfps(), 
         getContractors(),
         getMetroRegions(),
+        getAllMetroCodes(),
       ]);
       setAllRfps(rfpsData);
       setAllContractors(contractorsData);
       setRegions(['all', ...regionData]);
+      setAllMetroInfo(metroInfoData);
       setLoading(false);
     }
     loadData();
@@ -91,16 +97,16 @@ export default function Dashboard() {
 
   const filteredRfps = useMemo(() => {
     return allRfps.filter(rfp => {
-      const regionInfo = metroCodes.find(m => m.code === rfp.metroCode);
+      const regionInfo = allMetroInfo.find(m => m.code === rfp.metroCode);
       const regionMatch = regionFilter === 'all' || (regionInfo && regionInfo.region === regionFilter);
       const metroMatch = metroFilter === 'all' || rfp.metroCode === metroFilter;
       return regionMatch && metroMatch;
     });
-  }, [allRfps, regionFilter, metroFilter]);
+  }, [allRfps, regionFilter, metroFilter, allMetroInfo]);
 
   const filteredContractors = useMemo(() => {
     return allContractors.filter(c => {
-      const contractorMetros = metroCodes.filter(m => c.metroCodes.includes(m.code));
+      const contractorMetros = allMetroInfo.filter(m => c.metroCodes.includes(m.code));
       const regionMatch = regionFilter === 'all' || contractorMetros.some(m => m.region === regionFilter);
       const metroMatch = metroFilter === 'all' || c.metroCodes.includes(metroFilter);
       
@@ -115,7 +121,7 @@ export default function Dashboard() {
       }
       return true; // Both are 'all'
     });
-  }, [allContractors, regionFilter, metroFilter]);
+  }, [allContractors, regionFilter, metroFilter, allMetroInfo]);
 
 
   if (loading) {
