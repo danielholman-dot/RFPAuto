@@ -1,8 +1,6 @@
 
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { contractorTypes } from "@/lib/data";
-import { Badge } from "@/components/ui/badge";
 
 export default function SettingsPage() {
 
@@ -17,19 +15,6 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
             <p>User preferences, notification settings, and other global configurations will be available here in a future update.</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Contractor Types</CardTitle>
-          <CardDescription>
-            List of supported contractor specializations.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {contractorTypes.map(type => (
-            <Badge key={type} variant="secondary">{type}</Badge>
-          ))}
         </CardContent>
       </Card>
     </div>
