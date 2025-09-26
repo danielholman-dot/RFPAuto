@@ -21,6 +21,7 @@ import { Pencil, Save } from 'lucide-react';
 import { useState } from 'react';
 import Textarea from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 export default function TemplatesPage() {
     const { toast } = useToast();
@@ -141,15 +142,17 @@ Best regards,
     return (
         <AccordionItem value={templateKey}>
           <Card>
-            <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left flex-grow">
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); handleToggleEdit(templateKey); }}>
-                {isEditing ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-              </Button>
-            </AccordionTrigger>
+            <div className="flex items-center w-full p-6">
+                <AccordionTrigger className="flex-grow text-left p-0 hover:no-underline">
+                    <div>
+                        <CardTitle>{title}</CardTitle>
+                        <CardDescription>{description}</CardDescription>
+                    </div>
+                </AccordionTrigger>
+                <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0" onClick={() => handleToggleEdit(templateKey)}>
+                    {isEditing ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+                </Button>
+            </div>
             <AccordionContent>
               <CardContent className="space-y-4">
                 <div>
@@ -202,17 +205,19 @@ Best regards,
       <Accordion type="single" collapsible className="w-full space-y-4">
         <AccordionItem value="sop-template">
           <Card>
-            <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left flex-grow">
-                <CardTitle>RFP Instructions (SOP)</CardTitle>
-                <CardDescription>
-                  This is the Standard Operating Procedure document used by the AI to generate new RFP drafts.
-                </CardDescription>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); handleToggleEdit('sop-template'); }}>
-                {editingKey === 'sop-template' ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-              </Button>
-            </AccordionTrigger>
+            <div className="flex items-center w-full p-6">
+                <AccordionTrigger className="flex-grow text-left p-0 hover:no-underline">
+                    <div className="flex-grow">
+                        <CardTitle>RFP Instructions (SOP)</CardTitle>
+                        <CardDescription>
+                        This is the Standard Operating Procedure document used by the AI to generate new RFP drafts.
+                        </CardDescription>
+                    </div>
+                </AccordionTrigger>
+                <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0" onClick={() => handleToggleEdit('sop-template')}>
+                    {editingKey === 'sop-template' ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+                </Button>
+            </div>
             <AccordionContent>
               <CardContent className="space-y-4">
                  {editingKey === 'sop-template' ? (
