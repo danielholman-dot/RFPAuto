@@ -17,6 +17,7 @@ import type { RFP, Contractor } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import Textarea from "../ui/textarea";
 
 type RfpInvitationDialogProps = {
   isOpen: boolean;
@@ -67,9 +68,9 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
     }
   }, [isOpen, rfp, contractor]);
 
-  const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleContentChange = (field: 'subject' | 'body', value: string) => {
     if (emailContent) {
-      setEmailContent({ ...emailContent, subject: e.target.value });
+      setEmailContent({ ...emailContent, [field]: value });
     }
   };
 
@@ -105,14 +106,20 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject" className="text-right">Subject</Label>
-                <Input id="subject" value={emailContent.subject} onChange={handleSubjectChange} className="col-span-3" />
+                <Input 
+                  id="subject" 
+                  value={emailContent.subject} 
+                  onChange={(e) => handleContentChange('subject', e.target.value)} 
+                  className="col-span-3" 
+                />
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="body" className="text-right mt-2">Body</Label>
-                <div 
-                  id="body" 
-                  className="col-span-3 h-64 border rounded-md p-2 text-sm overflow-auto"
-                  dangerouslySetInnerHTML={{ __html: emailContent.body }}
+                <Textarea 
+                  id="body"
+                  value={emailContent.body.replace(/<br\s*\/?>/gi, '\n').replace(/<b>/g, '').replace(/<\/b>/g, '')}
+                  onChange={(e) => handleContentChange('body', e.target.value)}
+                  className="col-span-3 h-64 text-sm"
                 />
             </div>
           </div>

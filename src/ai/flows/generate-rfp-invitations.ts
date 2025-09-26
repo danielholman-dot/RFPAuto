@@ -42,11 +42,7 @@ export type GenerateRfpInvitationOutput = z.infer<typeof GenerateRfpInvitationOu
 
 export async function generateRfpInvitation(input: GenerateRfpInvitationInput): Promise<GenerateRfpInvitationOutput> {
   const result = await generateRfpInvitationFlow(input);
-  // Basic conversion from Markdown-like bolding to HTML bold tags.
-  const formattedBody = result.emailBody
-    .replace(/\n/g, '<br/>') // Convert newlines to <br> tags
-    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); // Convert **text** to <b>text</b>
-  return { ...result, emailBody: formattedBody };
+  return result;
 }
 
 
@@ -57,7 +53,7 @@ const rfpInvitationPrompt = ai.definePrompt({
   prompt: `You are an expert email drafter specializing in writing compelling RFP Expression of Interest (EOI) emails for project managers.
 
   Given the following project details and contractor information, draft a personalized email invitation for EOI participation.
-  The tone should be professional and formal. Use markdown for bolding.
+  The tone should be professional and formal. Format the email body using HTML for line breaks (<br/>) and bold tags (<b>) where appropriate.
 
   Project Name: {{{projectName}}}
   Year: ${new Date().getFullYear()}
@@ -78,25 +74,25 @@ const rfpInvitationPrompt = ai.definePrompt({
   <template>
   Subject: CONFIDENTIAL Expression of Interest - Google MARCUS {{{projectName}}} | ${new Date().getFullYear()} {{{contractorName}}}
 
-  Dear {{{contractorName}}} Team,
+  Dear {{{contractorName}}} Team,<br/><br/>
 
-  Google is issuing an upcoming Request for Proposal (RFP) for one of its operational data center sites located in {{{campusLocation}}}. This work includes, but is not limited to, Moves, Adds, Retrofits, Changes, Utilities, and Security (collectively known as MARCUS works).
+  Google is issuing an upcoming Request for Proposal (RFP) for one of its operational data center sites located in {{{campusLocation}}}. This work includes, but is not limited to, Moves, Adds, Retrofits, Changes, Utilities, and Security (collectively known as MARCUS works).<br/><br/>
 
-  Google is seeking qualified General Contractors/Suppliers to perform post-facility handover work at our operational data center campuses located in {{{campusLocation}}}. This work includes, but is not limited to, Moves, Adds, Retrofits, Changes, Utilities, and Security (collectively known as MARCUS works). This is confidential information and adheres to the terms set forth in the NDA.
+  Google is seeking qualified General Contractors/Suppliers to perform post-facility handover work at our operational data center campuses located in {{{campusLocation}}}. This work includes, but is not limited to, Moves, Adds, Retrofits, Changes, Utilities, and Security (collectively known as MARCUS works). This is confidential information and adheres to the terms set forth in the NDA.<br/><br/>
 
-  **Objectives:**
-  This Expression of Interest (EOI) aims to gather written submissions from qualified companies interested in participating in the upcoming RFP process.
+  <b>Objectives:</b><br/>
+  This Expression of Interest (EOI) aims to gather written submissions from qualified companies interested in participating in the upcoming RFP process.<br/><br/>
 
-  **Action Required**
-  If your company is interested in receiving more details about this upcoming RFP, please provide all details required in the following Expression of Interest form [LINK]. Due {{{eoiDueDate}}}.
+  <b>Action Required</b><br/>
+  If your company is interested in receiving more details about this upcoming RFP, please provide all details required in the following Expression of Interest form [LINK]. Due {{{eoiDueDate}}}.<br/><br/>
 
-  Thank you for your time and we appreciate your consideration as a potential partner.
+  Thank you for your time and we appreciate your consideration as a potential partner.<br/><br/>
 
-  Best regards,
+  Best regards,<br/><br/>
 
-  ---
-  **Key Dates:**
-  RFP Period: {{{rfpStartDate}}} - {{{rfpEndDate}}}
+  ---<br/>
+  <b>Key Dates:</b><br/>
+  RFP Period: {{{rfpStartDate}}} - {{{rfpEndDate}}}<br/>
   Projected Timeline: {{{projectStartDate}}} - {{{projectEndDate}}}
   </template>
   `,
