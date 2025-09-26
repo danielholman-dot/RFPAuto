@@ -78,22 +78,12 @@ export const getContractorTypes = async () => {
 
 // Data access functions
 export async function getContractors(): Promise<Contractor[]> {
-  const contractorsWithLogos = contractors.map(c => ({
-    ...c,
-    logoUrl: `https://picsum.photos/seed/${c.name.replace(/\s/g, '')}/40/40`
-  }));
-  return Promise.resolve(contractorsWithLogos);
+  return Promise.resolve(contractors);
 }
 
 export async function getContractorById(id: string): Promise<Contractor | null> {
   const contractor = contractors.find(c => c.id === id);
-  if (!contractor) return null;
-
-  const contractorWithLogo = {
-    ...contractor,
-    logoUrl: `https://picsum.photos/seed/${contractor.name.replace(/\s/g, '')}/40/40`
-  };
-  return Promise.resolve(contractorWithLogo);
+  return Promise.resolve(contractor || null);
 }
 
 
@@ -151,10 +141,6 @@ export async function getSuggestedContractors(metroCode: string, contractorType:
       .filter(c => c.metroCodes.includes(metroCode) && c.type === contractorType)
       .sort((a,b) => (a.preference || 99) - (b.preference || 99))
       .slice(0, 5)
-      .map(c => ({
-          ...c,
-          logoUrl: `https://picsum.photos/seed/${c.name.replace(/\s/g, '')}/40/40`
-      }));
   return Promise.resolve(suggested);
 }
 
@@ -163,11 +149,7 @@ export async function getInvitedContractors(ids: string[]): Promise<Contractor[]
     return Promise.resolve([]);
   }
   const invited = contractors
-    .filter(c => ids.includes(c.id))
-    .map(c => ({
-        ...c,
-        logoUrl: `https://picsum.photos/seed/${c.name.replace(/\s/g, '')}/40/40`
-    }));
+    .filter(c => ids.includes(c.id));
   return Promise.resolve(invited);
 }
 
