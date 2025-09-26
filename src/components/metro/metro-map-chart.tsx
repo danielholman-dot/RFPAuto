@@ -34,9 +34,9 @@ export function MetroMapChart({ metros }: MetroMapChartProps) {
   const mapImage = PlaceHolderImages.find(img => img.id === 'usa-map');
 
   const validMetros = metros.filter(m => 
-    m.region !== 'Canada' && 
-    typeof m.lat === 'number' && !isNaN(m.lat) &&
-    typeof m.lon === 'number' && !isNaN(m.lon)
+    m.region !== 'Canada' &&
+    typeof m.lat === 'number' && isFinite(m.lat) &&
+    typeof m.lon === 'number' && isFinite(m.lon)
   );
 
   return (
