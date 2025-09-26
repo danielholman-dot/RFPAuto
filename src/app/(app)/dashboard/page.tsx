@@ -116,7 +116,7 @@ export default function Dashboard() {
       if (regionFilter !== 'all') {
         return regionMatch;
       }
-      if (metroFilter !== 'all') {
+      if (metroFilter !== 'all') { // This case was not handled correctly before for contractors
         return metroMatch;
       }
       return true; // Both are 'all'
@@ -155,7 +155,7 @@ export default function Dashboard() {
                       ))}
                   </SelectContent>
               </Select>
-              <Select value={metroFilter} onValueChange={setMetroFilter} disabled={regionFilter === 'all'}>
+              <Select value={metroFilter} onValuechange={setMetroFilter} disabled={regionFilter === 'all'}>
                   <SelectTrigger className="w-full md:w-[220px]">
                       <SelectValue placeholder="Filter by Metro" />
                   </SelectTrigger>
@@ -304,4 +304,5 @@ export default function Dashboard() {
       </div>
     </>
   );
-}
+
+    
