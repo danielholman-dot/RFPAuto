@@ -29,7 +29,6 @@ export type Contractor = {
   performance: number;
   metroCodes: string[];
   preference?: number;
-  logoUrl?: string;
 };
 
 export type Proposal = {

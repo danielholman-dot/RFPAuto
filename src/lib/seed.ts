@@ -720,7 +720,6 @@ export const ContractorsData = [
         metroCodes: contractorMetroCodes,
         performance: Math.floor(Math.random() * 21) + 80, // 80 to 100
         preference,
-        logoUrl: `https://picsum.photos/seed/${c.name.replace(/\s/g, '')}/40/40`
     };
 });
 

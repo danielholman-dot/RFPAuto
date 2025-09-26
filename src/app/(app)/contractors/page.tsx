@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -53,8 +53,7 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableRow key={contractor.id}>
             <TableCell>
               <Avatar>
-                <AvatarImage src={contractor.logoUrl} alt={`${contractor.name} logo`} data-ai-hint="company logo" />
-                <AvatarFallback>{contractor.name.substring(0, 2)}</AvatarFallback>
+                <AvatarFallback><HardHat className="h-5 w-5 text-muted-foreground" /></AvatarFallback>
               </Avatar>
             </TableCell>
             <TableCell className="font-medium">{contractor.name}</TableCell>
