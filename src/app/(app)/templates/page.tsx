@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { marcusSOPContent } from '@/lib/sop';
 
 export default function TemplatesPage() {
   const eoiTemplate = {
@@ -120,6 +121,25 @@ Best regards,
         </CardHeader>
       </Card>
       <Accordion type="single" collapsible className="w-full space-y-4">
+        <AccordionItem value="item-5">
+          <Card>
+            <AccordionTrigger className="p-6">
+              <div>
+                <CardTitle className="text-left">RFP Instructions (SOP)</CardTitle>
+                <CardDescription className="text-left">
+                  This is the Standard Operating Procedure document used by the AI to generate new RFP drafts.
+                </CardDescription>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="space-y-4">
+                <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono h-[60vh] overflow-auto">
+                    {marcusSOPContent}
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
         <AccordionItem value="item-1">
           <Card>
             <AccordionTrigger className="p-6">
