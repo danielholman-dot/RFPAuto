@@ -2,7 +2,8 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Check, Pencil, X } from "lucide-react";
 
 const permissionsData = [
     { feature: "Dashboard", page: true, gpo: true, pm: false },
@@ -51,6 +52,7 @@ export default function SettingsPage() {
                 <TableHead>Feature / Page</TableHead>
                 <TableHead className="text-center">GPO (Google Procurement Office)</TableHead>
                 <TableHead className="text-center">Project Management</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -62,6 +64,12 @@ export default function SettingsPage() {
                   </TableCell>
                   <TableCell className="text-center">
                     {item.pm ? <Check className="mx-auto h-5 w-5 text-green-600" /> : <X className="mx-auto h-5 w-5 text-red-600" />}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="outline" size="sm">
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
