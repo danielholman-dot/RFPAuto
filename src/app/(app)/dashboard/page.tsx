@@ -83,17 +83,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadMetros() {
+      let metroData: MetroOption[] = [];
       if (regionFilter === 'all') {
-        setMetros([]);
-        setMetroFilter('all');
+        metroData = allMetroInfo.map(m => ({ code: m.code, city: m.city }));
       } else {
-        const metroData = await getMetrosByRegion(regionFilter);
-        setMetros(metroData);
-        setMetroFilter('all');
+        metroData = await getMetrosByRegion(regionFilter);
       }
+      setMetros(metroData.sort((a,b) => a.code.localeCompare(b.code)));
+      setMetroFilter('all');
     }
     loadMetros();
-  }, [regionFilter]);
+  }, [regionFilter, allMetroInfo]);
 
   const filteredRfps = useMemo(() => {
     return allRfps.filter(rfp => {
@@ -106,20 +106,12 @@ export default function Dashboard() {
 
   const filteredContractors = useMemo(() => {
     return allContractors.filter(c => {
-      const contractorMetros = allMetroInfo.filter(m => c.metroCodes.includes(m.code));
-      const regionMatch = regionFilter === 'all' || contractorMetros.some(m => m.region === regionFilter);
+      const contractorMetrosInRegion = allMetroInfo.filter(m => c.metroCodes.includes(m.code) && (regionFilter === 'all' || m.region === regionFilter));
+      
+      const regionMatch = regionFilter === 'all' || contractorMetrosInRegion.length > 0;
       const metroMatch = metroFilter === 'all' || c.metroCodes.includes(metroFilter);
       
-      if (regionFilter !== 'all' && metroFilter !== 'all') {
-        return regionMatch && metroMatch;
-      }
-      if (regionFilter !== 'all') {
-        return regionMatch;
-      }
-      if (metroFilter !== 'all') { // This case was not handled correctly before for contractors
-        return metroMatch;
-      }
-      return true; // Both are 'all'
+      return regionMatch && metroMatch;
     });
   }, [allContractors, regionFilter, metroFilter, allMetroInfo]);
 
@@ -155,7 +147,7 @@ export default function Dashboard() {
                       ))}
                   </SelectContent>
               </Select>
-              <Select value={metroFilter} onValuechange={setMetroFilter} disabled={regionFilter === 'all'}>
+              <Select value={metroFilter} onValueChange={setMetroFilter}>
                   <SelectTrigger className="w-full md:w-[220px]">
                       <SelectValue placeholder="Filter by Metro" />
                   </SelectTrigger>
