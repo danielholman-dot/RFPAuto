@@ -33,14 +33,16 @@ export function RfpAwardDialog({ isOpen, onOpenChange, rfp, contractor }: RfpAwa
 
 
   const updateEmailBody = useCallback(() => {
-    if (emailContent) {
+    if (emailContent?.originalBody) {
       let newBody = emailContent.originalBody;
       newBody = newBody.replace(/\[Your Name\]/g, yourName);
       newBody = newBody.replace(/\[Your Position\]/g, yourPosition);
       newBody = newBody.replace(/\[Your Company\]/g, yourCompany);
-      setEmailContent(prev => prev ? { ...prev, body: newBody } : null);
+      if (newBody !== emailContent.body) {
+        setEmailContent(prev => prev ? { ...prev, body: newBody } : null);
+      }
     }
-  }, [emailContent, yourName, yourPosition, yourCompany]);
+  }, [emailContent?.originalBody, emailContent?.body, yourName, yourPosition, yourCompany]);
 
 
   useEffect(() => {
