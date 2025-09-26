@@ -227,6 +227,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                     <TableRow>
                       <TableHead>Contractor</TableHead>
                       <TableHead>Contact</TableHead>
+                      <TableHead>Metros</TableHead>
                       <TableHead>Performance</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
@@ -236,6 +237,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                       <TableRow key={contractor.id}>
                         <TableCell className="font-medium">{contractor.name}</TableCell>
                         <TableCell>{contractor.contactName} ({contractor.contactEmail})</TableCell>
+                        <TableCell>{contractor.metroCodes.join(', ')}</TableCell>
                         <TableCell className="flex items-center">
                           {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
                         </TableCell>
