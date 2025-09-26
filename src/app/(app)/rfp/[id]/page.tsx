@@ -46,8 +46,12 @@ export default function RfpDetailPage() {
           return 'secondary'; // Blue / secondary for final stages
       case 'Draft':
         return 'outline'; // Grey outline for pending
-      default:
+      case 'Selection':
+      case 'Invitation':
+      case 'Proposals':
         return 'secondary'; // Yellow / warning for active states like Selection, Invitation, etc.
+      default:
+        return 'secondary';
     }
   };
 

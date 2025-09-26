@@ -104,34 +104,36 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
   const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
   const [sentEoiContractors, setSentEoiContractors] = useState<string[]>([]);
 
-  // Autosave logic
-  useEffect(() => {
+  const handleStageToggle = (stage: RfpStage) => {
+    const newCompletedStages = completedStages.includes(stage)
+        ? completedStages.filter(s => s !== stage)
+        : [...completedStages, stage];
+
+    setCompletedStages(newCompletedStages);
+
     const findNextStage = () => {
-        for (const stage of STAGES) {
-            if (!completedStages.includes(stage)) {
-                return stage;
+        for (const s of STAGES) {
+            if (!newCompletedStages.includes(s)) {
+                return s;
             }
         }
         return 'Completed';
     };
 
     const newStatus = findNextStage();
-    if (rfp.status !== newStatus) {
-        const updatedRfp = { ...rfp, status: newStatus as RFP['status'] };
-        setRfp(updatedRfp);
-        updateRfp(rfp.id, { status: newStatus as RFP['status'] });
-    }
-  }, [completedStages, rfp]);
+    
+    // Create a new RFP object with the updated status
+    const updatedRfp = { ...rfp, status: newStatus as RFP['status'] };
+    
+    // Update the local state immediately
+    setRfp(updatedRfp);
+    
+    // Trigger the autosave
+    updateRfp(rfp.id, { status: newStatus as RFP['status'] });
 
-
-  const handleStageToggle = (stage: RfpStage) => {
-    setCompletedStages(prev => {
-        const isCompleted = prev.includes(stage);
-        if (isCompleted) {
-            return prev.filter(s => s !== stage);
-        } else {
-            return [...prev, stage];
-        }
+    toast({
+        title: "Status Updated",
+        description: `RFP is now in the "${newStatus}" stage.`,
     });
   };
 
