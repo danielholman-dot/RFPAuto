@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo } from "react";
@@ -28,6 +28,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Checkbox } from "../ui/checkbox";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { RfpChecklistDialog } from "./rfp-checklist-dialog";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
+import { Label } from "../ui/label"
 
 
 type RfpTabsProps = {
@@ -55,6 +57,8 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   const [selectedProposals, setSelectedProposals] = useState<string[]>([]);
   const [comparativeAnalysisResult, setComparativeAnalysisResult] = useState<GenerateComparativeAnalysisOutput | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const [winningContractorId, setWinningContractorId] = useState<string | null>(null);
 
   const loadInvited = async () => {
     if (isDraft) return;
@@ -454,10 +458,61 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
           <Card>
               <CardHeader>
                   <CardTitle>Award Recommendation</CardTitle>
-                  <CardDescription>Review final scores and generate an award recommendation.</CardDescription>
+                  <CardDescription>Select the winning contractor to generate award and non-award letters.</CardDescription>
               </CardHeader>
               <CardContent>
-                  <p className="text-muted-foreground text-center py-8">Award recommendation tools will be available after proposal analysis.</p>
+                {invitedLoading ? (
+                   <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
+                ) : invitedContractors.length > 0 ? (
+                  <RadioGroup value={winningContractorId || ''} onValueChange={setWinningContractorId}>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12"></TableHead>
+                          <TableHead>Contractor</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {invitedContractors.map(contractor => {
+                          const isWinner = winningContractorId === contractor.id;
+                          const isLoser = winningContractorId !== null && winningContractorId !== contractor.id;
+                          return (
+                            <TableRow key={contractor.id}>
+                              <TableCell>
+                                <RadioGroupItem value={contractor.id} id={contractor.id} />
+                              </TableCell>
+                              <TableCell>
+                                <Label htmlFor={contractor.id} className="font-medium">{contractor.name}</Label>
+                              </TableCell>
+                              <TableCell>
+                                {isWinner && <Badge>Winner</Badge>}
+                                {isLoser && <Badge variant="destructive">Not Selected</Badge>}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {isWinner && (
+                                  <Button size="sm">
+                                    <Award className="mr-2 h-4 w-4" />
+                                    Send Award Letter
+                                  </Button>
+                                )}
+                                {isLoser && (
+                                  <Button size="sm" variant="secondary">
+                                    <Mail className="mr-2 h-4 w-4" />
+                                    Send Non-Award Letter
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </RadioGroup>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">No contractors have been invited for this RFP.</p>
+                )}
               </CardContent>
           </Card>
         </TabsContent>
@@ -489,5 +544,3 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
-
-    
