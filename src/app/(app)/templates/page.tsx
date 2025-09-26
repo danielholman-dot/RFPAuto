@@ -206,17 +206,17 @@ Best regards,
         <AccordionItem value="sop-template">
           <Card>
             <div className="flex items-center w-full p-6">
-                <AccordionTrigger className="flex-grow text-left p-0 hover:no-underline">
-                    <div className="flex-grow">
-                        <CardTitle>RFP Instructions (SOP)</CardTitle>
-                        <CardDescription>
-                        This is the Standard Operating Procedure document used by the AI to generate new RFP drafts.
-                        </CardDescription>
-                    </div>
-                </AccordionTrigger>
-                <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0" onClick={() => handleToggleEdit('sop-template')}>
-                    {editingKey === 'sop-template' ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-                </Button>
+              <AccordionTrigger className="flex-grow p-0 text-left hover:no-underline">
+                <div className="flex-grow">
+                  <CardTitle>RFP Instructions (SOP)</CardTitle>
+                  <CardDescription>
+                    This is the Standard Operating Procedure document used by the AI to generate new RFP drafts.
+                  </CardDescription>
+                </div>
+              </AccordionTrigger>
+              <Button variant="ghost" size="icon" className="ml-4 flex-shrink-0" onClick={() => handleToggleEdit('sop-template')}>
+                {editingKey === 'sop-template' ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+              </Button>
             </div>
             <AccordionContent>
               <CardContent className="space-y-4">
