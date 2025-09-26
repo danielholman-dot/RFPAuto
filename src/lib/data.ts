@@ -114,6 +114,16 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals'>): Promise<st
   return Promise.resolve(newId);
 }
 
+export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<RFP | null> {
+    const rfpIndex = rfps.findIndex(r => r.id === rfpId);
+    if (rfpIndex === -1) {
+      return null;
+    }
+    rfps[rfpIndex] = { ...rfps[rfpIndex], ...updates };
+    return Promise.resolve(rfps[rfpIndex]);
+  }
+  
+
 export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'id'>) {
   const rfp = rfps.find(r => r.id === rfpId);
   if (!rfp) {

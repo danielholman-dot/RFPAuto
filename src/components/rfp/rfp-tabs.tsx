@@ -17,12 +17,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award, PencilRuler, CheckCircle, CheckCircle2, ArrowRight, Check } from "lucide-react"
+import { Mail, Send, Bot, Trophy, Star, Loader2, UploadCloud, PlusCircle, Settings, Award, CheckCircle, Check } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { generateComparativeAnalysis, GenerateComparativeAnalysisOutput } from "@/ai/flows/generate-comparative-analysis";
-import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp } from "@/lib/data";
+import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp, updateRfp } from "@/lib/data";
 import { RfpInvitationDialog } from "./rfp-invitation-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
@@ -68,8 +68,13 @@ const StageCompletion = ({ stage, completedStages, onStageToggle }: { stage: Rfp
 export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
   const [rfp, setRfp] = useState(initialRfp);
   const [activeTab, setActiveTab] = useState(rfp.status === 'Draft' ? 'Selection' : rfp.status);
-  const [completedStages, setCompletedStages] = useState<RfpStage[]>([]);
-
+  
+  // Initialize completed stages based on current RFP status
+  const getInitialCompletedStages = (status: RfpStage) => {
+    const currentIndex = STAGES.indexOf(status);
+    return STAGES.slice(0, currentIndex);
+  };
+  const [completedStages, setCompletedStages] = useState<RfpStage[]>(getInitialCompletedStages(rfp.status as RfpStage));
   const { toast } = useToast();
 
   const [suggestedContractors, setSuggestedContractors] = useState<Contractor[]>([]);
@@ -98,6 +103,26 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
   const [isNonAwardDialogOpen, setIsNonAwardDialogOpen] = useState(false);
   const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
   const [sentEoiContractors, setSentEoiContractors] = useState<string[]>([]);
+
+  // Autosave logic
+  useEffect(() => {
+    const findNextStage = () => {
+        for (const stage of STAGES) {
+            if (!completedStages.includes(stage)) {
+                return stage;
+            }
+        }
+        return 'Completed';
+    };
+
+    const newStatus = findNextStage();
+    if (rfp.status !== newStatus) {
+        const updatedRfp = { ...rfp, status: newStatus as RFP['status'] };
+        setRfp(updatedRfp);
+        updateRfp(rfp.id, { status: newStatus as RFP['status'] });
+    }
+  }, [completedStages, rfp]);
+
 
   const handleStageToggle = (stage: RfpStage) => {
     setCompletedStages(prev => {
