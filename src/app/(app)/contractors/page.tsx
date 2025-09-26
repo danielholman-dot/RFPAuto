@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -92,6 +93,7 @@ export default function ContractorsPage() {
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
   const [metroCodeFilter, setMetroCodeFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     async function loadData() {
@@ -124,9 +126,10 @@ export default function ContractorsPage() {
     return allContractors.filter(contractor => {
       const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
       const metroCodeMatch = metroCodeFilter === 'all' || (contractor.metroCodes && contractor.metroCodes.includes(metroCodeFilter));
-      return typeMatch && metroCodeMatch;
+      const searchMatch = searchTerm === '' || contractor.name.toLowerCase().includes(searchTerm.toLowerCase());
+      return typeMatch && metroCodeMatch && searchMatch;
     });
-  }, [allContractors, typeFilter, metroCodeFilter]);
+  }, [allContractors, typeFilter, metroCodeFilter, searchTerm]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -171,6 +174,12 @@ export default function ContractorsPage() {
             <CardDescription>A list of all preferred contractors.</CardDescription>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              placeholder="Search by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full sm:w-[200px]"
+            />
             <Select value={typeFilter} onValueChange={setTypeFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by Type" />
