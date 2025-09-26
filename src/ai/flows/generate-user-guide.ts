@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview A flow that generates a user guide for the MARCUS Automation Suite.
+ * @fileOverview A flow that generates a user guide for the RFP Automation Suite.
  *
  * - generateUserGuide - A function that generates the user guide content.
  * - GenerateUserGuideOutput - The return type for the generateUserGuide function.
@@ -23,7 +23,8 @@ export async function generateUserGuide(): Promise<GenerateUserGuideOutput> {
 const prompt = ai.definePrompt({
   name: 'generateUserGuidePrompt',
   output: {schema: GenerateUserGuideOutputSchema},
-  prompt: `You are an expert technical writer tasked with creating a comprehensive user guide for a web application called the "MARCUS Automation Suite". The application is designed to streamline the Request for Proposal (RFP) process for construction and data center projects.
+  prompt: `You are an expert technical writer tasked with creating a comprehensive user guide for a web application called the "RFP Automation Suite".
+The application is designed to streamline the Request for Proposal (RFP) process for small construction and data center projects (internally referred to as MARCUS projects: Moves, Adds, Retrofits, Changes, Utilities, Security). Do not explain the MARCUS acronym or mention Google in the guide.
 
 Generate a user guide as a single, well-structured HTML document. The guide should be rich with explanations. Use appropriate HTML tags like <h1>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, and <table> to create a professional and readable document. Do not include <html>, <head>, or <body> tags.
 
@@ -31,7 +32,7 @@ For each major feature or "chapter," provide a detailed explanation of its purpo
 
 The guide should cover the following key areas of the application:
 
-1.  **Introduction**: Briefly explain the purpose of the MARCUS Automation Suite and its benefits.
+1.  **Introduction**: Briefly explain the purpose of the RFP Automation Suite and its benefits.
 
 2.  **Dashboard**: Describe the main dashboard, including the key performance indicators (KPIs) like Total Budget, Total Contractors, and Active RFPs, and the Gantt chart for project timelines. Explain how the filters work.
 
