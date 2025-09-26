@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/select';
 import type { RFP, Contractor } from '@/lib/types';
 import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
-import { getContractors, getRfps, getAllMetroCodes } from '@/lib/data';
+import { getContractors, getRfps, getAllMetroCodes, getMetroRegions, getMetrosByRegion } from '@/lib/data';
 import { useEffect, useState, useMemo } from 'react';
 import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
 
@@ -44,42 +44,78 @@ type MetroInfo = {
   region: string;
 };
 
+type MetroOption = {
+  code: string;
+  city: string;
+};
+
 export default function Dashboard() {
   const [allRfps, setAllRfps] = useState<RFP[]>([]);
   const [allContractors, setAllContractors] = useState<Contractor[]>([]);
-  const [allMetroDetails, setAllMetroDetails] = useState<MetroInfo[]>([]);
-
+  
+  const [regions, setRegions] = useState<string[]>([]);
+  const [metros, setMetros] = useState<MetroOption[]>([]);
+  
   const [loading, setLoading] = useState(true);
+  const [regionFilter, setRegionFilter] = useState('all');
   const [metroFilter, setMetroFilter] = useState('all');
 
   useEffect(() => {
     async function loadData() {
-      const [rfpsData, contractorsData, metroDetails] = await Promise.all([
+      const [rfpsData, contractorsData, regionData] = await Promise.all([
         getRfps(), 
         getContractors(),
-        getAllMetroCodes(),
+        getMetroRegions(),
       ]);
       setAllRfps(rfpsData);
       setAllContractors(contractorsData);
-      setAllMetroDetails(metroDetails);
+      setRegions(['all', ...regionData]);
       setLoading(false);
     }
     loadData();
   }, []);
 
-  const filteredRfps = useMemo(() => {
-    if (metroFilter === 'all') {
-      return allRfps;
+  useEffect(() => {
+    async function loadMetros() {
+      if (regionFilter === 'all') {
+        setMetros([]);
+        setMetroFilter('all');
+      } else {
+        const metroData = await getMetrosByRegion(regionFilter);
+        setMetros(metroData);
+        setMetroFilter('all');
+      }
     }
-    return allRfps.filter(rfp => rfp.metroCode === metroFilter);
-  }, [allRfps, metroFilter]);
+    loadMetros();
+  }, [regionFilter]);
+
+  const filteredRfps = useMemo(() => {
+    return allRfps.filter(rfp => {
+      const regionInfo = metroCodes.find(m => m.code === rfp.metroCode);
+      const regionMatch = regionFilter === 'all' || (regionInfo && regionInfo.region === regionFilter);
+      const metroMatch = metroFilter === 'all' || rfp.metroCode === metroFilter;
+      return regionMatch && metroMatch;
+    });
+  }, [allRfps, regionFilter, metroFilter]);
 
   const filteredContractors = useMemo(() => {
-     if (metroFilter === 'all') {
-      return allContractors;
-     }
-    return allContractors.filter(c => c.metroCodes.includes(metroFilter));
-  }, [allContractors, metroFilter]);
+    return allContractors.filter(c => {
+      const contractorMetros = metroCodes.filter(m => c.metroCodes.includes(m.code));
+      const regionMatch = regionFilter === 'all' || contractorMetros.some(m => m.region === regionFilter);
+      const metroMatch = metroFilter === 'all' || c.metroCodes.includes(metroFilter);
+      
+      if (regionFilter !== 'all' && metroFilter !== 'all') {
+        return regionMatch && metroMatch;
+      }
+      if (regionFilter !== 'all') {
+        return regionMatch;
+      }
+      if (metroFilter !== 'all') {
+        return metroMatch;
+      }
+      return true; // Both are 'all'
+    });
+  }, [allContractors, regionFilter, metroFilter]);
 
 
   if (loading) {
@@ -103,13 +139,23 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h1 className="text-2xl font-semibold">Dashboard</h1>
           <div className="flex gap-4">
-              <Select value={metroFilter} onValueChange={setMetroFilter}>
+               <Select value={regionFilter} onValueChange={setRegionFilter}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                      <SelectValue placeholder="Filter by Region" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {regions.map(region => (
+                          <SelectItem key={region} value={region}>{region === 'all' ? 'All Regions' : region}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+              <Select value={metroFilter} onValueChange={setMetroFilter} disabled={regionFilter === 'all'}>
                   <SelectTrigger className="w-full md:w-[220px]">
                       <SelectValue placeholder="Filter by Metro" />
                   </SelectTrigger>
                   <SelectContent>
                        <SelectItem value="all">All Metros</SelectItem>
-                      {allMetroDetails.map(metro => (
+                      {metros.map(metro => (
                           <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
                       ))}
                   </SelectContent>
