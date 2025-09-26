@@ -233,9 +233,9 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
   }, [invitedContractors, suggestedContractors, allContractors]);
 
   const uninvitedContractors = useMemo(() => {
-    const invitedIds = new Set(invitedContractors.map(c => c.id));
+    const invitedIds = new Set(rfp.invitedContractors || []);
     return allContractors.filter(c => !invitedIds.has(c.id));
-  }, [allContractors, invitedContractors]);
+  }, [allContractors, rfp.invitedContractors]);
 
   const analysisChartData = useMemo(() => {
     return proposals
