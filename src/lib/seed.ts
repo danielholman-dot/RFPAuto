@@ -1,5 +1,6 @@
 
 
+
 export const ContractorsData = [
     {
         "name": "Allison-Smith Company LLC",
@@ -720,6 +721,24 @@ export const ContractorsData = [
         "preferredStatus": "Most Preferred",
         "region": "North America",
         "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
+    },
+    {
+        "name": "TestGray Electrical/NICON",
+        "contactName": "John Smith",
+        "contactEmail": "jsmith@testgray.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Most Preferred",
+        "region": "North America",
+        "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
+    },
+    {
+        "name": "TestRedbrick General Contractor",
+        "contactName": "Joe Smith",
+        "contactEmail": "jsmith@redbrick.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "North America",
+        "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
     }
 ].map(c => {
     // Extract metro codes from the metroSite string
@@ -808,3 +827,4 @@ export const RFPData = [
     
 
     
+
