@@ -123,7 +123,7 @@ export default function ContractorsPage() {
   const filteredContractors = useMemo(() => {
     return allContractors.filter(contractor => {
       const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
-      const metroCodeMatch = metroCodeFilter === 'all' || contractor.metroCodes.includes(metroCodeFilter);
+      const metroCodeMatch = metroCodeFilter === 'all' || (contractor.metroCodes && contractor.metroCodes.includes(metroCodeFilter));
       return typeMatch && metroCodeMatch;
     });
   }, [allContractors, typeFilter, metroCodeFilter]);
