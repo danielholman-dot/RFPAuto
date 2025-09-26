@@ -21,7 +21,7 @@
     {
       "id": "usa-map",
       "description": "A simple outline map of the USA.",
-      "imageUrl": "https://images.unsplash.com/photo-1619468234399-2c9d6ca38622?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxVU0ElMjBtYXAlMjBpbGx1c3RyYXRpb258ZW58MHx8fHwxNzU4ODk5MDQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1543973155-a2287ee3e642?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       "imageHint": "USA map"
     }
   ]
