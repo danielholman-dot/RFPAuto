@@ -28,11 +28,7 @@ const GenerateAwardLetterOutputSchema = z.object({
 export type GenerateAwardLetterOutput = z.infer<typeof GenerateAwardLetterOutputSchema>;
 
 export async function generateAwardLetter(input: GenerateAwardLetterInput): Promise<GenerateAwardLetterOutput> {
-  const result = await generateAwardLetterFlow(input);
-  const formattedBody = result.emailBody
-    .replace(/\n/g, '<br/>')
-    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-  return { ...result, emailBody: formattedBody };
+  return generateAwardLetterFlow(input);
 }
 
 const prompt = ai.definePrompt({
@@ -40,31 +36,32 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateAwardLetterInputSchema},
   output: {schema: GenerateAwardLetterOutputSchema},
   prompt: `You are an expert email drafter. Generate an award notification email based on the following template and details.
+  Format the email body using HTML for line breaks (<br/>) and bold tags (<b>) where appropriate.
 
   **Template:**
   Subject: Award Notification: MARCUS {{{projectName}}}
 
-  Dear {{{contractorName}}},
+  Dear {{{contractorName}}},<br/><br/>
 
-  We are pleased to announce that {{{contractorName}}} has been awarded the MARCUS {{{projectName}}} RFP after a comprehensive review and assessment of your proposal. Congratulations on your successful selection to move forward in this exciting opportunity!
+  We are pleased to announce that <b>{{{contractorName}}}</b> has been awarded the MARCUS {{{projectName}}} RFP after a comprehensive review and assessment of your proposal. Congratulations on your successful selection to move forward in this exciting opportunity!<br/><br/>
 
-  Please find attached the formal award letter, which outlines the conditions of the award and the required next steps. Highlights include:
-  - **Final Confirmation of Onsite Project Personnel:** Please upload the appropriate resumes to your designated folder [LINK], detailing the site-specific staffing roster for Google's final project team approval.
-  - **Project Team Meeting:** Join GPO and the XX Project Team for a meeting on {{{meetingDate}}}. A separate calendar invite will be sent for this meeting—please let us know if you do not receive it. All proposed onsite personnel are expected to attend.
+  Please find attached the formal award letter, which outlines the conditions of the award and the required next steps. Highlights include:<br/>
+  - <b>Final Confirmation of Onsite Project Personnel:</b> Please upload the appropriate resumes to your designated folder [LINK], detailing the site-specific staffing roster for Google's final project team approval.<br/>
+  - <b>Project Team Meeting:</b> Join GPO and the XX Project Team for a meeting on {{{meetingDate}}}. A separate calendar invite will be sent for this meeting—please let us know if you do not receive it. All proposed onsite personnel are expected to attend.<br/><br/>
 
-  Your points of contact for the next phase will be:
-  - Program Lead: XX
-  - Site MARCUS Lead: XX
-  - Regional Contract Manager: XX
+  Your points of contact for the next phase will be:<br/>
+  - Program Lead: XX<br/>
+  - Site MARCUS Lead: XX<br/>
+  - Regional Contract Manager: XX<br/><br/>
 
-  Please respond to the email containing this notice to confirm your acceptance of the award and the specified conditions by no later than {{{confirmationDate}}}, by “Replying All” to this email. 
+  Please respond to the email containing this notice to confirm your acceptance of the award and the specified conditions by no later than <b>{{{confirmationDate}}}</b>, by “Replying All” to this email.<br/><br/>
 
-  We deeply appreciate your participation in the RFP process and look forward to a successful partnership with {{{contractorName}}} as we move into the next phase of the MARCUS {{{projectName}}} initiative.
+  We deeply appreciate your participation in the RFP process and look forward to a successful partnership with {{{contractorName}}} as we move into the next phase of the MARCUS {{{projectName}}} initiative.<br/><br/>
 
-  Best regards,
+  Best regards,<br/><br/>
 
-  [Your Name]
-  [Your Position]
+  [Your Name]<br/>
+  [Your Position]<br/>
   [Your Company]
 
   **Details:**

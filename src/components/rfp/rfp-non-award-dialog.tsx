@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Send } from "lucide-react";
 import { generateNonAwardLetter } from "@/ai/flows/generate-non-award-letter";
 import type { RFP, Contractor } from "@/lib/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import Textarea from "../ui/textarea";
 
@@ -26,73 +26,63 @@ type RfpNonAwardDialogProps = {
 };
 
 export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: RfpNonAwardDialogProps) {
-  const [emailContent, setEmailContent] = useState<{ to: string, subject: string, body: string } | null>(null);
+  const [emailContent, setEmailContent] = useState<{ to: string, subject: string, body: string, originalBody: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [improvementAreas, setImprovementAreas] = useState('');
   const [yourName, setYourName] = useState('Google Program Owner');
   const [yourPosition, setYourPosition] = useState('Program Manager');
   const [yourCompany, setYourCompany] = useState('Google');
-
-
+  
   const formatDate = (date: any) => {
     if (!date) return 'TBD';
     const d = date.toDate ? date.toDate() : new Date(date);
     return format(d, 'MMMM d, yyyy');
   };
 
+  const generateAndSetEmail = useCallback(() => {
+    setIsLoading(true);
+    setEmailContent(null);
+    
+    generateNonAwardLetter({
+      projectName: rfp.projectName,
+      contractorName: contractor.name,
+      contractorEmail: contractor.contactEmail,
+      submissionDate: formatDate(rfp.rfpEndDate),
+      improvementAreas: improvementAreas,
+    }).then(result => {
+      setEmailContent({
+          to: contractor.contactEmail,
+          subject: result.emailSubject,
+          body: result.emailBody,
+          originalBody: result.emailBody,
+      });
+      setIsLoading(false);
+    }).catch(err => {
+      console.error("Failed to generate email:", err);
+      setIsLoading(false);
+    });
+  }, [rfp, contractor, improvementAreas]);
+
   useEffect(() => {
     if (isOpen) {
-      setIsLoading(true);
-      setEmailContent(null);
-      
-      generateNonAwardLetter({
-        projectName: rfp.projectName,
-        contractorName: contractor.name,
-        contractorEmail: contractor.contactEmail,
-        submissionDate: formatDate(rfp.rfpEndDate),
-        improvementAreas: improvementAreas,
-      }).then(result => {
-        let body = result.emailBody;
-        body = body.replace(/\[Your Name\]/g, yourName);
-        body = body.replace(/\[Your Position\]/g, yourPosition);
-        body = body.replace(/\[Your Company\]/g, yourCompany);
-        setEmailContent({
-            to: contractor.contactEmail,
-            subject: result.emailSubject,
-            body: body,
-        });
-        setIsLoading(false);
-      }).catch(err => {
-        console.error("Failed to generate email:", err);
-        setIsLoading(false);
-      });
+        generateAndSetEmail();
     }
-  }, [isOpen, rfp, contractor, improvementAreas, yourName, yourPosition, yourCompany]);
+  }, [isOpen, generateAndSetEmail]);
 
-  const updateBody = (field: 'name' | 'position' | 'company', value: string) => {
-    if (!emailContent) return;
+  const updateEmailBody = useCallback(() => {
+    if (emailContent) {
+      let newBody = emailContent.originalBody;
+      newBody = newBody.replace(/\[Your Name\]/g, yourName);
+      newBody = newBody.replace(/\[Your Position\]/g, yourPosition);
+      newBody = newBody.replace(/\[Your Company\]/g, yourCompany);
+      newBody = newBody.replace(/{{{improvementAreas}}}/g, improvementAreas);
+      setEmailContent(prev => prev ? { ...prev, body: newBody } : null);
+    }
+  }, [emailContent, yourName, yourPosition, yourCompany, improvementAreas]);
 
-    let newBody = emailContent.body;
-    if (field === 'name') newBody = newBody.replace(yourName, value);
-    if (field === 'position') newBody = newBody.replace(yourPosition, value);
-    if (field === 'company') newBody = newBody.replace(yourCompany, value);
-    
-    setEmailContent(prev => prev ? {...prev, body: newBody} : null);
-  }
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateBody('name', e.target.value);
-    setYourName(e.target.value);
-  }
-  const handlePositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateBody('position', e.target.value);
-    setYourPosition(e.target.value);
-  }
-  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateBody('company', e.target.value);
-    setYourCompany(e.target.value);
-  }
-
+  useEffect(() => {
+    updateEmailBody();
+  }, [yourName, yourPosition, yourCompany, emailContent?.originalBody, updateEmailBody]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -140,18 +130,19 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
                         className="h-32"
                     />
                 </div>
+                 <Button variant="ghost" size="sm" onClick={generateAndSetEmail}>Regenerate with feedback</Button>
                 <h4 className="font-semibold">Your Information</h4>
                 <div className="space-y-2">
                     <Label htmlFor="your-name">Your Name</Label>
-                    <Input id="your-name" value={yourName} onChange={handleNameChange} />
+                    <Input id="your-name" value={yourName} onChange={(e) => setYourName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="your-position">Your Position</Label>
-                    <Input id="your-position" value={yourPosition} onChange={handlePositionChange} />
+                    <Input id="your-position" value={yourPosition} onChange={(e) => setYourPosition(e.target.value)} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="your-company">Your Company</Label>
-                    <Input id="your-company" value={yourCompany} onChange={handleCompanyChange} />
+                    <Input id="your-company" value={yourCompany} onChange={(e) => setYourCompany(e.target.value)} />
                 </div>
             </div>
           </div>

@@ -28,11 +28,7 @@ const GenerateNonAwardLetterOutputSchema = z.object({
 export type GenerateNonAwardLetterOutput = z.infer<typeof GenerateNonAwardLetterOutputSchema>;
 
 export async function generateNonAwardLetter(input: GenerateNonAwardLetterInput): Promise<GenerateNonAwardLetterOutput> {
-    const result = await generateNonAwardLetterFlow(input);
-    const formattedBody = result.emailBody
-      .replace(/\n/g, '<br/>')
-      .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-    return { ...result, emailBody: formattedBody };
+    return generateNonAwardLetterFlow(input);
 }
 
 const prompt = ai.definePrompt({
@@ -40,30 +36,30 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateNonAwardLetterInputSchema},
   output: {schema: GenerateNonAwardLetterOutputSchema},
   prompt: `You are an expert email drafter. Generate a non-award notification email based on the following template and details.
+  Format the email body with HTML using <br/> for line breaks and wrap optional sections correctly.
 
   **Template:**
   Subject: Notice of Decision - Google MARCUS {{{projectName}}} - {{{contractorName}}}
 
-  Dear {{{contractorName}}} Team,
+  Dear {{{contractorName}}} Team,<br/><br/>
 
-  We would like to thank you and your team for your participation in the MARCUS {{{projectName}}} RFP on {{{submissionDate}}}.
+  We would like to thank you and your team for your participation in the MARCUS {{{projectName}}} RFP on {{{submissionDate}}}.<br/><br/>
 
-  The Google team has decided not to advance this specific project any further with your company. This email formally concludes our review process for this project. We appreciate your interest and will reach out for future RFPs that align with our needs.
+  The Google team has decided not to advance this specific project any further with your company. This email formally concludes our review process for this project. We appreciate your interest and will reach out for future RFPs that align with our needs.<br/><br/>
 
-  We appreciate the time and effort you have put into responding to this RFP process. Please note, this decision does not prohibit your involvement in future RFP opportunities with Google.
+  We appreciate the time and effort you have put into responding to this RFP process. Please note, this decision does not prohibit your involvement in future RFP opportunities with Google.<br/><br/>
 
   {{#if improvementAreas}}
-  While we don’t share the results of the RFP evaluation, here are some areas for potential improvement that could strengthen your proposal in future proposals:
-  
-  {{{improvementAreas}}}
+  While we don’t share the results of the RFP evaluation, here are some areas for potential improvement that could strengthen your proposal in future proposals:<br/>
+  {{{improvementAreas}}}<br/><br/>
   {{/if}}
 
-  Thank you for your efforts to support this bid process. Should you have any additional questions, please don’t hesitate to let us know how we can help.
+  Thank you for your efforts to support this bid process. Should you have any additional questions, please don’t hesitate to let us know how we can help.<br/><br/>
 
-  Regards,
+  Regards,<br/><br/>
 
-  [Your Name]
-  [Your Position]
+  [Your Name]<br/>
+  [Your Position]<br/>
   [Your Company]
 
   **Details:**
