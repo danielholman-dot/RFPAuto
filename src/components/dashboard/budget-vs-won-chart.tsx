@@ -1,4 +1,3 @@
-
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -10,7 +9,7 @@ type BudgetVsWonChartProps = {
 };
 
 export function BudgetVsWonChart({ rfps }: BudgetVsWonChartProps) {
-  const chartData = useMemo(() => {
+  const awardedData = useMemo(() => {
     return rfps
       .filter(rfp => rfp.status === 'Awarded' || rfp.status === 'Completed')
       .map(rfp => {
@@ -21,11 +20,21 @@ export function BudgetVsWonChart({ rfps }: BudgetVsWonChartProps) {
           won: awardedProposal?.bidAmount || 0,
         };
       })
-      .filter(data => data.won > 0); // Only show projects with a won amount
+      .filter(data => data.won > 0);
   }, [rfps]);
 
+  const budgetOnlyData = useMemo(() => {
+    return rfps.map(rfp => ({
+      name: rfp.projectName,
+      budget: rfp.estimatedBudget,
+    }));
+  }, [rfps]);
+
+  const hasAwardedData = awardedData.length > 0;
+  const chartData = hasAwardedData ? awardedData : budgetOnlyData;
+
   if (!chartData || chartData.length === 0) {
-    return <p className="text-center text-muted-foreground py-8">No awarded project data to display for this chart.</p>;
+    return <p className="text-center text-muted-foreground py-8">No project data to display for this chart.</p>;
   }
 
   const formatCurrency = (value: number) => {
@@ -55,10 +64,8 @@ export function BudgetVsWonChart({ rfps }: BudgetVsWonChartProps) {
         <Tooltip formatter={(value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)} />
         <Legend />
         <Bar dataKey="budget" fill="hsl(var(--muted-foreground))" name="Budget" />
-        <Bar dataKey="won" fill="hsl(var(--primary))" name="Won Amount" />
+        {hasAwardedData && <Bar dataKey="won" fill="hsl(var(--primary))" name="Won Amount" />}
       </BarChart>
     </ResponsiveContainer>
   );
 }
-
-    
