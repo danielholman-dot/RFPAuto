@@ -468,7 +468,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-12"></TableHead>
+                          <TableHead className="w-24">Select Winner</TableHead>
                           <TableHead>Contractor</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Action</TableHead>
