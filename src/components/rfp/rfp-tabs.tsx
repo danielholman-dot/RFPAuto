@@ -106,7 +106,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     loadProposals();
     loadAllContractors();
 
-  }, [rfp, isDraft]);
+  }, [rfp.id, rfp.metroCode, rfp.contractorType, rfp.estimatedBudget, isDraft]);
 
   const handleAddContractorToRfp = async () => {
     if (!selectedContractorToAdd) return;
@@ -207,7 +207,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
         name: getContractorById(p.contractorId)?.name || 'Unknown',
         value: p.bidAmount,
       }));
-  }, [proposals, selectedProposals]);
+  }, [proposals, selectedProposals, getContractorById]);
 
 
   return (
@@ -582,5 +582,3 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
-
-    

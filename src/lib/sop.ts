@@ -191,3 +191,4 @@ Google is committed to treating all workers with respect and dignity, ensuring s
 If you have not done so already, please click on this link to sign up for a Google Docs account using your corporate email address as only then will you be able to access all the documents.
 ### 3.10. Qualification Requirements for New Partners 
 All directly contracted Google suppliers are contractually required to follow the qualification process under our construction agreements and be registered and qualified in Google’s Supplier Information Management System, Achilles.
+`;
