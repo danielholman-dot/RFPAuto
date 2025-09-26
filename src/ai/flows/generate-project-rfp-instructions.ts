@@ -37,19 +37,23 @@ export async function generateProjectRFPInstructions(
   input: GenerateProjectRFPInstructionsInput
 ): Promise<GenerateProjectRFPInstructionsOutput> {
   const startDate = new Date(input.startDate);
+  
+  // Validate the date and default to now() if it's invalid.
+  const validStartDate = !isNaN(startDate.getTime()) ? startDate : new Date();
+
   const rfpTimeline = {
       currentMonth: format(new Date(), 'MMMM'),
       currentYear: format(new Date(), 'yyyy'),
       googleContactName: "MARCUS Program Team",
       googleContactEmail: "marcus-rfp-support@google.com",
-      eoiResponseDate: format(addBusinessDays(startDate, 5), 'MM/dd/yyyy'),
-      rfpStartDate: format(startDate, 'MM/dd/yyyy'),
-      rfpConfirmationDate: format(addBusinessDays(startDate, 2), 'MM/dd/yyyy'),
-      qnaSubmissionDate: format(addBusinessDays(startDate, 7), 'MM/dd/yyyy'),
-      qnaResponseDate: format(addBusinessDays(startDate, 10), 'MM/dd/yyyy'),
-      rfpEndDate: format(addBusinessDays(startDate, 20), 'MM/dd/yyyy'),
-      presentationDate: format(addBusinessDays(startDate, 25), 'MM/dd/yyyy'),
-      awardNotificationDate: format(addBusinessDays(startDate, 30), 'MM/dd/yyyy'),
+      eoiResponseDate: format(addBusinessDays(validStartDate, 5), 'MM/dd/yyyy'),
+      rfpStartDate: format(validStartDate, 'MM/dd/yyyy'),
+      rfpConfirmationDate: format(addBusinessDays(validStartDate, 2), 'MM/dd/yyyy'),
+      qnaSubmissionDate: format(addBusinessDays(validStartDate, 7), 'MM/dd/yyyy'),
+      qnaResponseDate: format(addBusinessDays(validStartDate, 10), 'MM/dd/yyyy'),
+      rfpEndDate: format(addBusinessDays(validStartDate, 20), 'MM/dd/yyyy'),
+      presentationDate: format(addBusinessDays(validStartDate, 25), 'MM/dd/yyyy'),
+      awardNotificationDate: format(addBusinessDays(validStartDate, 30), 'MM/dd/yyyy'),
   }
 
   const promptInput = { ...input, ...rfpTimeline };
