@@ -35,7 +35,7 @@ export default function UserGuidePage() {
                         User Guide
                     </CardTitle>
                     <CardDescription>
-                        A comprehensive, AI-generated guide to using the MARCUS Automation Suite.
+                        A comprehensive, AI-generated guide to using the RFP Automation Suite.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -48,7 +48,11 @@ export default function UserGuidePage() {
                         <div
                             className={cn(
                                 "prose prose-sm max-w-none dark:prose-invert",
-                                "[&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:p-2 [&_th]:font-bold [&_td]:border [&_td]:p-2 [&_ul]:list-disc [&_ul]:pl-5"
+                                "[&_h2]:mt-8 [&_h2]:border-b [&_h2]:pb-2",
+                                "[&_table]:mt-6 [&_table]:w-full [&_table]:border-collapse",
+                                "[&_th]:border [&_th]:p-2 [&_th]:font-bold",
+                                "[&_td]:border [&_td]:p-2",
+                                "[&_ul]:list-disc [&_ul]:pl-5"
                             )}
                             dangerouslySetInnerHTML={{ __html: guideContent || '' }}
                         />
