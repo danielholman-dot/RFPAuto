@@ -1,13 +1,58 @@
 
 export const ContractorsData = [
     {
+        "name": "Allison-Smith Company LLC",
+        "contactName": "Austin Morgan; Mark Gallacher; Jason Smith; Courtney Britt; Blake Harrelson; Stephen Sanchez",
+        "contactEmail": "amorgan@allisonsmith.com; mgallacher@allisonsmith.com; jsmith@allisonsmith.com; cbritt@allisonsmith.com; bharrelson@allisonsmith.com; ssanchez@allisonsmith.com",
+        "type": "Electrical",
+        "preferredStatus": "Preferred",
+        "region": "East",
+        "metroSite": "ATL (Atlanta), CHS (Charleston)"
+    },
+    {
+        "name": "Archkey Solutions LLC",
+        "contactName": "Chris White; Steven Stone; Rich Ross; Jason Fean; Kari Crawley; Dan Dvorak; Ryan Hildebrandt; Bill Olson",
+        "contactEmail": "cwhite@sachsco.com; steven.stone@archkey.com; Rich.Ross@archkey.com; jason.fean@archkey.com; kari.crawley@archkey.com; dan.dvorak@archkey.com; ryan.hildebrandt@archkey.com; bill.olson@archkey.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Preferred",
+        "region": "North America",
+        "metroSite": "CMH (Columbus), NOVA (Northern Virginia), CHS (Charleston)"
+    },
+    {
         "name": "Ascension Construction Solutions LLC",
         "contactName": "Jeanna Hondel; Michael Hondel",
         "contactEmail": "jhondel@ascension-cs.com; mhondel@ascension-cs.com",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "East",
-        "metroSite": "CMH (Columbus)"
+        "metroSite": "CMH (Columbus), DFW (Dallas)"
+    },
+    {
+        "name": "Batchelor and Kimball, Inc.",
+        "contactName": "David Batchelor; Brian Batchelor; Nathan Deasy; William Doty; David M. Vepraskas; Carter Cochran; Roger Atkinson",
+        "contactEmail": "David@bkimechanical.com; Brian@bkimechanical.com; NDeasy@bkimechanical.com; Bill@bkimechanical.com; davidv@bkimechanical.com; ccochran@bkimechanical.com; ratkinson@bkimechanical.com",
+        "type": "Mechanical",
+        "preferredStatus": "Preferred",
+        "region": "East",
+        "metroSite": "CHS (Charleston)"
+    },
+    {
+        "name": "BGI-GCON JV LLC",
+        "contactName": "Michael Godbehere; Michele Newlon",
+        "contactEmail": "godbehere@gconinc.com; michelen@gconinc.com; brianw@gconinc.com; flinte@gconinc.com; sarahg@gconinc.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "West",
+        "metroSite": "DFW (Dallas)"
+    },
+    {
+        "name": "Bombard Electric, LLC",
+        "contactName": "Stephen Murray; Bobby House; Jason Luehsenhop",
+        "contactEmail": "stephen.murray@bombardmc.com; bobby.house@bombardelec.com; jason.luehsenhop@bombardmc.com",
+        "type": "Electrical",
+        "preferredStatus": "Preferred",
+        "region": "West Coast",
+        "metroSite": "LAS"
     },
     {
         "name": "Bremik Construction",
@@ -16,7 +61,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "DLS (The Dalles)"
+    },
+    {
+        "name": "C.D. Moody Construction Company, Inc",
+        "contactName": "C. David Moody, Jr; Erica Sims-Young",
+        "contactEmail": "dmoody@cdmoodyconstruction.com; Esims@cdmoodyconstruction.com",
+        "type": "General Contractor",
+        "preferredStatus": "Preferred",
+        "region": "North America",
+        "metroSite": "NOVA (Northern Virginia), CHS (Charleston)"
     },
     {
         "name": "Century Contractors, Inc.",
@@ -25,7 +79,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte), CHS (Charleston), CKV (Clarksville), RIC (Richmond)"
+    },
+    {
+        "name": "Cleveland Electric Company",
+        "contactName": "Robert Siegworth; Vann Cleveland; Andy Tolbert; Corey Bobo; Mike Taylor; Robin Domogala; John Cleveland; Corey Bobo",
+        "contactEmail": "roberts@clevelandgroup.com; vannc@clevelandgroup.com; Andy.Tolbert@clevelandgroup.com; CoreyB@clevelandgroup.com; MikeT@clevelandgroup.com; robind@clevelandgroup.com; coreyB@clevelandgroup.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CHS (Charleston), LNR (Lenior), ATL (Atlanta)"
     },
     {
         "name": "Custom Computer Cable, Inc.",
@@ -34,7 +97,16 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)"
+    },
+    {
+        "name": "D.H. Griffin Infrastructure LLC",
+        "contactName": "Chad Wineinger; Danny Hoyle; Chris Carter",
+        "contactEmail": "cwineinger@dhgriffin.com; dhoyle@dhgriffin.com; ccarter@dhgriffin.com",
+        "type": "General Contractor",
+        "preferredStatus": "Preferred",
+        "region": "East",
+        "metroSite": "LNR (Lenior)"
     },
     {
         "name": "Direct Line Global LLC",
@@ -43,7 +115,25 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.), DFW (Dallas), DLS (The Dalles)"
+    },
+    {
+        "name": "E2 Optics, LLC.",
+        "contactName": "Kristi Alford-Haarberg; Shane Moore; Andrea Spisak",
+        "contactEmail": "kristi@e2optics.com; shane.moore@e2optics.com; andrea.spisak@e2optics.com",
+        "type": "NICON",
+        "preferredStatus": "Most Preferred",
+        "region": "North America",
+        "metroSite": "CMH (Columbus), CHS (Charleston), NOVA (Northern Virginia), DFW (Dallas)"
+    },
+    {
+        "name": "Faith Technologies Inc.",
+        "contactName": "David Jahner; Pat McGettigan; Mike Brown; Jesse Davis; Ken Baumgart; Brandon Miller",
+        "contactEmail": "David.jahner@faithtechinc.com; Pat.McGettigan@faithtechinc.com; michael.brown@faithtechinc.com; jesse.davis@faithtechinc.com; Ken.Baumgart@faithtechinc.com; brandon.miller@faithtechinc.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Most Preferred",
+        "region": "North America",
+        "metroSite": "SPC (Clarksville), TUL (Pryor)"
     },
     {
         "name": "Fisk Electric Company",
@@ -52,7 +142,7 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "LAX (Los Angeles), LAS (Las Vegas), DFW (Dallas), PHX (Phoenix)"
     },
     {
         "name": "Fortis Construction, Inc",
@@ -61,16 +151,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "RNO (Reno), TUL (Tulsa), SLC (Salt Lake City), DLS (The Dalles)"
     },
     {
         "name": "Fulcrum Reliability Systems, Inc.",
-        "contactName": "Jimmie Bailey; Andrew Bohm",
+        "contactName": "Jimmie Baile; Andrew Bohm",
         "contactEmail": "jimmie.bailey@fulcrumdcs.com; andrew.bohm@fulcrumdcs.com",
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "PHX (Phoenix), DFW (Dallas), LAS (Las Vegas), CID (Cedar Rapids), ATL (Atlanta), CMH (Columbus)"
     },
     {
         "name": "GBA Builders, LLC.",
@@ -79,7 +169,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "MCI (Kansas City), DFW (Dallas), BMI (Bloomington), CLT (Charlotte), IAD (Washington, D.C.)"
+    },
+    {
+        "name": "GCON, Inc.",
+        "contactName": "Michael Godbehere; Flint Ellis; Brian White",
+        "contactEmail": "mikegodbehere@gconinc.com; flinte@gconinc.com; brianw@gconinc.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "West",
+        "metroSite": "DFW (Dallas)"
     },
     {
         "name": "Gilbane Building Company",
@@ -88,7 +187,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "Multi-Region"
     },
     {
         "name": "Grade A Construction, LLC",
@@ -97,16 +196,25 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "MEM (Memphis), CKV (Clarksville)"
+    },
+    {
+        "name": "H. J. Russell & Company",
+        "contactName": "Clinton Kurtz; M Swick; Michael Russell",
+        "contactEmail": "ckurtz@hjrussell.com; mswick@hjrussell.com; mrussell@hjrussell.com; edent@hjrussell.com; bsharpe@hjrussell.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CHS (Charleston), ATL (Atlanta), CKV (Clarksville)"
     },
     {
         "name": "HITT Contracting, Inc",
         "contactName": "Evan Antonides; Steve Schoenefeldt; Kim Roy; Spencer Allin; Connor Toomey",
-        "contactEmail": "eantonides@hitt-gc.com; sschoenefeldt@hitt-gc.com; sallin@hitt-gc.com; ctoomey@hitt-gc.com",
+        "contactEmail": "eantonides@hitt-gc.com; sschoenefeldt@hitt-gc.com; sallin@hitt-gc.com; ctoomey@hitt-gc.com; SAllin@hitt-gc.com; CToomey@hitt-gc.com",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "LAX (Los Angeles), ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)"
     },
     {
         "name": "Holder Construction Group, LLC",
@@ -115,7 +223,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte), CMH (Columbus), DFW (Dallas), PHX (Phoenix), LAX (Los Angeles)"
+    },
+    {
+        "name": "Holt Brothers Construction, LLC",
+        "contactName": "Jeff Beam; Terrence Holt; Torry Holt; Yaswanthi Kothapalli",
+        "contactEmail": "jbeam@holtbrothersinc.com; terrence@holtbrothersinc.com; torry@holtbrothersinc.com; ykothapalli@holtbrothersinc.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CHS (Charleston), LNR (Lenior)"
     },
     {
         "name": "IES Communications, LLC",
@@ -124,7 +241,7 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "PHX (Phoenix), LAX (Los Angeles), ATL (Atlanta), CID (Cedar Rapids), DFW (Dallas), IAD (Washington, D.C.), SLC (Salt Lake City)"
     },
     {
         "name": "Infrastructure Professional Services and Equipment, LLC",
@@ -142,7 +259,7 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta)"
     },
     {
         "name": "J.E. Dunn Construction Group, Inc.",
@@ -151,7 +268,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "MCI (Kansas City), ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix)"
+    },
+    {
+        "name": "Kenimer & Knox Mechanical, LLC",
+        "contactName": "Bill Kenimer; Tanya Kenimer; Tommy McChargue",
+        "contactEmail": "bkenimer@kkmech.com; tkenimer@kkmech.com; tmcchargue@kkmech.com",
+        "type": "Mechanical",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CHS (Charleston)"
     },
     {
         "name": "Kor Building Group",
@@ -160,7 +286,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "PHX (Phoenix), LAS (Las Vegas), RNO (Reno)"
     },
     {
         "name": "M. A. Mortenson Company",
@@ -169,7 +295,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "PHX (Phoenix), CID (Cedar Rapids), MSP (Minneapolis), DLS (The Dalles), MCI (Kansas City), DFW (Dallas)"
     },
     {
         "name": "M.C. Dean, Inc.",
@@ -178,7 +304,25 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "IAD (Washington, D.C.), LAX (Los Angeles), DLS (The Dalles), SLC (Salt Lake City), DFW (Dallas), ATL (Atlanta)"
+    },
+    {
+        "name": "Manhattan Construction Company",
+        "contactName": "Ryan Haynie; Ronnie Wood; Greg McClure; Davis Barksdale",
+        "contactEmail": "rhaynie@manhattanconstruction.com; rawood@manhattanconstruction.com; GMcClure@manhattanconstruction.com; Dbarksdale@manhattanconstruction.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "West (Central)",
+        "metroSite": "TUL (Pryor)"
+    },
+    {
+        "name": "McFarland Building Group, LLC",
+        "contactName": "Michelle Smith; Becki Wilson; Ben Wilhelm; Gene Harris",
+        "contactEmail": "msmith@mcco-us.com; bwilson@mcco-us.com; bwilhelm@mcco-us.com; gharris@mcco-us.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "LNR (Lenior)"
     },
     {
         "name": "McKenney's, Inc.",
@@ -187,7 +331,34 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte)"
+    },
+    {
+        "name": "Miller Electric Company [Omaha]",
+        "contactName": "Craig Langfeldt; Tim Tanner; Roger Ferris",
+        "contactEmail": "craigl@millerelect.com; tim.tanner@millerelect.com; roger.ferris@millerelect.com",
+        "type": "Electrical",
+        "preferredStatus": "Most Preferred",
+        "region": "West (Central)",
+        "metroSite": "OMA (Omaha)"
+    },
+    {
+        "name": "MMC Mechanical Contractors, Inc",
+        "contactName": "Tom Benassi; Jack Duren; Andrew Thompson; Dennis Eden",
+        "contactEmail": "tbenassi@mmccontractors.com; jduren@mmccontractors.com; athompson@mmccontractors.com; deden@mmccontractors.com",
+        "type": "Mechanical",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "CMH (Columbus)"
+    },
+    {
+        "name": "OEG, Inc",
+        "contactName": "Alex Maia; Sean Cox; Tom Bergmann; Danny Robinson",
+        "contactEmail": "alex.maia@oeg.us.com; sean.cox@oeg.us.com; tom.bergmann@oeg.us.com; danny.robinson@oeg.us.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Most Preferred",
+        "region": "West",
+        "metroSite": "DLS (The Dalles)"
     },
     {
         "name": "P & C Construction, Inc.",
@@ -196,7 +367,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "HSV (Huntsville), BMI (Bloomington), CKV (Clarksville), ATL (Atlanta), CLT (Charlotte), DFW (Dallas)"
     },
     {
         "name": "P1 Group",
@@ -205,7 +376,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "LAS (Las Vegas), MCI (Kansas City)"
     },
     {
         "name": "Palmetto Tri-Venture",
@@ -214,7 +385,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "CMH (Columbus), CHS (Charleston), DFW (Dallas), CID (Cedar Rapids), DLS (The Dalles), CLT (Charlotte)"
     },
     {
         "name": "Patterson & Dewar Engineers, Inc.",
@@ -223,16 +394,16 @@ export const ContractorsData = [
         "type": "Electrical / Professional Services",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), PHX (Phoenix), CKV (Clarksville), DFW (Dallas), RIC (Richmond)"
     },
     {
         "name": "The Poole and Kent Corporation",
         "contactName": "Donald Lynott; Jake Medina; Brian Touchard; Daniel Bock; Adam Snavely",
-        "contactEmail": "dlynott@emcor.net; dlynott@pkcorp.com; jmedina@emcor.net; jmedina@pkcorp.com; btouchard@emcor.net; btouchard@pkcorp.com; dbock@pkcorp.com; asnavely@emcor.net",
+        "contactEmail": "dlynott@emcor.net / dlynott@pkcorp.com; jmedina@emcor.net / jmedina@pkcorp.com; btouchard@emcor.net / btouchard@pkcorp.com; dbock@pkcorp.com; asnavely@emcor.net",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "CMH (Columbus), IAD (Washington, D.C.), RIC (Richmond)"
     },
     {
         "name": "R. Lafferty & Son Industrial And Commercial Contractors, LLC",
@@ -244,13 +415,22 @@ export const ContractorsData = [
         "metroSite": "TBD"
     },
     {
+        "name": "Southland Industries",
+        "contactName": "Timothy Michael; Jose Felsmann; Michael Starego; Jeremiah Newens",
+        "contactEmail": "tmichael@southlandind.com; jfelsmann@southlandind.com; mstarego@southlandind.com; jnewens@southlandind.com",
+        "type": "Mechanical",
+        "preferredStatus": "Most Preferred",
+        "region": "West (Central)",
+        "metroSite": "DFW (Dallas), MEM (Memphis"
+    },
+    {
         "name": "Superior Fiber & Data Services, Inc.",
         "contactName": "Randy Fuller; Tommy Osborne; Jeff Macfee",
         "contactEmail": "rfuller@sfdcabling.com",
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
     },
     {
         "name": "T5 Data Centers LLC",
@@ -259,7 +439,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), BMI (Bloomington), CLT (Charlotte), LAX (Los Angeles), MSP (Minneapolis), DLS (The Dalles)"
     },
     {
         "name": "Teklus Construction, LLC",
@@ -268,7 +448,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "LAS (Las Vegas), RNO (Reno), LAX (Los Angeles), MCI (Kansas City)"
+    },
+    {
+        "name": "The Whiting-Turner Contracting Company",
+        "contactName": "Jonathan Hess; Brent Voyles; Kendall Martin; Adam Eshelbrenner",
+        "contactEmail": "Jonathan.Hess@whiting-turner.com; Brent.Voyles@whiting-turner.com; kendall.martin@whiting-turner.com; adam.eshelbrenner@whiting-turner.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "West (Central)",
+        "metroSite": "OMA (Omaha)"
     },
     {
         "name": "TM Source Building Group, Inc.",
@@ -277,7 +466,25 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
+    },
+    {
+        "name": "Turner Construction Company Inc",
+        "contactName": "Corey Ketchum; Dan Fine",
+        "contactEmail": "CKetchum@tcco.com; dmfine@tcco.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CMH (Columbus)"
+    },
+    {
+        "name": "TW Constructors, LLC",
+        "contactName": "Todd Weaver; Bill Johnson; Nick Gittemeier; Bill Begis; Todd Nelson",
+        "contactEmail": "weavert@twc-stl.com; Johnsonb@twc-stl.com; begisb@twc-stl.com; nelsont@twc-stl.com; gittemeiern@twc-stl.com; johnsonb@twc-stl.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CMH (Columbus)"
     },
     {
         "name": "Ujamaa Construction Inc.",
@@ -286,7 +493,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "BMI (Bloomington), CHS (Charleston), CKV (Clarksville), ATL (Atlanta), LAS (Las Vegas), DLS (The Dalles)"
     },
     {
         "name": "U.S. Engineering Innovations, LLC",
@@ -295,7 +502,7 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "MCI (Kansas City), CKV (Clarksville), TUL (Tulsa)"
     },
     {
         "name": "Vertiv Corporation",
@@ -304,7 +511,25 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "CMH (Columbus), HSV (Huntsville)"
+    },
+    {
+        "name": "Viking Engineering and Construction, LLC",
+        "contactName": "Cecil DelaCruz; Jeffrey Payson; Drew Schaefer; Serge Bachinsky; Zach Hunt; Noah Johnson",
+        "contactEmail": "cecil@vikingec.com; jpayson@vikingec.com; drew@vikingec.com; serge@vikingec.com; zach@vikingec.com; noah@vikingec.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "West",
+        "metroSite": "DLS (The Dalles)"
+    },
+    {
+        "name": "Vision Technologies, LLC",
+        "contactName": "Kevin Nolan; Yaser Ali; Peter Cava; Jon Lyman; Jennifer Spees; S. Michael Quade",
+        "contactEmail": "knolan@visiontech.biz; yali@visiontech.biz; pcava@visiontech.biz; jlyman@visiontech.biz; jspees@visiontech.biz; mquade@visiontech.biz",
+        "type": "NICON",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CHS (Charleston), CMH (Columbus), NOVA (Northern Virginia)"
     },
     {
         "name": "W. G. Yates & Sons Construction Company",
@@ -313,7 +538,16 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "HSV (Huntsville), MEM (Memphis), DFW (Dallas), ATL (Atlanta), LAX (Los Angeles)"
+    },
+    {
+        "name": "Walker Engineering, Inc.",
+        "contactName": "Randy Randolph; Eric Lugger; Justin Davis; Raymond Fischer",
+        "contactEmail": "rrandolph@walkertx.com; elugger@walkertx.com; jrdavis@walkertx.com; rfischer@walkertx.com",
+        "type": "Electrical",
+        "preferredStatus": "Most Preferred",
+        "region": "West",
+        "metroSite": "DFW (Dallas)"
     },
     {
         "name": "Wycliffe Trinity, LLC",
@@ -322,7 +556,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "IAD (Washington, D.C.)"
     },
     {
         "name": "ABB Inc",
@@ -331,7 +565,7 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "CLT (Charlotte), PHX (Phoenix), DFW (Dallas), CMH (Columbus)"
     },
     {
         "name": "Brandt Mechanical Services",
@@ -340,7 +574,7 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
     },
     {
         "name": "Cache Valley Electric Company",
@@ -349,7 +583,7 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "SLC (Salt Lake City), DLS (The Dalles), PHX (Phoenix), DFW (Dallas)"
     },
     {
         "name": "Caddell Construction Co., Inc.",
@@ -358,7 +592,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "HSV (Huntsville), PHX (Phoenix), ATL (Atlanta)"
     },
     {
         "name": "CPG Beyond",
@@ -367,16 +601,16 @@ export const ContractorsData = [
         "type": "Electrical / Professional Services",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "IAD (Washington, D.C.), PHX (Phoenix)"
     },
     {
         "name": "DPR Construction, Inc",
-        "contactName": "Luke Stocking; Damien McCants; Felix Cole; Kevin Burch; Brett Korn; Scott Hibbard; Chuck Rosenthal",
+        "contactName": "Luke Stocking; Damien McCants; Felix Cole; Kevin Burch; Brett Korn; Scott Hibbard; Chuck Rosenthall",
         "contactEmail": "lukes@dpr.com; DamienM@dpr.com; felixc@dpr.com; kevinb@dpr.com; brettk@dpr.com; Scotthi@dpr.com; chuckr@dpr.com",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix), LAX (Los Angeles), IAD (Washington, D.C.)"
     },
     {
         "name": "Dwatts Construction LLC",
@@ -385,7 +619,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)"
     },
     {
         "name": "Dynalectric Company",
@@ -394,7 +628,7 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "LAX (Los Angeles), DLS (The Dalles), IAD (Washington, D.C.), RNO (Reno), PHX (Phoenix)"
     },
     {
         "name": "Environmental Air Systems, LLC",
@@ -403,7 +637,7 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "CLT (Charlotte), MRN (Morganton)"
     },
     {
         "name": "Leapley Construction Group of Atlanta, LLC",
@@ -412,7 +646,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), HSV (Huntsville)"
     },
     {
         "name": "Low Voltage Solutions, Inc.",
@@ -421,7 +655,7 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "BMI (Bloomington)"
     },
     {
         "name": "Miller Electric Company [MECOJAX]",
@@ -430,7 +664,7 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)"
     },
     {
         "name": "Oklahoma Electrical Supply Company",
@@ -439,7 +673,7 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "TUL (Tulsa), SWO (Stillwater), LNK (Lincoln)"
     },
     {
         "name": "Suffolk Construction Company, Inc",
@@ -448,7 +682,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "DLS (The Dalles), DFW (Dallas), LAX (Los Angeles), IAD (Washington, D.C.)"
     },
     {
         "name": "Superior Fiber & Data Services, Inc.",
@@ -457,7 +691,7 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "TBD"
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
     },
     {
         "name": "Teel Construction",
@@ -466,20 +700,28 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.)"
     }
 ].map(c => {
     const allMetroCodes = ['CMH', 'IAD', 'LNK/CBF', 'DFW', 'DLS', 'TUL', 'CKV', 'RIC', 'CHS', 'RNO', 'SLC', 'MCI', 'PHX', 'YUL', 'FWA', 'CLT', 'AUS', 'HSV', 'BMI', 'CID', 'FDY', 'SWO', 'AMW', 'LAS', 'LAX', 'ATL', 'MSP', 'MRN', 'MEM', 'PHN', 'ROA', 'DYS', 'HOU'];
-    const numMetroCodes = Math.floor(Math.random() * 3) + 1;
-    const contractorMetroCodes = [...new Array(numMetroCodes)].map(() => allMetroCodes[Math.floor(Math.random() * allMetroCodes.length)]);
     
+    // Extract metro codes from the metroSite string
+    const metroSiteString = c.metroSite || '';
+    const regex = /([A-Z]{3,4})/g;
+    const matches = metroSiteString.match(regex) || [];
+
+    const numMetroCodes = Math.floor(Math.random() * 3) + 1;
+    const randomMetroCodes = [...new Array(numMetroCodes)].map(() => allMetroCodes[Math.floor(Math.random() * allMetroCodes.length)]);
+    
+    const contractorMetroCodes = Array.from(new Set([...matches, ...randomMetroCodes]));
+
     let preference = 3;
     if (c.preferredStatus === 'Most Preferred') preference = 1;
     if (c.preferredStatus === 'Preferred') preference = 2;
 
     return {
         ...c,
-        metroCodes: Array.from(new Set(contractorMetroCodes)),
+        metroCodes: contractorMetroCodes,
         performance: Math.floor(Math.random() * 21) + 80, // 80 to 100
         preference,
     };
