@@ -5,7 +5,7 @@ import { RfpTabs } from '@/components/rfp/rfp-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { RFP } from '@/lib/types';
-import { getRfpById } from '@/lib/data';
+import { getRfpById, metroCodes } from '@/lib/data';
 import { useEffect, useState }from 'react';
 
 type RfpDetailPageProps = {
@@ -26,6 +26,8 @@ export default function RfpDetailPage({ params: { id } }: RfpDetailPageProps) {
     }
     loadData();
   }, [id]);
+
+  const metroInfo = metroCodes.find(m => m.code === rfp?.metroCode);
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
@@ -88,7 +90,7 @@ export default function RfpDetailPage({ params: { id } }: RfpDetailPageProps) {
           </div>
         </CardHeader>
         <CardContent className="grid md:grid-cols-3 gap-4 text-sm">
-            <div><strong>Metro:</strong> {rfp.metroCode}</div>
+            <div><strong>Metro:</strong> {metroInfo ? `${metroInfo.code} - ${metroInfo.city}, ${metroInfo.state}`: rfp.metroCode}</div>
             <div><strong>Contractor Type:</strong> {rfp.contractorType}</div>
             <div className="md:col-span-3"><strong>Budget:</strong> ${rfp.estimatedBudget.toLocaleString('de-DE')}</div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:col-span-3">
