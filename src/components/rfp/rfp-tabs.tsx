@@ -33,6 +33,7 @@ import { Label } from "../ui/label"
 import { RfpAwardDialog } from "./rfp-award-dialog"
 import { RfpNonAwardDialog } from "./rfp-non-award-dialog"
 import { RfpDrafting } from "./rfp-drafting"
+import { Input } from "../ui/input";
 
 
 type RfpTabsProps = {
@@ -354,7 +355,6 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                       <TableHead>Contractor</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Documents</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -372,18 +372,15 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="h-8">
-                                <UploadCloud className="mr-2 h-4 w-4"/> Commercial
-                              </Button>
-                              <Button variant="outline" size="sm" className="h-8">
-                                <UploadCloud className="mr-2 h-4 w-4"/> Technical
-                              </Button>
-                              <Button variant="outline" size="sm" className="h-8">
-                                <UploadCloud className="mr-2 h-4 w-4"/> Presentation
-                              </Button>
+                                <label className="flex items-center gap-2" htmlFor={`proposal-upload-${contractor.id}`}>
+                                    <Button asChild variant="outline" size="sm" className="h-8">
+                                        <span>
+                                            <UploadCloud className="mr-2 h-4 w-4"/> Upload Proposal
+                                        </span>
+                                    </Button>
+                                    <Input id={`proposal-upload-${contractor.id}`} type="file" className="hidden"/>
+                                </label>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-right">
                           </TableCell>
                         </TableRow>
                       );
@@ -585,3 +582,5 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
+
+    
