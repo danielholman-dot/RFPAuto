@@ -81,10 +81,10 @@ const getIconForType = (type: string) => {
 export default function ContractorsPage() {
   const [allContractors, setAllContractors] = useState<Contractor[]>([]);
   const [contractorTypes, setContractorTypes] = useState<string[]>([]);
-  const [metroSites, setMetroSites] = useState<string[]>([]);
+  const [metroCodes, setMetroCodes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
-  const [metroSiteFilter, setMetroSiteFilter] = useState('all');
+  const [metroCodeFilter, setMetroCodeFilter] = useState('all');
 
   useEffect(() => {
     async function loadData() {
@@ -96,8 +96,8 @@ export default function ContractorsPage() {
       setAllContractors(data);
       setContractorTypes(['all', ...types]);
       
-      const uniqueMetroSites = ['all', ...Array.from(new Set(data.map(c => c.metroSite)))];
-      setMetroSites(uniqueMetroSites);
+      const uniqueMetroCodes = ['all', ...Array.from(new Set(data.flatMap(c => c.metroCodes)))].sort();
+      setMetroCodes(uniqueMetroCodes);
 
       setLoading(false);
     }
@@ -115,10 +115,10 @@ export default function ContractorsPage() {
   const filteredContractors = useMemo(() => {
     return allContractors.filter(contractor => {
       const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
-      const metroSiteMatch = metroSiteFilter === 'all' || contractor.metroSite === metroSiteFilter;
-      return typeMatch && metroSiteMatch;
+      const metroCodeMatch = metroCodeFilter === 'all' || contractor.metroCodes.includes(metroCodeFilter);
+      return typeMatch && metroCodeMatch;
     });
-  }, [allContractors, typeFilter, metroSiteFilter]);
+  }, [allContractors, typeFilter, metroCodeFilter]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -173,13 +173,13 @@ export default function ContractorsPage() {
                     ))}
                 </SelectContent>
             </Select>
-            <Select value={metroSiteFilter} onValueChange={setMetroSiteFilter}>
+            <Select value={metroCodeFilter} onValueChange={setMetroCodeFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by Metro/Site" />
                 </SelectTrigger>
                 <SelectContent>
-                    {metroSites.map(metro => (
-                        <SelectItem key={metro} value={metro}>{metro === 'all' ? 'All Metro/Sites' : metro}</SelectItem>
+                    {metroCodes.map(metro => (
+                        <SelectItem key={metro} value={metro}>{metro === 'all' ? 'All Metros' : metro}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
