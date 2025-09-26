@@ -33,7 +33,11 @@ const CustomTooltip = ({ active, payload }: any) => {
 export function MetroMapChart({ metros }: MetroMapChartProps) {
   const mapImage = PlaceHolderImages.find(img => img.id === 'usa-map');
 
-  const validMetros = metros.filter(m => m.region !== 'Canada' && typeof m.lat === 'number' && typeof m.lon === 'number' && !isNaN(m.lat) && !isNaN(m.lon));
+  const validMetros = metros.filter(m => 
+    m.region !== 'Canada' && 
+    typeof m.lat === 'number' && !isNaN(m.lat) &&
+    typeof m.lon === 'number' && !isNaN(m.lon)
+  );
 
   return (
     <div
