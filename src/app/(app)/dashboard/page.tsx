@@ -33,10 +33,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { RFP, Contractor } from '@/lib/types';
-import { RfpVolumeChart } from '@/components/dashboard/rfp-volume-chart';
 import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
 import { getContractors, getRfps, getMetroRegions, getMetrosByRegion } from '@/lib/data';
 import { useEffect, useState, useMemo } from 'react';
+import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
 
 export default function Dashboard() {
   const [allRfps, setAllRfps] = useState<RFP[]>([]);
@@ -221,13 +221,13 @@ export default function Dashboard() {
           </Card>
            <Card>
             <CardHeader>
-              <CardTitle>RFP Volume</CardTitle>
+              <CardTitle>Budget vs. Won Proposal</CardTitle>
               <CardDescription>
-                Number of RFPs created over the last 6 months.
+                Comparison of budgeted amounts vs. final awarded proposal amounts across projects.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <RfpVolumeChart />
+              <BudgetVsWonChart rfps={filteredRfps}/>
             </CardContent>
           </Card>
         </div>
@@ -286,5 +286,7 @@ export default function Dashboard() {
     </>
   );
 }
+
+    
 
     
