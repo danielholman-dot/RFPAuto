@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Send } from "lucide-react";
 import { generateNonAwardLetter } from "@/ai/flows/generate-non-award-letter";
 import type { RFP, Contractor } from "@/lib/types";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
 import Textarea from "../ui/textarea";
 
@@ -67,22 +67,24 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
     if (isOpen) {
         generateAndSetEmail();
     }
-  }, [isOpen, generateAndSetEmail]);
+  }, [isOpen]);
 
   const updateEmailBody = useCallback(() => {
-    if (emailContent) {
+    if (emailContent?.originalBody) {
       let newBody = emailContent.originalBody;
       newBody = newBody.replace(/\[Your Name\]/g, yourName);
       newBody = newBody.replace(/\[Your Position\]/g, yourPosition);
       newBody = newBody.replace(/\[Your Company\]/g, yourCompany);
       newBody = newBody.replace(/{{{improvementAreas}}}/g, improvementAreas);
-      setEmailContent(prev => prev ? { ...prev, body: newBody } : null);
+      if (newBody !== emailContent.body) {
+        setEmailContent(prev => prev ? { ...prev, body: newBody } : null);
+      }
     }
-  }, [emailContent, yourName, yourPosition, yourCompany, improvementAreas]);
+  }, [emailContent?.originalBody, emailContent?.body, yourName, yourPosition, yourCompany, improvementAreas]);
 
   useEffect(() => {
     updateEmailBody();
-  }, [yourName, yourPosition, yourCompany, emailContent?.originalBody, updateEmailBody]);
+  }, [yourName, yourPosition, yourCompany, improvementAreas, updateEmailBody]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
