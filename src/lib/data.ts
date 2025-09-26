@@ -69,7 +69,8 @@ export const contractorTypes = [
   'NICON',
   'Electrical / NICON',
   'Electrical / Mechanical',
-  'Electrical / Professional Services'
+  'Electrical / Professional Services',
+  'Electrical / Mechanical / NICON'
 ];
 
 export const getContractorTypes = async () => {
