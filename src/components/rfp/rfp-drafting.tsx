@@ -23,6 +23,22 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
     const { toast } = useToast();
 
     const handleGenerateDraft = async () => {
+        const missingFields = [];
+        if (!rfp.projectName || rfp.projectName === 'New RFP Draft') missingFields.push("Project Name");
+        if (!rfp.scopeOfWork || rfp.scopeOfWork === 'To be defined.') missingFields.push("Scope of Work");
+        if (!rfp.metroCode || rfp.metroCode === 'N/A') missingFields.push("Metro Code (Campus)");
+        if (!rfp.contractorType || rfp.contractorType === 'N/A') missingFields.push("Contractor Type");
+        if (!rfp.projectStartDate) missingFields.push("Project Start Date");
+
+        if (missingFields.length > 0) {
+            toast({
+                variant: "destructive",
+                title: "Missing Information",
+                description: `Please provide the following details before generating a draft: ${missingFields.join(', ')}.`,
+            });
+            return;
+        }
+
         setIsGenerating(true);
         setDraftContent(null);
         try {
