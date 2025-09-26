@@ -46,6 +46,8 @@ export function ProjectIntakeForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [metroCodes, setMetroCodes] = useState<{code: string, city: string}[]>([]);
   const [contractorTypes, setContractorTypes] = useState<string[]>([]);
+  const [formattedBudget, setFormattedBudget] = useState("");
+
 
   useEffect(() => {
     async function loadData() {
@@ -100,6 +102,20 @@ export function ProjectIntakeForm() {
       setIsSubmitting(false);
     }
   }
+  
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^0-9]/g, '');
+    const numericValue = Number(rawValue);
+    
+    if (!isNaN(numericValue)) {
+      form.setValue('estimatedBudget', numericValue);
+      setFormattedBudget(new Intl.NumberFormat('de-DE').format(numericValue));
+    } else {
+      form.setValue('estimatedBudget', 0);
+      setFormattedBudget("");
+    }
+  };
+
 
   return (
     <Form {...form}>
@@ -185,7 +201,17 @@ export function ProjectIntakeForm() {
               <FormItem>
                 <FormLabel>Estimated Budget</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="e.g., 5000000" {...field} />
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
+                    <Input 
+                      type="text"
+                      placeholder="5.000.000" 
+                      {...field}
+                      value={formattedBudget}
+                      onChange={handleBudgetChange}
+                      className="pl-7"
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -372,3 +398,5 @@ export function ProjectIntakeForm() {
     </Form>
   )
 }
+
+    
