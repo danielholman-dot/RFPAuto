@@ -1,6 +1,7 @@
 
 
 
+
 export const ContractorsData = [
     {
         "name": "Allison-Smith Company LLC",
@@ -739,6 +740,15 @@ export const ContractorsData = [
         "preferredStatus": "Most Preferred",
         "region": "North America",
         "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
+    },
+    {
+        "name": "TEST Rafael Correa",
+        "contactName": "Rafael Correa",
+        "contactEmail": "rafael.correa@linesight.com",
+        "type": "General Contractor",
+        "preferredStatus": "Most Preferred",
+        "region": "East",
+        "metroSite": "CMH, CHS, ATL, IAD, LNK/CBF, DFW, DLS, TUL, CKV, RIC, RNO, SLC, MCI, PHX, YUL, FWA, CLT, AUS, HSV, BMI, CID, FDY, SWO, AMW, LAS, LAX, MSP, MRN, MEM, PHN, ROA, DYS, HOU"
     }
 ].map(c => {
     // Extract metro codes from the metroSite string
@@ -753,10 +763,16 @@ export const ContractorsData = [
     if (c.preferredStatus === 'Most Preferred') preference = 1;
     if (c.preferredStatus === 'Preferred') preference = 2;
 
+    let performance = Math.floor(Math.random() * 21) + 80; // 80 to 100
+    if (c.name === 'TEST Rafael Correa') {
+        performance = 100;
+    }
+
+
     return {
         ...c,
         metroCodes: contractorMetroCodes,
-        performance: Math.floor(Math.random() * 21) + 80, // 80 to 100
+        performance,
         preference,
     };
 });
@@ -827,4 +843,5 @@ export const RFPData = [
     
 
     
+
 
