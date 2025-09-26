@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -15,11 +16,11 @@ import {
   Book,
   Users,
   Settings,
-  Briefcase,
   Map,
   FileText,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '../ui/button';
 
@@ -36,7 +37,15 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
-          <Briefcase className="w-8 h-8 text-primary" />
+          {/* You can replace this placeholder with your own logo */}
+          <Image 
+            src="https://picsum.photos/seed/logo/40/40" 
+            alt="Company Logo"
+            width={40}
+            height={40}
+            className="rounded-md"
+            data-ai-hint="logo"
+          />
           <h1 className="text-xl font-bold text-sidebar-foreground font-headline">MARCUS</h1>
         </div>
       </SidebarHeader>
