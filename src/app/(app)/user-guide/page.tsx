@@ -52,7 +52,13 @@ export default function UserGuidePage() {
                                 "[&_table]:mt-6 [&_table]:w-full [&_table]:border-collapse",
                                 "[&_th]:border [&_th]:p-2 [&_th]:font-bold",
                                 "[&_td]:border [&_td]:p-2",
-                                "[&_ul]:list-disc [&_ul]:pl-5"
+                                "[&_ul]:list-disc [&_ul]:pl-5",
+                                "[&_details]:border [&_details]:rounded-lg [&_details]:p-4 [&_details]:mt-4",
+                                "[&_summary]:font-semibold [&_summary]:cursor-pointer [&_summary]:list-none [&_summary]:-m-4 [&_summary]:p-4",
+                                "[&_summary::-webkit-details-marker]:hidden",
+                                "[&_summary]:before:content-['+'] [&_summary]:before:mr-2",
+                                "[&_details[open]>summary]:before:content-['-']"
+
                             )}
                             dangerouslySetInnerHTML={{ __html: guideContent || '' }}
                         />

@@ -24,9 +24,9 @@ const prompt = ai.definePrompt({
   name: 'generateUserGuidePrompt',
   output: {schema: GenerateUserGuideOutputSchema},
   prompt: `You are an expert technical writer tasked with creating a comprehensive user guide for a web application called the "RFP Automation Suite".
-The application is designed to streamline the Request for Proposal (RFP) process for small construction and data center projects (internally referred to as MARCUS projects: Moves, Adds, Retrofits, Changes, Utilities, Security). Do not explain the MARCUS acronym or mention Google in the guide.
+The application is designed to streamline the Request for Proposal (RFP) process for small construction and data center projects. Do not explain the MARCUS acronym or mention Google in the guide.
 
-Generate a user guide as a single, well-structured HTML document. The guide should be rich with explanations. Use appropriate HTML tags like <h1>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, and <table> to create a professional and readable document. Do not include <html>, <head>, or <body> tags.
+Generate a user guide as a single, well-structured HTML document. The guide should be rich with explanations. Use appropriate HTML tags like <h1>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, <table>, <details>, and <summary> to create a professional and readable document. Do not include <html>, <head>, or <body> tags.
 
 For each major feature or "chapter," provide a detailed explanation of its purpose and functionality. Then, create a simple two-column HTML table that clearly lists the key **Inputs** (what the user provides or does) and the key **Outputs** (what the system produces or the result).
 
@@ -41,11 +41,14 @@ The guide should cover the following key areas of the application:
     *   Detail the information required.
     *   Explain that this creates an RFP in "Draft" status.
 
-4.  **Managing an RFP (The RFP Lifecycle)**: This is a major section. Describe the different tabs a user will go through.
-    *   **Selection & Drafting**: Explain the "AI-Powered RFP Drafting" tab where users can generate the official RFP instructions document from a template. Mention that they can see suggested contractors here.
-    *   **Invitations & Proposals**: Describe how a user can invite contractors, and then track their proposal submissions in the "Proposals" tab.
-    *   **AI Analysis**: Explain how users can select submitted proposals and use the "AI Evaluation" feature to get a comparative analysis and bid visualization.
+4.  **Managing an RFP (The RFP Lifecycle)**: This is a major section. Describe the different tabs a user will go through. For each tab/step, use a collapsible <details> tag with a <summary> that shows the step name (e.g., "+ Selection & Drafting"). Inside the <details> tag, provide a rich explanation of the functionality and its corresponding Input/Output table.
+    *   **Selection**: Explain the "Selection" tab where users can see AI-suggested contractors based on the RFP criteria.
+    *   **Drafting**: Detail the "Drafting" tab where users can use the AI to generate the official RFP instructions document from a template.
+    *   **Invitations**: Describe how a user can see the list of invited contractors and generate EOI (Expression of Interest) emails.
+    *   **Proposals**: Explain how users can track proposal submissions from invited contractors and manually add other contractors to the list.
+    *   **Analysis**: Explain how users can select submitted proposals and use the "AI Evaluation" feature to get a comparative analysis and bid visualization.
     *   **Awarding**: Detail the "Award" tab, where a user selects a winning contractor and can then generate and send both "Award" and "Non-Award" letters.
+    *   **Feedback**: Briefly mention the purpose of the feedback tab for post-project analysis.
 
 5.  **Templates**:
     *   Explain the purpose of the "Templates" page.
@@ -69,4 +72,3 @@ const generateUserGuideFlow = ai.defineFlow(
     return output!;
   }
 );
-
