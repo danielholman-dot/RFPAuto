@@ -47,6 +47,10 @@ export const getMetroCodes = async () => {
   return metroCodes.map(m => ({ code: m.code, city: m.city }));
 }
 
+export const getAllMetroCodes = async () => {
+    return Promise.resolve(metroCodes);
+}
+
 export const getMetroRegions = async () => {
     return Promise.resolve([...new Set(metroCodes.map(m => m.region))]);
 }

@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getContractors, getContractorTypes } from '@/lib/data';
+import { getContractors, getContractorTypes, getAllMetroCodes } from '@/lib/data';
 import type { Contractor } from '@/lib/types';
 import { useEffect, useState, useMemo } from 'react';
 import { Users, Wrench, Zap, HardHat } from 'lucide-react';
@@ -78,10 +78,17 @@ const getIconForType = (type: string) => {
   }
 };
 
+type MetroCodeInfo = {
+  code: string;
+  city: string;
+  state: string;
+  region: string;
+};
+
 export default function ContractorsPage() {
   const [allContractors, setAllContractors] = useState<Contractor[]>([]);
   const [contractorTypes, setContractorTypes] = useState<string[]>([]);
-  const [metroCodes, setMetroCodes] = useState<string[]>([]);
+  const [metroCodes, setMetroCodes] = useState<MetroCodeInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
   const [metroCodeFilter, setMetroCodeFilter] = useState('all');
@@ -89,14 +96,15 @@ export default function ContractorsPage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      const [data, types] = await Promise.all([
+      const [data, types, metros] = await Promise.all([
         getContractors(),
         getContractorTypes(),
+        getAllMetroCodes(),
       ]);
       setAllContractors(data);
       setContractorTypes(['all', ...types]);
       
-      const uniqueMetroCodes = ['all', ...Array.from(new Set(data.flatMap(c => c.metroCodes)))].sort();
+      const uniqueMetroCodes = metros.sort((a, b) => a.code.localeCompare(b.code));
       setMetroCodes(uniqueMetroCodes);
 
       setLoading(false);
@@ -174,12 +182,13 @@ export default function ContractorsPage() {
                 </SelectContent>
             </Select>
             <Select value={metroCodeFilter} onValueChange={setMetroCodeFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectTrigger className="w-full sm:w-[220px]">
                     <SelectValue placeholder="Filter by Metro/Site" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">All Metros</SelectItem>
                     {metroCodes.map(metro => (
-                        <SelectItem key={metro} value={metro}>{metro === 'all' ? 'All Metros' : metro}</SelectItem>
+                        <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
