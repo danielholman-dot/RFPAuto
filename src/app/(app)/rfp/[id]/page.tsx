@@ -90,7 +90,7 @@ export default function RfpDetailPage({ params: { id } }: RfpDetailPageProps) {
         <CardContent className="grid md:grid-cols-3 gap-4 text-sm">
             <div><strong>Metro:</strong> {rfp.metroCode}</div>
             <div><strong>Contractor Type:</strong> {rfp.contractorType}</div>
-            <div className="md:col-span-3"><strong>Budget:</strong> ${rfp.estimatedBudget.toLocaleString()}</div>
+            <div className="md:col-span-3"><strong>Budget:</strong> ${rfp.estimatedBudget.toLocaleString('de-DE')}</div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:col-span-3">
               <div><strong>RFP Start:</strong> {formatDate(rfp.rfpStartDate)}</div>
               <div><strong>RFP End:</strong> {formatDate(rfp.rfpEndDate)}</div>

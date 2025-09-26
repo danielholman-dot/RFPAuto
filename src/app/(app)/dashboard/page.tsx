@@ -274,7 +274,7 @@ export default function Dashboard() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      ${rfp.estimatedBudget.toLocaleString()}
+                      ${rfp.estimatedBudget.toLocaleString('de-DE')}
                     </TableCell>
                   </TableRow>
                 ))}

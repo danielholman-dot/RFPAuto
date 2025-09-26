@@ -107,7 +107,7 @@ export default function RfpRegistryPage() {
                 </TableCell>
                 <TableCell>{formatDate(rfp.projectStartDate)}</TableCell>
                 <TableCell className="text-right">
-                  ${rfp.estimatedBudget.toLocaleString()}
+                  ${rfp.estimatedBudget.toLocaleString('de-DE')}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="outline" size="sm" onClick={() => handleEdit(rfp.id)}>
