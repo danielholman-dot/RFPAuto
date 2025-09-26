@@ -11,13 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Pencil, Save } from "lucide-react";
 import { generateRfpInvitation } from "@/ai/flows/generate-rfp-invitations";
 import type { RFP, Contractor } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import Textarea from "../ui/textarea";
+import { cn } from "@/lib/utils";
 
 type RfpInvitationDialogProps = {
   isOpen: boolean;
@@ -30,6 +31,7 @@ type RfpInvitationDialogProps = {
 export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onEoiSent }: RfpInvitationDialogProps) {
   const [emailContent, setEmailContent] = useState<{ to: string, subject: string, body: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
   const formatDate = (date: any) => {
@@ -41,6 +43,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
+      setIsEditing(false);
       setEmailContent(null);
       
       const eoiDueDate = rfp.rfpEndDate ? format(new Date(rfp.rfpEndDate), 'MMMM d, yyyy') + ' at 5:00 PM PST' : 'TBD';
@@ -115,12 +118,27 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="body" className="text-right mt-2">Body</Label>
-                <Textarea 
-                  id="body"
-                  value={emailContent.body.replace(/<br\s*\/?>/gi, '\n').replace(/<b>/g, '').replace(/<\/b>/g, '')}
-                  onChange={(e) => handleContentChange('body', e.target.value)}
-                  className="col-span-3 h-64 text-sm"
-                />
+                <div className="col-span-3 space-y-2">
+                  {isEditing ? (
+                    <Textarea 
+                      id="body"
+                      value={emailContent.body.replace(/<br\s*\/?>/gi, '\n').replace(/<b>/g, '').replace(/<\/b>/g, '')}
+                      onChange={(e) => handleContentChange('body', e.target.value.replace(/\n/g, '<br/>'))}
+                      className="h-64 text-sm bg-background"
+                    />
+                  ) : (
+                    <div 
+                      id="body"
+                      className="h-64 border rounded-md p-2 text-sm overflow-auto bg-muted/50"
+                      dangerouslySetInnerHTML={{ __html: emailContent.body }}
+                    />
+                  )}
+                  <div className="flex justify-end">
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)}>
+                      {isEditing ? <><Save className="mr-2 h-4 w-4" /> Save</> : <><Pencil className="mr-2 h-4 w-4" /> Edit</>}
+                    </Button>
+                  </div>
+                </div>
             </div>
           </div>
         ) : (
