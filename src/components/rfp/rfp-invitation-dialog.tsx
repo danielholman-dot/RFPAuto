@@ -65,6 +65,13 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
     }
   }, [isOpen, rfp, contractor]);
 
+  const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (emailContent) {
+      setEmailContent({ ...emailContent, subject: e.target.value });
+    }
+  };
+
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[625px]">
@@ -87,7 +94,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor }: R
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject" className="text-right">Subject</Label>
-                <Input id="subject" value={emailContent.subject} className="col-span-3" />
+                <Input id="subject" value={emailContent.subject} onChange={handleSubjectChange} className="col-span-3" />
             </div>
              <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="body" className="text-right mt-2">Body</Label>
