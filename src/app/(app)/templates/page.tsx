@@ -126,13 +126,13 @@ Best regards,
         <AccordionItem value="item-5">
           <Card>
             <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left">
+              <div className="text-left flex-grow">
                 <CardTitle>RFP Instructions (SOP)</CardTitle>
                 <CardDescription>
                   This is the Standard Operating Procedure document used by the AI to generate new RFP drafts.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="icon" className="mr-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
+              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
                 <Pencil className="h-4 w-4" />
               </Button>
             </AccordionTrigger>
@@ -148,14 +148,14 @@ Best regards,
         <AccordionItem value="item-1">
           <Card>
             <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left">
+              <div className="text-left flex-grow">
                 <CardTitle>EOI - Expression of Interest</CardTitle>
                 <CardDescription>
                   Template for sending an initial Expression of Interest invitation to
                   potential contractors.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="icon" className="mr-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
+              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
                 <Pencil className="h-4 w-4" />
               </Button>
             </AccordionTrigger>
@@ -185,13 +185,13 @@ Best regards,
         <AccordionItem value="item-4">
           <Card>
             <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left">
+              <div className="text-left flex-grow">
                 <CardTitle>Notice of Award</CardTitle>
                 <CardDescription>
                   Template for notifying a contractor that they were selected for a project.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="icon" className="mr-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
+              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
                 <Pencil className="h-4 w-4" />
               </Button>
             </AccordionTrigger>
@@ -221,13 +221,13 @@ Best regards,
         <AccordionItem value="item-2">
           <Card>
             <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left">
+              <div className="text-left flex-grow">
                 <CardTitle>Notice of Non-Award</CardTitle>
                 <CardDescription>
                   Template for notifying a contractor that they were not selected for a project.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="icon" className="mr-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
+              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
                 <Pencil className="h-4 w-4" />
               </Button>
             </AccordionTrigger>
@@ -257,13 +257,13 @@ Best regards,
         <AccordionItem value="item-3">
           <Card>
             <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left">
+              <div className="text-left flex-grow">
                 <CardTitle>NDA Renewal Email</CardTitle>
                 <CardDescription>
                   Template for requesting an NDA renewal from a partner company.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="icon" className="mr-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
+              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
                 <Pencil className="h-4 w-4" />
               </Button>
             </AccordionTrigger>
