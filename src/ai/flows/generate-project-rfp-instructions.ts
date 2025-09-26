@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow that generates project-specific RFP instructions by combining project data with boilerplate content from the MARCUS SOP.
@@ -43,6 +44,11 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateProjectRFPInstructionsOutputSchema},
   prompt: `You are an expert in generating project-specific RFP instructions. Combine the project data with the MARCUS SOP content to create comprehensive RFP instructions.
 
+MARCUS SOP Content: 
+${marcusSOPContent}
+
+You must use the content above as the template for the RFP instructions. Fill in the placeholders in the template with the following project-specific data.
+
 Project Name: {{{projectName}}}
 Scope of Work: {{{scopeOfWork}}}
 Metro Code: {{{metroCode}}}
@@ -50,9 +56,9 @@ Contractor Type: {{{contractorType}}}
 Estimated Budget: {{{estimatedBudget}}}
 Start Date: {{{startDate}}}
 Technical Documents: {{{technicalDocuments}}}
-MARCUS SOP Content: ${marcusSOPContent}
 
-Generate project-specific RFP instructions:`,
+Generate the full, formatted RFP instructions document based on the template and the provided data.
+`,
 });
 
 const generateProjectRFPInstructionsFlow = ai.defineFlow(

@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award, PencilRuler } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo } from "react";
@@ -32,6 +32,7 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { Label } from "../ui/label"
 import { RfpAwardDialog } from "./rfp-award-dialog"
 import { RfpNonAwardDialog } from "./rfp-non-award-dialog"
+import { RfpDrafting } from "./rfp-drafting"
 
 
 type RfpTabsProps = {
@@ -211,9 +212,12 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   return (
     <>
       <Tabs defaultValue="selection" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
           <TabsTrigger value="selection">
             <Users className="w-4 h-4 mr-2"/> Selection
+          </TabsTrigger>
+          <TabsTrigger value="drafting">
+            <PencilRuler className="w-4 h-4 mr-2"/> Drafting
           </TabsTrigger>
           <TabsTrigger value="invitations">
             <Mail className="w-4 h-4 mr-2"/> Invitations
@@ -273,6 +277,10 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="drafting" className="mt-4">
+            <RfpDrafting rfp={rfp} />
         </TabsContent>
 
         <TabsContent value="invitations" className="mt-4">
