@@ -17,10 +17,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award, PencilRuler } from "lucide-react"
+import { Mail, Send, FileText, Bot, Trophy, Star, MessageSquare, Users, Loader2, UploadCloud, PlusCircle, Settings, Award, PencilRuler, CheckCircle2, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { generateComparativeAnalysis, GenerateComparativeAnalysisOutput } from "@/ai/flows/generate-comparative-analysis";
 import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp } from "@/lib/data";
 import { RfpInvitationDialog } from "./rfp-invitation-dialog";
@@ -34,6 +34,7 @@ import { RfpAwardDialog } from "./rfp-award-dialog"
 import { RfpNonAwardDialog } from "./rfp-non-award-dialog"
 import { RfpDrafting } from "./rfp-drafting"
 import { Input } from "../ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 
 type RfpTabsProps = {
@@ -41,7 +42,39 @@ type RfpTabsProps = {
   isDraft?: boolean;
 }
 
-export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
+const STAGES: RFP['status'][] = ['Draft', 'Drafting', 'Invitation', 'Proposals', 'Analysis', 'Award', 'Feedback', 'Completed'];
+
+const StageContentWrapper = ({ title, children, onComplete, isCompleted }: { title: string, children: React.ReactNode, onComplete: () => void, isCompleted?: boolean }) => (
+    <Card>
+        <CardHeader>
+            <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>
+                        {isCompleted ? "This stage is complete." : `Complete this stage to move to the next step.`}
+                    </CardDescription>
+                </div>
+                {!isCompleted && (
+                    <Button onClick={onComplete}>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Mark as Complete & Next
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                )}
+            </div>
+        </CardHeader>
+        <CardContent>
+            {children}
+        </CardContent>
+    </Card>
+);
+
+export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
+  const [rfp, setRfp] = useState(initialRfp);
+  const [activeTab, setActiveTab] = useState(rfp.status);
+
+  const { toast } = useToast();
+
   const [suggestedContractors, setSuggestedContractors] = useState<Contractor[]>([]);
   const [suggestedLoading, setSuggestedLoading] = useState(!isDraft);
 
@@ -68,14 +101,33 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   const [isNonAwardDialogOpen, setIsNonAwardDialogOpen] = useState(false);
   const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
 
+  const currentStageIndex = STAGES.indexOf(rfp.status);
 
-  const loadInvited = async () => {
+  useEffect(() => {
+    setActiveTab(rfp.status);
+  }, [rfp.status]);
+
+  const handleStageComplete = () => {
+    const nextStageIndex = currentStageIndex + 1;
+    if (nextStageIndex < STAGES.length) {
+      const nextStage = STAGES[nextStageIndex];
+      setRfp(prev => ({ ...prev, status: nextStage }));
+      setActiveTab(nextStage);
+      toast({
+        title: "Stage Completed!",
+        description: `RFP moved to ${nextStage} stage.`,
+      });
+    }
+  };
+
+
+  const loadInvited = useCallback(async () => {
     if (isDraft) return;
     setInvitedLoading(true);
     const contractors = await getInvitedContractors(rfp.invitedContractors || []);
     setInvitedContractors(contractors);
     setInvitedLoading(false);
-  }
+  }, [isDraft, rfp.invitedContractors]);
 
   useEffect(() => {
     if (isDraft) return;
@@ -90,7 +142,6 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     async function loadProposals() {
       setProposalsLoading(true);
       const props = await getProposalsForRfp(rfp.id);
-      // Add a dummy bid amount for charting
       const propsWithBids = props.map(p => ({...p, bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8 }));
       setProposals(propsWithBids);
       setProposalsLoading(false);
@@ -106,15 +157,15 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     loadProposals();
     loadAllContractors();
 
-  }, [rfp.id, rfp.metroCode, rfp.contractorType, rfp.estimatedBudget, isDraft]);
+  }, [rfp.id, rfp.metroCode, rfp.contractorType, rfp.estimatedBudget, isDraft, loadInvited]);
 
   const handleAddContractorToRfp = async () => {
     if (!selectedContractorToAdd) return;
     await addInvitedContractorToRfp(rfp.id, selectedContractorToAdd);
-    // Add to local state to immediately show change
     const contractor = allContractors.find(c => c.id === selectedContractorToAdd);
     if (contractor && !invitedContractors.find(c => c.id === contractor.id)) {
         setInvitedContractors(prev => [...prev, contractor]);
+        setRfp(prev => ({ ...prev, invitedContractors: [...(prev.invitedContractors || []), contractor.id]}));
     }
     setSelectedContractorToAdd('');
   };
@@ -189,16 +240,14 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     return new Date(date).toLocaleDateString();
   };
 
-  const getContractorById = (id: string) => {
-    // Check both invited and suggested, as a proposal could be from a contractor not in the invited list for some reason
+  const getContractorById = useCallback((id: string) => {
     return invitedContractors?.find(c => c.id === id) || suggestedContractors?.find(c => c.id === id) || allContractors?.find(c => c.id === id);
-  }
+  }, [invitedContractors, suggestedContractors, allContractors]);
 
   const uninvitedContractors = useMemo(() => {
     const invitedIds = new Set(invitedContractors.map(c => c.id));
-    // Only show suggested contractors that have not been invited yet.
-    return suggestedContractors.filter(c => !invitedIds.has(c.id));
-  }, [suggestedContractors, invitedContractors]);
+    return allContractors.filter(c => !invitedIds.has(c.id));
+  }, [allContractors, invitedContractors]);
 
   const analysisChartData = useMemo(() => {
     return proposals
@@ -212,194 +261,188 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
 
   return (
     <>
-      <Tabs defaultValue="selection" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
-          <TabsTrigger value="selection">
-            <Users className="w-4 h-4 mr-2"/> Selection
-          </TabsTrigger>
-          <TabsTrigger value="drafting">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <TabsTrigger value="Drafting" disabled={currentStageIndex < STAGES.indexOf('Drafting')}>
             <PencilRuler className="w-4 h-4 mr-2"/> Drafting
           </TabsTrigger>
-          <TabsTrigger value="invitations">
-            <Mail className="w-4 h-4 mr-2"/> Invitations
+          <TabsTrigger value="Invitation" disabled={currentStageIndex < STAGES.indexOf('Invitation')}>
+            <Mail className="w-4 h-4 mr-2"/> Invitation
           </TabsTrigger>
-          <TabsTrigger value="proposals">
+          <TabsTrigger value="Proposals" disabled={currentStageIndex < STAGES.indexOf('Proposals')}>
             <FileText className="w-4 h-4 mr-2"/> Proposals
           </TabsTrigger>
-          <TabsTrigger value="analysis">
+          <TabsTrigger value="Analysis" disabled={currentStageIndex < STAGES.indexOf('Analysis')}>
             <Bot className="w-4 h-4 mr-2"/> Analysis
           </TabsTrigger>
-          <TabsTrigger value="award">
+          <TabsTrigger value="Award" disabled={currentStageIndex < STAGES.indexOf('Award')}>
             <Trophy className="w-4 h-4 mr-2"/> Award
           </TabsTrigger>
-          <TabsTrigger value="feedback">
+          <TabsTrigger value="Feedback" disabled={currentStageIndex < STAGES.indexOf('Feedback')}>
             <MessageSquare className="w-4 h-4 mr-2"/> Feedback
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="selection" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contractor Selection</CardTitle>
-              <CardDescription>
-                {isDraft ? "Complete the RFP draft to see contractor suggestions." : `Based on the project's metro code (${rfp.metroCode}) and contractor type (${rfp.contractorType}), here are the top suggested contractors.`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {suggestedLoading && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>}
-              {!suggestedLoading && !suggestedContractors?.length && <p className="text-center text-muted-foreground py-8">No matching contractors found for this RFP's criteria.</p>}
-              {suggestedContractors && suggestedContractors.length > 0 && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Contractor</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Metros</TableHead>
-                      <TableHead>Performance</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {suggestedContractors.map(contractor => (
-                      <TableRow key={contractor.id}>
-                        <TableCell className="font-medium">{contractor.name}</TableCell>
-                        <TableCell>{contractor.contactName} ({contractor.contactEmail})</TableCell>
-                        <TableCell>{contractor.metroCodes.join(', ')}</TableCell>
-                        <TableCell className="flex items-center">
-                          {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => handleInviteClick(contractor)}>Invite</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+        <TabsContent value="Drafting" className="mt-4">
+            <StageContentWrapper title="RFP Drafting" onComplete={handleStageComplete} isCompleted={currentStageIndex > STAGES.indexOf('Drafting')}>
+                 <RfpDrafting rfp={rfp} />
+            </StageContentWrapper>
         </TabsContent>
 
-        <TabsContent value="drafting" className="mt-4">
-            <RfpDrafting rfp={rfp} />
-        </TabsContent>
-
-        <TabsContent value="invitations" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>RFP Invitations</CardTitle>
-              <CardDescription>
-                Generate and send EOI / RFP invitation emails to selected contractors.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {invitedLoading && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>}
-              {!invitedLoading && !invitedContractors?.length && <p className="text-muted-foreground text-center py-8">No contractors have been invited yet.</p>}
-              {invitedContractors && invitedContractors.map(c => (
-                <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{c.name}</p>
-                    <p className="text-sm text-muted-foreground">{c.contactEmail}</p>
-                  </div>
-                  <div className="space-x-2">
-                    <Button variant="outline"><Mail className="mr-2 h-4 w-4"/> Generate EOI</Button>
-                    <Button><Send className="mr-2 h-4 w-4"/> Send RFP</Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="proposals" className="mt-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Proposal Submissions</CardTitle>
-                <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
-              </div>
-              <Button variant="outline" onClick={() => setIsChecklistDialogOpen(true)}>
-                <Settings className="mr-2 h-4 w-4" />
-                Configure RFP Checklist
-              </Button>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center gap-4 mb-6 p-4 border rounded-lg">
-                    <div className="flex-grow">
-                        <Select value={selectedContractorToAdd} onValueChange={setSelectedContractorToAdd}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a contractor to add from suggestions..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {uninvitedContractors.map(c => (
-                                    <SelectItem key={c.id} value={c.id}>
-                                        {c.name}
-                                    </SelectItem>
+        <TabsContent value="Invitation" className="mt-4">
+             <StageContentWrapper title="Contractor Invitation" onComplete={handleStageComplete} isCompleted={currentStageIndex > STAGES.indexOf('Invitation')}>
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Suggested Contractors</CardTitle>
+                            <CardDescription>
+                                {isDraft ? "Complete the RFP draft to see contractor suggestions." : `Based on the project's metro code (${rfp.metroCode}) and contractor type (${rfp.contractorType}), here are top suggestions.`}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                        {suggestedLoading && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>}
+                        {!suggestedLoading && !suggestedContractors?.length && <p className="text-center text-muted-foreground py-8">No matching contractors found for this RFP's criteria.</p>}
+                        {suggestedContractors && suggestedContractors.length > 0 && (
+                            <Table>
+                            <TableHeader>
+                                <TableRow>
+                                <TableHead>Contractor</TableHead>
+                                <TableHead>Performance</TableHead>
+                                <TableHead className="text-right">Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {suggestedContractors.map(contractor => (
+                                <TableRow key={contractor.id}>
+                                    <TableCell className="font-medium">{contractor.name}</TableCell>
+                                    <TableCell className="flex items-center">
+                                    {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                    <Button variant="outline" size="sm" onClick={() => handleInviteClick(contractor)}>Invite</Button>
+                                    </TableCell>
+                                </TableRow>
                                 ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <Button onClick={handleAddContractorToRfp} disabled={!selectedContractorToAdd}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add to List
-                    </Button>
-                </div>
-              {proposalsLoading ? (
-                <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
-              ) : invitedContractors.length === 0 && !invitedLoading ? (
-                <p className="text-muted-foreground text-center py-8">No contractors have been invited to submit proposals yet.</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Contractor</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Documents</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {invitedContractors.map(contractor => {
-                      const proposal = proposalStatusByContractor.get(contractor.id);
-                      const hasSubmitted = !!proposal;
-                      return (
-                        <TableRow key={contractor.id}>
-                          <TableCell className="font-medium">{contractor.name}</TableCell>
-                          <TableCell>
-                            <Badge variant={hasSubmitted ? 'default' : 'outline'}>
-                              {hasSubmitted ? 'Submitted' : 'Pending'}
-                            </Badge>
-                             {hasSubmitted && <div className="text-xs text-muted-foreground mt-1">on {formatDate(proposal.submittedDate)}</div>}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                                <label className="flex items-center gap-2" htmlFor={`proposal-upload-${contractor.id}`}>
-                                    <Button asChild variant="outline" size="sm" className="h-8">
-                                        <span>
-                                            <UploadCloud className="mr-2 h-4 w-4"/> Upload Proposal
-                                        </span>
-                                    </Button>
-                                    <Input id={`proposal-upload-${contractor.id}`} type="file" className="hidden"/>
-                                </label>
+                            </TableBody>
+                            </Table>
+                        )}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                        <CardTitle>Invited Contractors</CardTitle>
+                        <CardDescription>
+                            Generate and send EOI / RFP invitation emails to selected contractors.
+                        </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center gap-4 mb-6 p-4 border rounded-lg">
+                                <p className="text-sm font-medium">Manually add a contractor to the invitation list:</p>
+                                <div className="flex-grow">
+                                    <Select value={selectedContractorToAdd} onValueChange={setSelectedContractorToAdd}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a contractor..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {uninvitedContractors.map(c => (
+                                                <SelectItem key={c.id} value={c.id}>
+                                                    {c.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button onClick={handleAddContractorToRfp} disabled={!selectedContractorToAdd}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add to Invite List
+                                </Button>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+                        {invitedLoading && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>}
+                        {!invitedLoading && !invitedContractors?.length && <p className="text-muted-foreground text-center py-8">No contractors have been invited yet.</p>}
+                        {invitedContractors && invitedContractors.map(c => (
+                            <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                                <p className="font-medium">{c.name}</p>
+                                <p className="text-sm text-muted-foreground">{c.contactEmail}</p>
+                            </div>
+                            <div className="space-x-2">
+                                <Button variant="outline" onClick={() => handleInviteClick(c)}><Mail className="mr-2 h-4 w-4"/> Generate EOI</Button>
+                            </div>
+                            </div>
+                        ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            </StageContentWrapper>
+        </TabsContent>
+
+        <TabsContent value="Proposals" className="mt-4">
+           <StageContentWrapper title="Proposal Submission" onComplete={handleStageComplete} isCompleted={currentStageIndex > STAGES.indexOf('Proposals')}>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Proposal Submissions</CardTitle>
+                        <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
+                    </div>
+                    <Button variant="outline" onClick={() => setIsChecklistDialogOpen(true)}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        Configure RFP Checklist
+                    </Button>
+                    </CardHeader>
+                    <CardContent>
+                    {proposalsLoading ? (
+                        <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
+                    ) : invitedContractors.length === 0 && !invitedLoading ? (
+                        <p className="text-muted-foreground text-center py-8">No contractors have been invited to submit proposals yet.</p>
+                    ) : (
+                        <Table>
+                        <TableHeader>
+                            <TableRow>
+                            <TableHead>Contractor</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Documents</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {invitedContractors.map(contractor => {
+                            const proposal = proposalStatusByContractor.get(contractor.id);
+                            const hasSubmitted = !!proposal;
+                            return (
+                                <TableRow key={contractor.id}>
+                                <TableCell className="font-medium">{contractor.name}</TableCell>
+                                <TableCell>
+                                    <Badge variant={hasSubmitted ? 'default' : 'outline'}>
+                                    {hasSubmitted ? 'Submitted' : 'Pending'}
+                                    </Badge>
+                                    {hasSubmitted && <div className="text-xs text-muted-foreground mt-1">on {formatDate(proposal.submittedDate)}</div>}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-2">
+                                        <label className="flex items-center gap-2" htmlFor={`proposal-upload-${contractor.id}`}>
+                                            <Button asChild variant="outline" size="sm" className="h-8">
+                                                <span>
+                                                    <UploadCloud className="mr-2 h-4 w-4"/> Upload Proposal
+                                                </span>
+                                            </Button>
+                                            <Input id={`proposal-upload-${contractor.id}`} type="file" className="hidden"/>
+                                        </label>
+                                    </div>
+                                </TableCell>
+                                </TableRow>
+                            );
+                            })}
+                        </TableBody>
+                        </Table>
+                    )}
+                    </CardContent>
+                </Card>
+           </StageContentWrapper>
         </TabsContent>
 
         
-        <TabsContent value="analysis" className="mt-4">
-          <Card>
-              <CardHeader>
-                  <CardTitle>AI-Driven Proposal Analysis</CardTitle>
-                  <CardDescription>Select submitted proposals to generate a comparative analysis and budget visualization.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+        <TabsContent value="Analysis" className="mt-4">
+             <StageContentWrapper title="AI-Driven Proposal Analysis" onComplete={handleStageComplete} isCompleted={currentStageIndex > STAGES.indexOf('Analysis')}>
+                <div className="space-y-6">
                   <div className="border rounded-lg p-4">
                     <h3 className="font-semibold mb-3">1. Select Proposals for Analysis</h3>
                     <div className="space-y-3">
@@ -472,17 +515,12 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                       </Card>
                     </div>
                   )}
-              </CardContent>
-          </Card>
+                </div>
+            </StageContentWrapper>
         </TabsContent>
 
-        <TabsContent value="award" className="mt-4">
-          <Card>
-              <CardHeader>
-                  <CardTitle>Award Recommendation</CardTitle>
-                  <CardDescription>Select the winning contractor to generate award and non-award letters.</CardDescription>
-              </CardHeader>
-              <CardContent>
+        <TabsContent value="Award" className="mt-4">
+            <StageContentWrapper title="Award Recommendation" onComplete={handleStageComplete} isCompleted={currentStageIndex > STAGES.indexOf('Award')}>
                 {invitedLoading ? (
                    <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
                 ) : invitedContractors.length > 0 ? (
@@ -535,20 +573,13 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                 ) : (
                   <p className="text-muted-foreground text-center py-8">No contractors have been invited for this RFP.</p>
                 )}
-              </CardContent>
-          </Card>
+            </StageContentWrapper>
         </TabsContent>
 
-        <TabsContent value="feedback" className="mt-4">
-          <Card>
-              <CardHeader>
-                  <CardTitle>Stakeholder Feedback</CardTitle>
-                  <CardDescription>Summarize feedback and generate a Lessons Learned report.</CardDescription>
-              </CardHeader>
-              <CardContent>
+        <TabsContent value="Feedback" className="mt-4">
+             <StageContentWrapper title="Stakeholder Feedback" onComplete={handleStageComplete} isCompleted={currentStageIndex > STAGES.indexOf('Feedback')}>
                   <p className="text-muted-foreground text-center py-8">Feedback summary tools will be available after project completion.</p>
-              </CardContent>
-          </Card>
+            </StageContentWrapper>
         </TabsContent>
       </Tabs>
       {selectedContractor && (

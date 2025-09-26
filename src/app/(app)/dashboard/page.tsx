@@ -121,21 +121,21 @@ export default function Dashboard() {
   }
 
   const activeRFPs =
-    filteredRfps?.filter((r) => r.status === 'In Progress' || r.status === 'Sent') || [];
+    filteredRfps?.filter((r) => r.status !== 'Draft' && r.status !== 'Completed' && r.status !== 'Award') || [];
   const totalBudget = filteredRfps?.reduce((sum, rfp) => sum + rfp.estimatedBudget, 0) || 0;
 
   const getStatusVariant = (status: RFP['status']) => {
     switch (status) {
-      case 'Awarded':
+      case 'Award':
       case 'Completed':
-        return 'default';
-      case 'Sent':
-      case 'In Progress':
-        return 'secondary';
+        return 'default'; // Green / primary color for success
+      case 'Analysis':
+      case 'Feedback':
+          return 'secondary'; // Blue / secondary for final stages
       case 'Draft':
-        return 'outline';
+        return 'outline'; // Grey outline for pending
       default:
-        return 'outline';
+        return 'secondary'; // Yellow / warning for active states like Selection, Invitation, etc.
     }
   };
 
@@ -218,7 +218,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{activeRFPs.length}</div>
             <p className="text-xs text-muted-foreground">
-              Currently in progress or sent
+              Currently in progress
             </p>
           </CardContent>
         </Card>
@@ -303,3 +303,4 @@ export default function Dashboard() {
   );
 
     
+

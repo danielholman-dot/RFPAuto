@@ -48,16 +48,16 @@ export default function RfpRegistryPage() {
   
   const getStatusVariant = (status: RFP['status']) => {
     switch (status) {
-      case 'Awarded':
+      case 'Award':
       case 'Completed':
-        return 'default';
-      case 'Sent':
-      case 'In Progress':
-        return 'secondary';
+        return 'default'; // Green / primary color for success
+      case 'Analysis':
+      case 'Feedback':
+          return 'secondary'; // Blue / secondary for final stages
       case 'Draft':
-        return 'outline';
+        return 'outline'; // Grey outline for pending
       default:
-        return 'outline';
+        return 'secondary'; // Yellow / warning for active states like Selection, Invitation, etc.
     }
   };
 

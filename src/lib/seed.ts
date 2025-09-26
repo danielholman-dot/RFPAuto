@@ -3,6 +3,7 @@
 
 
 
+
 export const ContractorsData = [
     {
         "name": "Allison-Smith Company LLC",
@@ -785,7 +786,7 @@ const getFutureDate = (baseDate: Date, days: number): Date => {
     return futureDate;
 };
 
-const baseStartDate = getFutureDate(now, 450); // Approx 15 months from now to ensure it's after Sept 2025
+const baseStartDate = new Date('2025-10-26T00:00:00Z');
 
 export const RFPData = [
   {
@@ -798,7 +799,7 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 20),
     projectStartDate: getFutureDate(baseStartDate, 31),
     projectEndDate: getFutureDate(baseStartDate, 213),
-    status: 'In Progress'
+    status: 'Proposals'
   },
   {
     projectName: 'West Coast Fiber Network Expansion',
@@ -810,7 +811,7 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 45),
     projectStartDate: getFutureDate(baseStartDate, 62),
     projectEndDate: getFutureDate(baseStartDate, 427),
-    status: 'Awarded'
+    status: 'Award'
   },
   {
     projectName: 'Columbus Campus Security System Overhaul',
@@ -822,7 +823,7 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 62),
     projectStartDate: getFutureDate(baseStartDate, 92),
     projectEndDate: getFutureDate(baseStartDate, 274),
-    status: 'Sent'
+    status: 'Invitation'
   },
   {
     projectName: 'Council Bluffs Power Distribution Unit Refresh',
@@ -830,7 +831,7 @@ export const RFPData = [
     metroCode: 'LNK/CBF',
     contractorType: 'Electrical',
     estimatedBudget: 7500000,
-    rfpStartDate: getFutureDate(baseStartDate, -30), // This will be in the past relative to other projects, but still future
+    rfpStartDate: getFutureDate(baseStartDate, -30),
     rfpEndDate: getFutureDate(baseStartDate, 0),
     projectStartDate: getFutureDate(baseStartDate, 20),
     projectEndDate: getFutureDate(baseStartDate, 202),
@@ -853,6 +854,7 @@ export const RFPData = [
     
 
     
+
 
 
 

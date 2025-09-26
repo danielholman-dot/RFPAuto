@@ -12,7 +12,7 @@ export type RFP = {
   rfpEndDate?: Timestamp | Date;
   projectStartDate?: Timestamp | Date;
   projectEndDate?: Timestamp | Date;
-  status: 'Draft' | 'Sent' | 'In Progress' | 'Awarded' | 'Completed';
+  status: 'Selection' | 'Drafting' | 'Invitation' | 'Proposals' | 'Analysis' | 'Award' | 'Feedback' | 'Draft' | 'Completed';
   invitedContractors?: string[];
   proposals?: Proposal[];
 };
@@ -52,3 +52,4 @@ export type Scorecard = {
   missionCriticalExperience: number;
   total: number;
 };
+
