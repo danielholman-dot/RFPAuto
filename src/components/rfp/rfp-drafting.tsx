@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import Textarea from "../ui/textarea";
 import type { RFP } from "@/lib/types";
 import { generateProjectRFPInstructions, GenerateProjectRFPInstructionsOutput } from "@/ai/flows/generate-project-rfp-instructions";
-import { Bot, Edit, Loader2, Save, Sparkles } from "lucide-react";
+import { Bot, Edit, Loader2, Save, Sparkles, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 type RfpDraftingProps = {
     rfp: RFP;
@@ -93,21 +94,34 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
                         <div className="flex justify-end gap-2 mb-4">
                             {isEditing ? (
                                 <Button onClick={handleSave}>
-                                    <Save className="mr-2 h-4 w-4" /> Save
+                                    <Save className="mr-2 h-4 w-4" /> Save Changes
                                 </Button>
                             ) : (
                                 <Button variant="outline" onClick={handleEditToggle}>
                                     <Edit className="mr-2 h-4 w-4" /> Edit
                                 </Button>
                             )}
+                             <Button variant="outline" onClick={handleGenerateDraft}>
+                                <Sparkles className="mr-2 h-4 w-4" /> Regenerate
+                            </Button>
                         </div>
-                        <Textarea 
-                            value={draftContent}
-                            onChange={(e) => setDraftContent(e.target.value)}
-                            readOnly={!isEditing}
-                            className="w-full h-[60vh] font-mono text-xs"
-                            placeholder="RFP draft will appear here..."
-                        />
+
+                        {isEditing ? (
+                             <Textarea 
+                                value={draftContent}
+                                onChange={(e) => setDraftContent(e.target.value)}
+                                className="w-full h-[70vh] font-mono text-xs"
+                                placeholder="RFP draft will appear here..."
+                            />
+                        ) : (
+                            <div 
+                                className={cn(
+                                    "prose prose-sm max-w-none p-4 border rounded-md h-[70vh] overflow-auto bg-background",
+                                    "[&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:p-2 [&_th]:font-bold [&_td]:border [&_td]:p-2 [&_ul]:list-disc [&_ul]:pl-5"
+                                )}
+                                dangerouslySetInnerHTML={{ __html: draftContent }} 
+                            />
+                        )}
                          <div className="mt-4 flex justify-end">
                             <Button>Review and Approve</Button>
                         </div>

@@ -27,7 +27,7 @@ export type GenerateProjectRFPInstructionsInput = z.infer<
 >;
 
 const GenerateProjectRFPInstructionsOutputSchema = z.object({
-  rfpInstructions: z.string().describe('The generated project-specific RFP instructions.'),
+  rfpInstructions: z.string().describe('The generated project-specific RFP instructions as an HTML document.'),
 });
 export type GenerateProjectRFPInstructionsOutput = z.infer<
   typeof GenerateProjectRFPInstructionsOutputSchema
@@ -74,9 +74,9 @@ const prompt = ai.definePrompt({
       awardNotificationDate: z.string(),
   })},
   output: {schema: GenerateProjectRFPInstructionsOutputSchema},
-  prompt: `You are an expert in generating project-specific RFP instructions. Combine the project data with the MARCUS SOP content to create comprehensive RFP instructions.
+  prompt: `You are an expert in generating project-specific RFP instructions. Your task is to convert the provided plain text SOP into a well-formatted HTML document, filling in the dynamic project data.
 
-MARCUS SOP Content: 
+MARCUS SOP Content (Template):
 ${marcusSOPContent}
 
 You must use the content above as the template for the RFP instructions. Fill in the placeholders in the template with the following project-specific data.
@@ -101,7 +101,12 @@ RFP End Date: {{{rfpEndDate}}}
 Presentation Date: {{{presentationDate}}}
 Award Notification Date: {{{awardNotificationDate}}}
 
-Generate the full, formatted RFP instructions document based on the template and the provided data.
+Generate a single HTML document. Use appropriate HTML tags like <h1>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, and <table> to create a professional and readable document.
+- Main sections should use <h2>.
+- Sub-sections should use <h3>.
+- The Table of Contents should be an unordered list with links to the corresponding section IDs.
+- Pay attention to lists, bold text, and tables to ensure they are rendered correctly in HTML.
+- The entire output should be a single, valid HTML string.
 `,
 });
 
