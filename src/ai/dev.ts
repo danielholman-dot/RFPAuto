@@ -8,3 +8,5 @@ import '@/ai/flows/draft-reminder-emails-proposal-submissions.ts';
 import '@/ai/flows/generate-award-recommendations.ts';
 import '@/ai/flows/summarize-stakeholder-feedback.ts';
 import '@/ai/flows/generate-comparative-analysis.ts';
+import '@/ai/flows/generate-award-letter.ts';
+import '@/ai/flows/generate-non-award-letter.ts';

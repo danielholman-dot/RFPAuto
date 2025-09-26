@@ -30,6 +30,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { RfpChecklistDialog } from "./rfp-checklist-dialog";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { Label } from "../ui/label"
+import { RfpAwardDialog } from "./rfp-award-dialog"
+import { RfpNonAwardDialog } from "./rfp-non-award-dialog"
 
 
 type RfpTabsProps = {
@@ -59,6 +61,11 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const [winningContractorId, setWinningContractorId] = useState<string | null>(null);
+  
+  const [isAwardDialogOpen, setIsAwardDialogOpen] = useState(false);
+  const [isNonAwardDialogOpen, setIsNonAwardDialogOpen] = useState(false);
+  const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
+
 
   const loadInvited = async () => {
     if (isDraft) return;
@@ -124,6 +131,16 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     setSelectedContractor(contractor);
     setIsInvitationDialogOpen(true);
   };
+  
+  const handleAwardLetterClick = (contractor: Contractor) => {
+    setContractorForDialog(contractor);
+    setIsAwardDialogOpen(true);
+  }
+
+  const handleNonAwardLetterClick = (contractor: Contractor) => {
+    setContractorForDialog(contractor);
+    setIsNonAwardDialogOpen(true);
+  }
 
   const handleAnalyze = async () => {
     const proposalsToAnalyze = proposals.filter(p => selectedProposals.includes(p.id));
@@ -468,7 +485,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-24">Select Winner</TableHead>
+                          <TableHead className="w-32">Select Winner</TableHead>
                           <TableHead>Contractor</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Action</TableHead>
@@ -492,13 +509,13 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                               </TableCell>
                               <TableCell className="text-right">
                                 {isWinner && (
-                                  <Button size="sm">
+                                  <Button size="sm" onClick={() => handleAwardLetterClick(contractor)}>
                                     <Award className="mr-2 h-4 w-4" />
                                     Send Award Letter
                                   </Button>
                                 )}
                                 {isLoser && (
-                                  <Button size="sm" variant="secondary">
+                                  <Button size="sm" variant="secondary" onClick={() => handleNonAwardLetterClick(contractor)}>
                                     <Mail className="mr-2 h-4 w-4" />
                                     Send Non-Award Letter
                                   </Button>
@@ -536,6 +553,22 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
           rfp={rfp}
           contractor={selectedContractor}
         />
+      )}
+      {contractorForDialog && (
+        <>
+          <RfpAwardDialog
+            isOpen={isAwardDialogOpen}
+            onOpenChange={setIsAwardDialogOpen}
+            rfp={rfp}
+            contractor={contractorForDialog}
+          />
+          <RfpNonAwardDialog
+            isOpen={isNonAwardDialogOpen}
+            onOpenChange={setIsNonAwardDialogOpen}
+            rfp={rfp}
+            contractor={contractorForDialog}
+          />
+        </>
       )}
       <RfpChecklistDialog
         isOpen={isChecklistDialogOpen}
