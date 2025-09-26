@@ -4,8 +4,8 @@ Google
 
 RFP Instructions
 
-MARCUS Project Name Small Projects General Contracting
-Month Year 
+MARCUS {{{projectName}}} Small Projects General Contracting
+{{{currentMonth}}} {{{currentYear}}} 
 
 
 
@@ -41,6 +41,7 @@ Table of Contents
 RFP Overview
  RFP Objective 
 Detailed Service Specifications and scope of work can be found in RFP document Reference A: Scope of Work and Specifications.
+{{{scopeOfWork}}}
  RFP Evaluation Criteria
 Google will conduct a fair, impartial, and comprehensive evaluation of all responses received. Google reserves the right to not award a contract as a result of this RFP. Google reserves the right to make a contract award solely based on the RFP response, without any further discussion with the Participant regarding the responses received. 
 RFP responses should be submitted with the most favorable terms available for price, service and proposed contractual terms and conditions.
@@ -74,44 +75,44 @@ Type
 Document Title
 Action/Timeline
 Reference A
-Link
+Scope of Work and Specifications for {{{projectName}}}
 Carefully review all instructions provided with this document
 Reference B
-Link
-
+Technical Documents: {{{technicalDocuments}}}
 For your documentation 
 and reference
 Reference C
 Link
 Submittal 1
-Link
+MARCUS RFP GC Q&A
 Response Due:
-Date and Time
+{{{qnaSubmissionDate}}}
 Submittal 2*
-Link
+MARCUS Commercial SGC Proposal Template
 Response Due: 
-Date and Time
+{{{rfpEndDate}}}
 For detailed instructions, please refer to Section 2: RFP Submission Deliverables in this document
 
 
 Submittal 3
-Link
+Declaration Involvement in Litigation and/or Arbitration
 Submittal 4*
-Link
+CGA [MARCUS] Construction Template for U.S. Projects
 Submittal 5
 Pilot Project Team Resumes
 Submittal 6
 GC Presentation
 Submittal 7
-Recording Consenr
-Date and Time
+Recording Consent
+{{{rfpEndDate}}}
 *Please note if your company has already submitted/signed this document, please submit signed documents and agreed upon rates.
 
  RFP Communication
 Direct all inquiries regarding this RFP to the below email address, including questions before and after submission, as well as during commercial discussions:
 
 Google Contact
-[Contact Name & Email]
+{{{googleContactName}}}
+{{{googleContactEmail}}}
 
  RFP Timeline
 The list below outlines key milestones for all Participant(s). Dates given are subject to change at Google’s discretion.
@@ -120,22 +121,22 @@ Milestone
 Deadline
 1
 EOI Response
-Month/Day/Year
+{{{eoiResponseDate}}}
 2
 RFP Release
-Month/Day/Year
+{{{rfpStartDate}}}
 12:00 PM PST
 3
 Confirm RFP received 
 Please “Reply All’ to the email from which you received the RFP to confirm that it has been received. Submittal 7 Recording Consent - MARCUS SPGC RFP 2025 send this document along with confirmation.
-Month/Day/Year
+{{{rfpConfirmationDate}}}
 12:00 PM PST
 4a
 Q&A  - Company submits questions
-Month/Day/Year
+{{{qnaSubmissionDate}}}
 4b
 Q&A Round - Google responds to questions
-Month/Day/Year
+{{{qnaResponseDate}}}
 12:00 PM PST
 5
 Submission of RFP Proposal:
@@ -144,16 +145,16 @@ MARCUS Commercial SGC Proposal Template
 Declaration Involvement in Litigation and/or Arbitration
 CGA [MARCUS] Construction Template for U.S. Projects
 Pilot Project Team Resumes
-Month/Day/Year
+{{{rfpEndDate}}}
 6
 Company Presentation of Proposal (if notified by Google) and Proposed Project Team Virtual Q&A Session for the following Key Roles:
 Project Manager
 Superintendent
 Environmental Health & Safety Manager
-Month/Day/Year
+{{{presentationDate}}}
 7
 RFP award and non award notification
-Month/Year
+{{{awardNotificationDate}}}
 
 
 RFP Submission Deliverables
@@ -167,9 +168,9 @@ Template Instructions (Tab 0): Google requires that all submitted proposals comp
 Labor Rates (Tabs 1a, 1b, 1c, 2, 3, 4 (reference)): 
 For suppliers with an existing CGA agreement, this section is not applicable. Previously agreed rates will be applicable.
 The cost components in the MARCUS Commercial Proposal Template will be extrapolated into a final, fully burdened bill rate, which will be introduced as Exhibit B in the updated CGA [MARCUS] Construction Template for U.S. Projects upon agreement with Google. 
-Through mutual agreement, the labor rates will be established for a  three-year period, using the 2025 base rate as a foundation and applying a calculated percentage escalation for years two and three.
+Through mutual agreement, the labor rates will be established for a  three-year period, using the {{{currentYear}}} base rate as a foundation and applying a calculated percentage escalation for years two and three.
 All labor rates must be submitted in US dollars. Currency conversions are for reference purposes only and should not be considered for pricing. Please note, if you already have an executed CGA on file with agreed upon rates, the entered rates should match the previously agreed upon rates for the next three years.
-Local talent shall be utilized for onsite key roles; relocation will not be considered for this project. Sites with active construction projects must have in person coverage while the work is being performed. Mileage between sites may be submitted as an expense and will be reimbursed only upon approval from the Google program approver.
+Local talent shall be utilized for onsite key roles; relocation will not be considered for this project. Sites with active construction projects have in person coverage while the work is being performed. Mileage between sites may be submitted as an expense and will be reimbursed only upon approval from the Google program approver.
 Fee Structure (Tab 3): 
 As part of your RFP response, Google requests that you propose a competitive and comprehensive fee structure that aligns with the unique requirements of the MARCUS program and the programmatic approach outlined in this RFP.  
 Your proposal should detail all fee components, including any fixed management fees, fees to manage professional services, variable performance-based fees, and optional value-added services. Be sure to clearly define the calculation methodology for each fee component, a performance metric upon which variable fees will be based, and any associated payment terms. 
