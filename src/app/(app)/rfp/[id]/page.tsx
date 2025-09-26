@@ -36,6 +36,21 @@ export default function RfpDetailPage() {
     return new Date(date).toLocaleDateString();
   };
 
+  const getStatusVariant = (status: RFP['status']) => {
+    switch (status) {
+      case 'Awarded':
+      case 'Completed':
+        return 'default';
+      case 'Sent':
+      case 'In Progress':
+        return 'secondary';
+      case 'Draft':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+  };
+
   if (loading) {
     return <div>Loading RFP...</div>
   }
@@ -65,7 +80,7 @@ export default function RfpDetailPage() {
                             <CardTitle className="text-2xl font-bold">{newRfp.projectName}</CardTitle>
                             <CardDescription>ID: {newRfp.id}</CardDescription>
                         </div>
-                        <Badge variant="outline" className="text-lg">{newRfp.status}</Badge>
+                        <Badge variant={getStatusVariant(newRfp.status)} className="text-lg">{newRfp.status}</Badge>
                         </div>
                     </CardHeader>
                 </Card>
@@ -85,7 +100,7 @@ export default function RfpDetailPage() {
               <CardTitle className="text-2xl font-bold">{rfp.projectName}</CardTitle>
               <CardDescription>ID: {rfp.id}</CardDescription>
             </div>
-            <Badge variant={rfp.status === 'Awarded' ? 'default' : 'secondary'} className="text-lg">{rfp.status}</Badge>
+            <Badge variant={getStatusVariant(rfp.status)} className="text-lg">{rfp.status}</Badge>
           </div>
         </CardHeader>
         <CardContent className="grid md:grid-cols-3 gap-4 text-sm">

@@ -124,12 +124,19 @@ export default function Dashboard() {
     filteredRfps?.filter((r) => r.status === 'In Progress' || r.status === 'Sent') || [];
   const totalBudget = filteredRfps?.reduce((sum, rfp) => sum + rfp.estimatedBudget, 0) || 0;
 
-  const formatDate = (date: any) => {
-    if (!date) return 'N/A';
-    if (date.toDate) { // Firebase Timestamp
-      return date.toDate().toLocaleDateString();
+  const getStatusVariant = (status: RFP['status']) => {
+    switch (status) {
+      case 'Awarded':
+      case 'Completed':
+        return 'default';
+      case 'Sent':
+      case 'In Progress':
+        return 'secondary';
+      case 'Draft':
+        return 'outline';
+      default:
+        return 'outline';
     }
-    return new Date(date).toLocaleDateString();
   };
 
   return (
@@ -277,9 +284,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={
-                          rfp.status === 'Awarded' ? 'default' : 'outline'
-                        }
+                        variant={getStatusVariant(rfp.status)}
                       >
                         {rfp.status}
                       </Badge>

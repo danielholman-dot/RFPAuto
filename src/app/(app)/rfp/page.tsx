@@ -46,6 +46,21 @@ export default function RfpRegistryPage() {
     return new Date(date).toLocaleDateString();
   };
   
+  const getStatusVariant = (status: RFP['status']) => {
+    switch (status) {
+      case 'Awarded':
+      case 'Completed':
+        return 'default';
+      case 'Sent':
+      case 'In Progress':
+        return 'secondary';
+      case 'Draft':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -96,11 +111,7 @@ export default function RfpRegistryPage() {
                 <TableCell>{rfp.metroCode}</TableCell>
                 <TableCell>
                   <Badge
-                    variant={
-                      rfp.status === 'Awarded' || rfp.status === 'Completed'
-                        ? 'default'
-                        : 'secondary'
-                    }
+                    variant={getStatusVariant(rfp.status)}
                   >
                     {rfp.status}
                   </Badge>
