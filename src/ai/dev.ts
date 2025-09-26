@@ -1,3 +1,4 @@
+
 import { config } from 'dotenv';
 config();
 
@@ -10,3 +11,4 @@ import '@/ai/flows/summarize-stakeholder-feedback.ts';
 import '@/ai/flows/generate-comparative-analysis.ts';
 import '@/ai/flows/generate-award-letter.ts';
 import '@/ai/flows/generate-non-award-letter.ts';
+import '@/ai/flows/generate-user-guide.ts';

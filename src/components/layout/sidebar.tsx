@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -19,6 +20,7 @@ import {
   Map,
   FileText,
   Briefcase,
+  HelpCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -133,6 +135,20 @@ export function AppSidebar() {
 
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
+            <SidebarMenuItem>
+                <Link href="/user-guide" passHref>
+                <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/user-guide')}
+                    tooltip={{ children: 'User Guide' }}
+                >
+                    <span>
+                    <HelpCircle />
+                    <span>User Guide</span>
+                    </span>
+                </SidebarMenuButton>
+                </Link>
+            </SidebarMenuItem>
           <SidebarMenuItem>
             <Link href="/settings" passHref>
               <SidebarMenuButton
