@@ -49,7 +49,7 @@ export default function SettingsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Feature / Page</TableHead>
-                <TableHead className="text-center">GPO (Global Program Owner)</TableHead>
+                <TableHead className="text-center">GPO (Google Procurement Office)</TableHead>
                 <TableHead className="text-center">Project Management</TableHead>
               </TableRow>
             </TableHeader>
