@@ -39,7 +39,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-2 p-2">
           {/* You can replace this placeholder with your own logo */}
           <Image 
-            src="https://picsum.photos/seed/logo/40/40" 
+            src="https://storage.googleapis.com/project-spark-308115-public/images/73f0b2f5-b382-45e3-b924-f4460d3d5f17.jpg" 
             alt="Company Logo"
             width={40}
             height={40}
