@@ -4,6 +4,7 @@
 
 
 
+
 export const ContractorsData = [
     {
         "name": "Allison-Smith Company LLC",
@@ -799,7 +800,7 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 20),
     projectStartDate: getFutureDate(baseStartDate, 31),
     projectEndDate: getFutureDate(baseStartDate, 213),
-    status: 'Proposals'
+    status: 'Selection'
   },
   {
     projectName: 'West Coast Fiber Network Expansion',
@@ -811,7 +812,7 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 45),
     projectStartDate: getFutureDate(baseStartDate, 62),
     projectEndDate: getFutureDate(baseStartDate, 427),
-    status: 'Award'
+    status: 'Selection'
   },
   {
     projectName: 'Columbus Campus Security System Overhaul',
@@ -823,7 +824,7 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 62),
     projectStartDate: getFutureDate(baseStartDate, 92),
     projectEndDate: getFutureDate(baseStartDate, 274),
-    status: 'Invitation'
+    status: 'Selection'
   },
   {
     projectName: 'Council Bluffs Power Distribution Unit Refresh',
@@ -835,7 +836,7 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 0),
     projectStartDate: getFutureDate(baseStartDate, 20),
     projectEndDate: getFutureDate(baseStartDate, 202),
-    status: 'Completed'
+    status: 'Selection'
   },
   {
     projectName: 'New Office Build-out in Austin',
@@ -847,13 +848,14 @@ export const RFPData = [
     rfpEndDate: getFutureDate(baseStartDate, 122),
     projectStartDate: getFutureDate(baseStartDate, 132),
     projectEndDate: getFutureDate(baseStartDate, 437),
-    status: 'Draft'
+    status: 'Selection'
   },
 ];
 
     
 
     
+
 
 
 
