@@ -1,6 +1,6 @@
 
 'use client';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { RfpTabs } from '@/components/rfp/rfp-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,13 +8,10 @@ import type { RFP } from '@/lib/types';
 import { getRfpById, metroCodes } from '@/lib/data';
 import { useEffect, useState }from 'react';
 
-type RfpDetailPageProps = {
-  params: {
-    id: string;
-  };
-};
+export default function RfpDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
 
-export default function RfpDetailPage({ params: { id } }: RfpDetailPageProps) {
   const [rfp, setRfp] = useState<RFP | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +21,9 @@ export default function RfpDetailPage({ params: { id } }: RfpDetailPageProps) {
       setRfp(data);
       setLoading(false);
     }
-    loadData();
+    if (id) {
+      loadData();
+    }
   }, [id]);
 
   const metroInfo = metroCodes.find(m => m.code === rfp?.metroCode);
