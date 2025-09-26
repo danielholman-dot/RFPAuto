@@ -15,12 +15,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { marcusSOPContent } from '@/lib/sop';
+import { marcusSOPContent as initialSopContent } from '@/lib/sop';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, Save } from 'lucide-react';
+import { useState } from 'react';
+import Textarea from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 export default function TemplatesPage() {
-  const eoiTemplate = {
+    const { toast } = useToast();
+
+  const [eoiTemplate, setEoiTemplate] = useState({
     subject:
       'CONFIDENTIAL Expression of Interest - Google MARCUS [RFP Name | Year] [GC Name]',
     body: `Dear [GC NAME] Team,
@@ -38,9 +43,9 @@ If your company is interested in receiving more details about this upcoming RFP,
 Thank you for your time and we appreciate your consideration as a potential partner.
 
 Best regards,`,
-  };
+  });
 
-  const nonAwardTemplate = {
+  const [nonAwardTemplate, setNonAwardTemplate] = useState({
     subject: 'Notice of Decision - Google MARCUS [Project Name] - [Supplier Name]',
     body: `Dear [Supplier Name] Team,
 
@@ -61,9 +66,9 @@ Regards,
 [Your Name]
 [Your Position]
 [Your Company]`,
-  };
+  });
 
-  const ndaTemplate = {
+  const [ndaTemplate, setNdaTemplate] = useState({
     subject: 'NDA Renewal Request - [Company Name]',
     body: `Dear [Company Name or POC Name],
 
@@ -84,9 +89,9 @@ Sincerely,
 
 [Your Name]
 [Your Position]`,
-  };
+  });
 
-  const awardTemplate = {
+  const [awardTemplate, setAwardTemplate] = useState({
     subject: 'Award Notification: MARCUS Project/Site Name',
     body: `Dear [Supplier Name],
 
@@ -110,7 +115,79 @@ Best regards,
 [Your Name]
 [Your Position]
 [Your Company]`,
+  });
+
+  const [marcusSOPContent, setMarcusSOPContent] = useState(initialSopContent);
+
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+
+  const handleToggleEdit = (key: string) => {
+    if (editingKey === key) {
+        setEditingKey(null);
+        toast({ title: "Edits Saved", description: "Your changes have been saved for this session." });
+    } else {
+        setEditingKey(key);
+    }
   };
+
+  const createTemplateUI = (
+    templateKey: string,
+    title: string,
+    description: string,
+    content: { subject: string; body: string; },
+    setContent: React.Dispatch<React.SetStateAction<{ subject: string; body: string; }>>
+  ) => {
+    const isEditing = editingKey === templateKey;
+    return (
+        <AccordionItem value={templateKey}>
+          <Card>
+            <AccordionTrigger className="p-6 justify-between items-center w-full">
+              <div className="text-left flex-grow">
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); handleToggleEdit(templateKey); }}>
+                {isEditing ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+              </Button>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">Subject</h3>
+                  {isEditing ? (
+                    <Input 
+                      value={content.subject} 
+                      onChange={(e) => setContent({...content, subject: e.target.value})}
+                      className="text-sm mt-1"
+                    />
+                  ) : (
+                    <p className="text-sm p-3 bg-muted rounded-md mt-1">
+                      {content.subject}
+                    </p>
+                  )}
+                </div>
+                <Separator />
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground">Body</h3>
+                   {isEditing ? (
+                    <Textarea 
+                      value={content.body} 
+                      onChange={(e) => setContent({...content, body: e.target.value})}
+                      className="text-sm mt-1 whitespace-pre-wrap font-mono h-96"
+                    />
+                  ) : (
+                    <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
+                      {content.body}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </AccordionContent>
+          </Card>
+        </AccordionItem>
+    );
+  };
+
 
   return (
     <div className="space-y-6">
@@ -118,12 +195,12 @@ Best regards,
         <CardHeader>
           <CardTitle>Templates</CardTitle>
           <CardDescription>
-            Standard templates for RFP-related communications.
+            Standard templates for RFP-related communications. Edits are saved for your current session.
           </CardDescription>
         </CardHeader>
       </Card>
       <Accordion type="single" collapsible className="w-full space-y-4">
-        <AccordionItem value="item-5">
+        <AccordionItem value="sop-template">
           <Card>
             <AccordionTrigger className="p-6 justify-between items-center w-full">
               <div className="text-left flex-grow">
@@ -132,164 +209,33 @@ Best regards,
                   This is the Standard Operating Procedure document used by the AI to generate new RFP drafts.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
-                <Pencil className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); handleToggleEdit('sop-template'); }}>
+                {editingKey === 'sop-template' ? <Save className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
               </Button>
             </AccordionTrigger>
             <AccordionContent>
               <CardContent className="space-y-4">
-                <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono h-[60vh] overflow-auto">
-                    {marcusSOPContent}
-                </div>
+                 {editingKey === 'sop-template' ? (
+                     <Textarea 
+                        value={marcusSOPContent}
+                        onChange={(e) => setMarcusSOPContent(e.target.value)}
+                        className="text-sm mt-1 whitespace-pre-wrap font-mono h-[70vh]"
+                     />
+                 ) : (
+                    <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono h-[60vh] overflow-auto">
+                        {marcusSOPContent}
+                    </div>
+                 )}
               </CardContent>
             </AccordionContent>
           </Card>
         </AccordionItem>
-        <AccordionItem value="item-1">
-          <Card>
-            <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left flex-grow">
-                <CardTitle>EOI - Expression of Interest</CardTitle>
-                <CardDescription>
-                  Template for sending an initial Expression of Interest invitation to
-                  potential contractors.
-                </CardDescription>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </AccordionTrigger>
-            <AccordionContent>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Subject
-                  </h3>
-                  <p className="text-sm p-3 bg-muted rounded-md mt-1">
-                    {eoiTemplate.subject}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Body
-                  </h3>
-                  <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
-                    {eoiTemplate.body}
-                  </div>
-                </div>
-              </CardContent>
-            </AccordionContent>
-          </Card>
-        </AccordionItem>
-        <AccordionItem value="item-4">
-          <Card>
-            <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left flex-grow">
-                <CardTitle>Notice of Award</CardTitle>
-                <CardDescription>
-                  Template for notifying a contractor that they were selected for a project.
-                </CardDescription>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </AccordionTrigger>
-            <AccordionContent>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Subject
-                  </h3>
-                  <p className="text-sm p-3 bg-muted rounded-md mt-1">
-                    {awardTemplate.subject}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Body
-                  </h3>
-                  <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
-                    {awardTemplate.body}
-                  </div>
-                </div>
-              </CardContent>
-            </AccordionContent>
-          </Card>
-        </AccordionItem>
-        <AccordionItem value="item-2">
-          <Card>
-            <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left flex-grow">
-                <CardTitle>Notice of Non-Award</CardTitle>
-                <CardDescription>
-                  Template for notifying a contractor that they were not selected for a project.
-                </CardDescription>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </AccordionTrigger>
-            <AccordionContent>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Subject
-                  </h3>
-                  <p className="text-sm p-3 bg-muted rounded-md mt-1">
-                    {nonAwardTemplate.subject}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Body
-                  </h3>
-                  <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
-                    {nonAwardTemplate.body}
-                  </div>
-                </div>
-              </CardContent>
-            </AccordionContent>
-          </Card>
-        </AccordionItem>
-        <AccordionItem value="item-3">
-          <Card>
-            <AccordionTrigger className="p-6 justify-between items-center w-full">
-              <div className="text-left flex-grow">
-                <CardTitle>NDA Renewal Email</CardTitle>
-                <CardDescription>
-                  Template for requesting an NDA renewal from a partner company.
-                </CardDescription>
-              </div>
-              <Button variant="ghost" size="icon" className="ml-4" onClick={(e) => { e.stopPropagation(); alert('Edit functionality to be added.'); }}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </AccordionTrigger>
-            <AccordionContent>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Subject
-                  </h3>
-                  <p className="text-sm p-3 bg-muted rounded-md mt-1">
-                    {ndaTemplate.subject}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <h3 className="font-semibold text-sm text-muted-foreground">
-                    Body
-                  </h3>
-                  <div className="text-sm p-3 bg-muted rounded-md mt-1 whitespace-pre-wrap font-mono">
-                    {ndaTemplate.body}
-                  </div>
-                </div>
-              </CardContent>
-            </AccordionContent>
-          </Card>
-        </AccordionItem>
+        
+        {createTemplateUI('eoi-template', 'EOI - Expression of Interest', 'Template for sending an initial Expression of Interest invitation.', eoiTemplate, setEoiTemplate)}
+        {createTemplateUI('award-template', 'Notice of Award', 'Template for notifying a contractor that they were selected for a project.', awardTemplate, setAwardTemplate)}
+        {createTemplateUI('non-award-template', 'Notice of Non-Award', 'Template for notifying a contractor that they were not selected for a project.', nonAwardTemplate, setNonAwardTemplate)}
+        {createTemplateUI('nda-template', 'NDA Renewal Email', 'Template for requesting an NDA renewal from a partner company.', ndaTemplate, setNdaTemplate)}
+
       </Accordion>
     </div>
   );
