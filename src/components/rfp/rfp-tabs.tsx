@@ -173,8 +173,9 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
 
   const uninvitedContractors = useMemo(() => {
     const invitedIds = new Set(invitedContractors.map(c => c.id));
-    return allContractors.filter(c => !invitedIds.has(c.id));
-  }, [allContractors, invitedContractors]);
+    // Only show suggested contractors that have not been invited yet.
+    return suggestedContractors.filter(c => !invitedIds.has(c.id));
+  }, [suggestedContractors, invitedContractors]);
 
   const analysisChartData = useMemo(() => {
     return proposals
@@ -297,7 +298,7 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
                     <div className="flex-grow">
                         <Select value={selectedContractorToAdd} onValueChange={setSelectedContractorToAdd}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a contractor to add..." />
+                                <SelectValue placeholder="Select a contractor to add from suggestions..." />
                             </SelectTrigger>
                             <SelectContent>
                                 {uninvitedContractors.map(c => (
@@ -488,3 +489,5 @@ export function RfpTabs({ rfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
+
+    
