@@ -78,11 +78,22 @@ export const getContractorTypes = async () => {
 
 // Data access functions
 export async function getContractors(): Promise<Contractor[]> {
-  return Promise.resolve(contractors);
+  const contractorsWithLogos = contractors.map(c => ({
+    ...c,
+    logoUrl: `https://picsum.photos/seed/${c.name.replace(/\s/g, '')}/40/40`
+  }));
+  return Promise.resolve(contractorsWithLogos);
 }
 
 export async function getContractorById(id: string): Promise<Contractor | null> {
-  return Promise.resolve(contractors.find(c => c.id === id) || null);
+  const contractor = contractors.find(c => c.id === id);
+  if (!contractor) return null;
+
+  const contractorWithLogo = {
+    ...contractor,
+    logoUrl: `https://picsum.photos/seed/${contractor.name.replace(/\s/g, '')}/40/40`
+  };
+  return Promise.resolve(contractorWithLogo);
 }
 
 
@@ -136,19 +147,28 @@ export async function getProposalsForRfp(rfpId: string): Promise<Proposal[]> {
 }
 
 export async function getSuggestedContractors(metroCode: string, contractorType: string): Promise<Contractor[]> {
-  return Promise.resolve(
-    contractors
+  const suggested = contractors
       .filter(c => c.metroCodes.includes(metroCode) && c.type === contractorType)
       .sort((a,b) => (a.preference || 99) - (b.preference || 99))
       .slice(0, 5)
-  );
+      .map(c => ({
+          ...c,
+          logoUrl: `https://picsum.photos/seed/${c.name.replace(/\s/g, '')}/40/40`
+      }));
+  return Promise.resolve(suggested);
 }
 
 export async function getInvitedContractors(ids: string[]): Promise<Contractor[]> {
   if (!ids || ids.length === 0) {
     return Promise.resolve([]);
   }
-  return Promise.resolve(contractors.filter(c => ids.includes(c.id)));
+  const invited = contractors
+    .filter(c => ids.includes(c.id))
+    .map(c => ({
+        ...c,
+        logoUrl: `https://picsum.photos/seed/${c.name.replace(/\s/g, '')}/40/40`
+    }));
+  return Promise.resolve(invited);
 }
 
 export async function addInvitedContractorToRfp(rfpId: string, contractorId: string): Promise<void> {
