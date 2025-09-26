@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis } from 'recharts';
@@ -32,7 +33,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 export function MetroMapChart({ metros }: MetroMapChartProps) {
   const mapImage = PlaceHolderImages.find(img => img.id === 'usa-map');
 
-  const nonCanadianMetros = metros.filter(m => m.region !== 'Canada');
+  const validMetros = metros.filter(m => m.region !== 'Canada' && typeof m.lat === 'number' && typeof m.lon === 'number' && !isNaN(m.lat) && !isNaN(m.lon));
 
   return (
     <div
@@ -75,7 +76,7 @@ export function MetroMapChart({ metros }: MetroMapChartProps) {
           />
           <ZAxis dataKey="code" name="code" />
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
-          <Scatter name="Metros" data={nonCanadianMetros} fill="hsl(var(--primary))" />
+          <Scatter name="Metros" data={validMetros} fill="hsl(var(--primary))" />
         </ScatterChart>
       </ResponsiveContainer>
     </div>
