@@ -28,22 +28,18 @@
         },
         "rfpStartDate": {
           "type": "string",
-          "format": "date-time",
           "description": "The start date for the RFP."
         },
         "rfpEndDate": {
           "type": "string",
-          "format": "date-time",
           "description": "The end date for the RFP."
         },
         "projectStartDate": {
           "type": "string",
-          "format": "date-time",
           "description": "The target start date for the project."
         },
         "projectEndDate": {
           "type": "string",
-          "format": "date-time",
           "description": "The target end date for the project."
         },
         "status": {
@@ -193,5 +189,24 @@
   "auth": {
     "providers": []
   },
-  "firestore": {}
+  "firestore": {
+    "/rfps/{rfpId}": {
+      "schema": {
+        "$ref": "#/entities/RFP"
+      },
+      "description": "Stores individual Request for Proposal documents."
+    },
+    "/contractors/{contractorId}": {
+      "schema": {
+        "$ref": "#/entities/Contractor"
+      },
+      "description": "Stores information about individual contractor companies."
+    },
+    "/proposals/{proposalId}": {
+      "schema": {
+        "$ref": "#/entities/Proposal"
+      },
+      "description": "Stores proposals submitted by contractors for specific RFPs."
+    }
+  }
 }
