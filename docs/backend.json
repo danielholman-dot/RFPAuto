@@ -49,10 +49,14 @@
         "status": {
           "type": "string",
           "enum": [
+            "Selection",
+            "Drafting",
+            "Invitation",
+            "Proposals",
+            "Analysis",
+            "Award",
+            "Feedback",
             "Draft",
-            "Sent",
-            "In Progress",
-            "Awarded",
             "Completed"
           ],
           "description": "The current status of the RFP."
@@ -73,6 +77,11 @@
         "additionalStakeholderEmails": {
           "type": "string",
           "description": "A comma-separated list of additional stakeholder emails."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The creation date of the RFP."
         }
       }
     },
