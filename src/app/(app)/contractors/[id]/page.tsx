@@ -3,13 +3,19 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
-import { getContractorById } from '@/lib/data';
+import { getContractorById, getMetroByCode } from '@/lib/data';
 import type { Contractor } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { HardHat, Users, Wrench, Zap, Star, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+
+type MetroInfo = {
+    code: string;
+    city: string;
+    state: string;
+};
 
 const getIconForType = (type: string) => {
     switch (type) {
@@ -32,12 +38,19 @@ export default function ContractorDetailPage() {
   const id = params.id as string;
 
   const [contractor, setContractor] = useState<Contractor | null>(null);
+  const [metroDetails, setMetroDetails] = useState<MetroInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
-      getContractorById(id).then(data => {
-        setContractor(data);
+      getContractorById(id).then(async (data) => {
+        if (data) {
+            setContractor(data);
+            const details = await Promise.all(
+                data.metroCodes.map(code => getMetroByCode(code))
+            );
+            setMetroDetails(details.filter((d): d is MetroInfo => d !== null));
+        }
         setLoading(false);
       });
     }
@@ -104,11 +117,11 @@ export default function ContractorDetailPage() {
             <div>
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
                     <MapPin className="w-5 h-5" />
-                    Operating Metro Codes
+                    Operating Locations
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
-                    {contractor.metroCodes.map(code => (
-                        <Badge key={code} variant="outline">{code}</Badge>
+                    {metroDetails.map(metro => (
+                        <Badge key={metro.code} variant="outline">{metro.code} - {metro.city}, {metro.state}</Badge>
                     ))}
                 </div>
             </div>
