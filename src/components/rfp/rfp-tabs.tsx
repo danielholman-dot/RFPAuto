@@ -122,13 +122,8 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
 
     const newStatus = findNextStage();
     
-    // Create a new RFP object with the updated status
     const updatedRfp = { ...rfp, status: newStatus as RFP['status'] };
-    
-    // Update the local state immediately
     setRfp(updatedRfp);
-    
-    // Trigger the autosave
     updateRfp(rfp.id, { status: newStatus as RFP['status'] });
 
     toast({
@@ -265,10 +260,10 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     return invitedContractors?.find(c => c.id === id) || suggestedContractors?.find(c => c.id === id) || allContractors?.find(c => c.id === id);
   }, [invitedContractors, suggestedContractors, allContractors]);
 
-  const uninvitedContractors = useMemo(() => {
+  const uninvitedSuggestedContractors = useMemo(() => {
     const invitedIds = new Set(rfp.invitedContractors || []);
-    return allContractors.filter(c => !invitedIds.has(c.id));
-  }, [allContractors, rfp.invitedContractors]);
+    return suggestedContractors.filter(c => !invitedIds.has(c.id));
+  }, [suggestedContractors, rfp.invitedContractors]);
 
   const analysisChartData = useMemo(() => {
     return proposals
@@ -361,7 +356,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                     <SelectValue placeholder="Select a contractor..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {uninvitedContractors.map(c => (
+                                    {uninvitedSuggestedContractors.map(c => (
                                         <SelectItem key={c.id} value={c.id}>
                                             {c.name}
                                         </SelectItem>
@@ -642,3 +637,5 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
+
+    
