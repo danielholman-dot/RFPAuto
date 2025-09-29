@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addRfp } from "@/lib/data"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
@@ -430,7 +430,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
             <FormItem>
               <FormLabel>Technical Documents</FormLabel>
               <FormControl>
-                <Input type="file" multiple {...field} />
+                <Input type="file" multiple />
               </FormControl>
               <FormDescription>Upload any relevant technical specs, drawings, or documents.</FormDescription>
               <FormMessage />
