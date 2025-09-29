@@ -95,7 +95,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
 
   const [selectedProposals, setSelectedProposals] = useState<string[]>([]);
   const [comparativeAnalysisResult, setComparativeAnalysisResult] = useState<GenerateComparativeAnalysisOutput | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(isDraft);
 
   const [winningContractorId, setWinningContractorId] = useState<string | null>(null);
   
@@ -106,6 +106,50 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
 
   // State for proposal link inputs
   const [proposalLinks, setProposalLinks] = useState<Record<string, string[]>>({});
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, contractorId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    toast({
+        title: "Uploading proposal...",
+        description: `Uploading file "${file.name}" for ${getContractorById(contractorId)?.name}.`
+    });
+
+    // Simulate file upload and text extraction
+    const proposalDocumentUrl = `proposals/${rfp.id}/${file.name}`;
+    const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
+
+    const newProposalData: Omit<Proposal, 'id'> = {
+        contractorId,
+        rfpId: rfp.id,
+        submittedDate: new Date(),
+        status: 'Submitted',
+        proposalDocumentUrl,
+        proposalText,
+        bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8,
+    };
+
+    try {
+        const newProposalId = await addProposal(rfp.id, newProposalData);
+        const newProposal: Proposal = {
+            ...newProposalData,
+            id: newProposalId,
+        };
+        setProposals(prev => [...prev, newProposal]);
+        toast({
+            title: "Proposal Uploaded",
+            description: "File has been successfully submitted.",
+        });
+    } catch (error) {
+        console.error("Error submitting proposal:", error);
+        toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description: "There was an error submitting the proposal.",
+        });
+    }
+};
 
   const handleStageToggle = (stage: RfpStage) => {
     const isCompleting = !completedStages.includes(stage);
@@ -492,7 +536,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                 <div>
                     <CardTitle>Proposal Submissions</CardTitle>
                     <CardDescription>
-                        Google Sheets cannot be uploaded directly. Please paste a shareable link to the Google Sheet below.
+                        For cloud documents like Google Sheets, paste a shareable link. For local files, use the upload button.
                     </CardDescription>
                 </div>
                 <Button variant="outline" onClick={() => setIsChecklistDialogOpen(true)}>
@@ -512,7 +556,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                 <TableHead>Contractor</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Submitted Documents/Links</TableHead>
-                                <TableHead className="text-right w-[40%]">Submit Proposal Link</TableHead>
+                                <TableHead className="text-right w-[40%]">Submit Proposal</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -546,27 +590,44 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                             )}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <div className="flex flex-col items-end gap-2">
-                                                {contractorLinks.map((link, index) => (
-                                                    <div key={index} className="flex w-full gap-2 items-center">
-                                                        <Input
-                                                            id={`proposal-link-${contractor.id}-${index}`}
-                                                            type="url"
-                                                            placeholder="Paste Google Sheet link here..."
-                                                            value={link}
-                                                            onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
-                                                            className="flex-grow"
-                                                        />
-                                                        <Button 
-                                                            variant="secondary" 
-                                                            size="sm" 
-                                                            onClick={() => handleLinkSubmit(contractor.id, link, index)}
-                                                            disabled={!link.trim()}
-                                                        >
-                                                            Submit
-                                                        </Button>
-                                                    </div>
-                                                ))}
+                                             <div className="flex flex-col items-end gap-4">
+                                                {/* Link submission */}
+                                                <div className="flex flex-col items-end gap-2 w-full">
+                                                    {contractorLinks.map((link, index) => (
+                                                        <div key={index} className="flex w-full gap-2 items-center">
+                                                            <Input
+                                                                id={`proposal-link-${contractor.id}-${index}`}
+                                                                type="url"
+                                                                placeholder="Paste Google Sheet link..."
+                                                                value={link}
+                                                                onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
+                                                                className="flex-grow"
+                                                            />
+                                                            <Button 
+                                                                variant="secondary" 
+                                                                size="sm" 
+                                                                onClick={() => handleLinkSubmit(contractor.id, link, index)}
+                                                                disabled={!link.trim()}
+                                                            >
+                                                                Submit Link
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {/* File upload */}
+                                                <div className="relative">
+                                                     <Input
+                                                        id={`file-upload-${contractor.id}`}
+                                                        type="file"
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                        onChange={(e) => handleFileUpload(e, contractor.id)}
+                                                    />
+                                                    <Button asChild variant="outline">
+                                                        <Label htmlFor={`file-upload-${contractor.id}`}>
+                                                            <UploadCloud className="mr-2 h-4 w-4" /> Upload Document
+                                                        </Label>
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </TableCell>
                                     </TableRow>
