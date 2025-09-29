@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, Bot, Trophy, Star, Loader2, UploadCloud, PlusCircle, Settings, Award, CheckCircle, Check, File } from "lucide-react"
+import { Mail, Send, Bot, Trophy, Star, Loader2, UploadCloud, PlusCircle, Settings, Award, CheckCircle, Check, File, Link as LinkIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -104,6 +104,9 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
   const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
   const [sentEoiContractors, setSentEoiContractors] = useState<string[]>([]);
 
+  // State for proposal link inputs
+  const [proposalLinks, setProposalLinks] = useState<Record<string, string[]>>({});
+
   const handleStageToggle = (stage: RfpStage) => {
     const isCompleting = !completedStages.includes(stage);
     let newCompletedStages = [...completedStages];
@@ -177,6 +180,16 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
 
   }, [rfp.id, rfp.metroCode, rfp.contractorType, rfp.estimatedBudget, isDraft, loadInvited]);
 
+  useEffect(() => {
+    // Initialize proposalLinks state
+    const initialLinks: Record<string, string[]> = {};
+    invitedContractors.forEach(c => {
+        initialLinks[c.id] = [''];
+    });
+    setProposalLinks(initialLinks);
+  }, [invitedContractors]);
+
+
   const handleAddContractorToRfp = async () => {
     if (!selectedContractorToAdd) return;
     await addInvitedContractorToRfp(rfp.id, selectedContractorToAdd);
@@ -217,40 +230,63 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     setIsNonAwardDialogOpen(true);
   }
 
-  const handleFileUpload = async (contractorId: string, file: File) => {
-    if (!file) return;
-
-    toast({
-        title: "Uploading proposal...",
-        description: `Submitting proposal for ${getContractorById(contractorId)?.name}.`,
+  const handleLinkChange = (contractorId: string, index: number, value: string) => {
+    setProposalLinks(prev => {
+        const newLinks = { ...prev };
+        newLinks[contractorId][index] = value;
+        
+        // If the last input for a contractor is filled, add a new empty one
+        if (index === newLinks[contractorId].length - 1 && value !== '') {
+            newLinks[contractorId].push('');
+        }
+        
+        return newLinks;
     });
-    
-    const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
+  };
 
-    const newProposalData: Omit<Proposal, 'id'> = {
-        contractorId: contractorId,
-        rfpId: rfp.id,
-        submittedDate: new Date(),
-        status: 'Submitted',
-        proposalDocumentUrl: `simulated/path/${file.name}`,
-        proposalText: proposalText,
-        bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8,
-    };
-    
-    const newProposalId = await addProposal(rfp.id, newProposalData);
-    
-    const newProposal: Proposal = {
-      ...newProposalData,
-      id: newProposalId,
-    };
+  const handleLinkSubmit = async (contractorId: string, linkUrl: string, index: number) => {
+      if (!linkUrl.trim()) return;
 
-    setProposals(prev => [...prev, newProposal]);
-    
-    toast({
-        title: "Proposal Submitted",
-        description: `Proposal for ${getContractorById(contractorId)?.name} has been uploaded.`,
-    });
-};
+      toast({
+          title: "Submitting proposal link...",
+          description: `Submitting link for ${getContractorById(contractorId)?.name}.`,
+      });
+
+      const newProposalData: Omit<Proposal, 'id'> = {
+          contractorId: contractorId,
+          rfpId: rfp.id,
+          submittedDate: new Date(),
+          status: 'Submitted',
+          proposalDocumentUrl: linkUrl,
+          proposalText: `Proposal submitted via Google Sheet link: ${linkUrl}`,
+          bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8,
+      };
+
+      const newProposalId = await addProposal(rfp.id, newProposalData);
+
+      const newProposal: Proposal = {
+          ...newProposalData,
+          id: newProposalId,
+      };
+
+      setProposals(prev => [...prev, newProposal]);
+
+      // Remove the submitted link from the input array and if it becomes empty, add a fresh input
+      setProposalLinks(prev => {
+        const newLinks = { ...prev };
+        newLinks[contractorId] = newLinks[contractorId].filter((_, i) => i !== index);
+        if (newLinks[contractorId].length === 0) {
+            newLinks[contractorId].push('');
+        }
+        return newLinks;
+      });
+
+      toast({
+          title: "Proposal Link Submitted",
+          description: `Link for ${getContractorById(contractorId)?.name} has been saved.`,
+      });
+  };
+
 
   const handleAnalyze = async () => {
     const proposalsToAnalyze = proposals.filter(p => selectedProposals.includes(p.id));
@@ -451,93 +487,98 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
         </TabsContent>
 
         <TabsContent value="Proposals" className="mt-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Proposal Submissions</CardTitle>
-                    <CardDescription>Track proposal submissions from invited contractors and upload relevant documents.</CardDescription>
+                    <CardDescription>
+                        Google Sheets cannot be uploaded directly. Please paste a shareable link to the Google Sheet below.
+                    </CardDescription>
                 </div>
                 <Button variant="outline" onClick={() => setIsChecklistDialogOpen(true)}>
                     <Settings className="mr-2 h-4 w-4" />
                     Configure RFP Checklist
                 </Button>
-                </CardHeader>
-                <CardContent>
+            </CardHeader>
+            <CardContent>
                 {proposalsLoading ? (
                     <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
                 ) : invitedContractors.length === 0 && !invitedLoading ? (
                     <p className="text-muted-foreground text-center py-8">No contractors have been invited to submit proposals yet.</p>
                 ) : (
                     <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead>Contractor</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Documents</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {invitedContractors.map(contractor => {
-                            const contractorProposals = proposalsByContractor.get(contractor.id) || [];
-                            const hasSubmitted = contractorProposals.length > 0;
-                            return (
-                                <TableRow key={contractor.id}>
-                                    <TableCell className="font-medium">{contractor.name}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={hasSubmitted ? 'default' : 'outline'}>
-                                            {hasSubmitted ? `Submitted (${contractorProposals.length})` : 'Pending'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        {hasSubmitted ? (
-                                            <ul className="space-y-1">
-                                                {contractorProposals.map(p => (
-                                                    <li key={p.id} className="text-sm flex items-center gap-2">
-                                                        <File size={14} className="text-muted-foreground" />
-                                                        <a href={p.proposalDocumentUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                                            {p.proposalDocumentUrl?.split('/').pop()}
-                                                        </a>
-                                                        <span className="text-xs text-muted-foreground">({formatDate(p.submittedDate)})</span>
-                                                    </li>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Contractor</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Submitted Documents/Links</TableHead>
+                                <TableHead className="text-right w-[40%]">Submit Proposal Link</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {invitedContractors.map(contractor => {
+                                const contractorProposals = proposalsByContractor.get(contractor.id) || [];
+                                const hasSubmitted = contractorProposals.length > 0;
+                                const contractorLinks = proposalLinks[contractor.id] || [''];
+                                return (
+                                    <TableRow key={contractor.id}>
+                                        <TableCell className="font-medium">{contractor.name}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={hasSubmitted ? 'default' : 'outline'}>
+                                                {hasSubmitted ? `Submitted (${contractorProposals.length})` : 'Pending'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {hasSubmitted ? (
+                                                <ul className="space-y-1">
+                                                    {contractorProposals.map(p => (
+                                                        <li key={p.id} className="text-sm flex items-center gap-2">
+                                                            <LinkIcon size={14} className="text-muted-foreground" />
+                                                            <a href={p.proposalDocumentUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-blue-600">
+                                                                {p.proposalDocumentUrl}
+                                                            </a>
+                                                            <span className="text-xs text-muted-foreground">({formatDate(p.submittedDate)})</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">No documents submitted.</p>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex flex-col items-end gap-2">
+                                                {contractorLinks.map((link, index) => (
+                                                    <div key={index} className="flex w-full gap-2 items-center">
+                                                        <Input
+                                                            id={`proposal-link-${contractor.id}-${index}`}
+                                                            type="url"
+                                                            placeholder="Paste Google Sheet link here..."
+                                                            value={link}
+                                                            onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
+                                                            className="flex-grow"
+                                                        />
+                                                        <Button 
+                                                            variant="secondary" 
+                                                            size="sm" 
+                                                            onClick={() => handleLinkSubmit(contractor.id, link, index)}
+                                                            disabled={!link.trim()}
+                                                        >
+                                                            Submit
+                                                        </Button>
+                                                    </div>
                                                 ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground">No documents uploaded.</p>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex flex-col items-end gap-2">
-                                            <label className="flex items-center gap-2" htmlFor={`proposal-upload-${contractor.id}`}>
-                                                <Button asChild variant="outline" size="sm" className="h-8 cursor-pointer">
-                                                    <span>
-                                                        <UploadCloud className="mr-2 h-4 w-4"/> Upload
-                                                    </span>
-                                                </Button>
-                                                <Input 
-                                                    id={`proposal-upload-${contractor.id}`} 
-                                                    type="file" 
-                                                    className="hidden"
-                                                    onChange={(e) => {
-                                                        if (e.target.files?.[0]) {
-                                                            handleFileUpload(contractor.id, e.target.files[0]);
-                                                        }
-                                                    }}
-                                                />
-                                            </label>
-                                            <p className="text-xs text-muted-foreground">To upload a Google Sheet, first export it as .xlsx</p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
                     </Table>
                 )}
                 <StageCompletion stage="Proposals" completedStages={completedStages} onStageToggle={handleStageToggle} />
-                </CardContent>
-            </Card>
-        </TabsContent>
+            </CardContent>
+        </Card>
+    </TabsContent>
 
         
         <TabsContent value="Analysis" className="mt-4">
@@ -577,8 +618,8 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                                             disabled={!p.proposalText}
                                                         />
                                                         <label htmlFor={`proposal-${p.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
-                                                            <File size={14} />
-                                                            {p.proposalDocumentUrl?.split('/').pop()}
+                                                            {p.proposalDocumentUrl?.startsWith('http') ? <LinkIcon size={14} /> : <File size={14} />}
+                                                            <span className="truncate max-w-xs">{p.proposalDocumentUrl}</span>
                                                         </label>
                                                         {!p.proposalText && <Badge variant="outline">No text</Badge>}
                                                     </div>
