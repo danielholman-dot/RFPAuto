@@ -26,6 +26,32 @@ import { Input } from '@/components/ui/input';
 export default function TemplatesPage() {
     const { toast } = useToast();
 
+  const [rfpReleaseTemplate, setRfpReleaseTemplate] = useState({
+    subject: 'Invitation to Participate - Google MARCUS [Project Name], [Year] / [Contractor Name]',
+    body: `Dear [Contractor Name] Team,
+
+Google would like to invite your company to participate in the MARCUS [Project Name], [Year], where we are seeking qualified General Contractors/Suppliers to perform post-facility completion handover work at our operational data center campuses located in [Campus Location]. Google is excited to have your company as a potential partner for this project. Below is a list of key actions pertaining to the RFP.
+
+If you have not yet completed the RFI Prequalification Questionnaire, please ensure it is filled out as soon as possible. If you have already completed this requirement, please disregard this statement.
+
+Key Action Items
+- Review RFP package contained in the shared folder: [Due Date]
+- Confirm receipt of this email: [Due Date] / [Time]
+- Q&A - General Contractor/Supplier submits questions (if applicable): [Due Date] / [Time]
+- Submission of RFP Proposal: [Due Date] / [Time]
+- General Contractor/Supplier Personnel Interview (if notified by Google): [Date]
+
+To access the RFP Folder, please click on this [Link] to sign up for a Google Docs account using your corporate email address. Please notice that we can't grant you access to personal Gmail accounts. Once you register please let us know and we will share the folder with your registered corporate email address. Additional Reference Documents will be added to your RFP Folder.
+
+Please 'Reply All' to this email to confirm receipt of the RFP documents by [Confirmation Due Date] at [Time].
+
+Please upload your RFP Submission packet by [Submission Due Date] at [Time]. Please note failure to submit all required documents by the specified due date may result in disqualification from further consideration for this RFP. It is critical that all materials are provided on time to ensure your proposal is reviewed in its entirety.
+
+We look forward to your participation in this RFP.
+
+Best Regards,`
+  });
+
   const [eoiTemplate, setEoiTemplate] = useState({
     subject:
       'CONFIDENTIAL Expression of Interest - Google MARCUS [RFP Name | Year] [GC Name]',
@@ -236,6 +262,7 @@ Best regards,
           </Card>
         </AccordionItem>
         
+        {createTemplateUI('rfp-release-template', 'RFP Release', 'Template for sending the formal RFP Release invitation.', rfpReleaseTemplate, setRfpReleaseTemplate)}
         {createTemplateUI('eoi-template', 'EOI - Expression of Interest', 'Template for sending an initial Expression of Interest invitation.', eoiTemplate, setEoiTemplate)}
         {createTemplateUI('award-template', 'Notice of Award', 'Template for notifying a contractor that they were selected for a project.', awardTemplate, setAwardTemplate)}
         {createTemplateUI('non-award-template', 'Notice of Non-Award', 'Template for notifying a contractor that they were not selected for a project.', nonAwardTemplate, setNonAwardTemplate)}
