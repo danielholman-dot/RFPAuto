@@ -18,7 +18,7 @@ import {
 import { getContractors, getContractorTypes, getAllMetroCodes } from '@/lib/data';
 import type { Contractor } from '@/lib/types';
 import { useEffect, useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat, Eye } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, FileText } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -63,12 +64,20 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
             <TableCell>{contractor.metroSite}</TableCell>
             <TableCell>{contractor.region}</TableCell>
             <TableCell className="text-right">
-                <Button asChild variant="outline" size="sm">
-                    <Link href={`/contractors/${contractor.id}`}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                    </Link>
-                </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button asChild variant="ghost" size="icon">
+                      <Link href={`/contractors/${contractor.id}`}>
+                        <FileText className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View Details</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </TableCell>
           </TableRow>
         ))}
