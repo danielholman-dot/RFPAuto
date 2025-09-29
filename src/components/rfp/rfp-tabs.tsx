@@ -609,14 +609,14 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                                                 onClick={() => handleLinkSubmit(contractor.id, link, index)}
                                                                 disabled={!link.trim()}
                                                             >
-                                                                Submit Link
+                                                                <Send />
                                                             </Button>
                                                         </div>
                                                     ))}
                                                 </div>
                                                 {/* File upload */}
                                                 <div className="relative">
-                                                     <Input
+                                                    <Input
                                                         id={`file-upload-${contractor.id}`}
                                                         type="file"
                                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
