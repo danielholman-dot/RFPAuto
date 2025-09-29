@@ -43,8 +43,8 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableHead>Logo</TableHead>
           <TableHead>Contractor Name</TableHead>
           <TableHead>POC Name</TableHead>
-          <TableHead>POC Email</TableHead>
           <TableHead>Contractor Type</TableHead>
+          <TableHead>Metro/Site</TableHead>
           <TableHead>Region</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -58,9 +58,9 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
               </Avatar>
             </TableCell>
             <TableCell className="font-medium">{contractor.name}</TableCell>
-            <TableCell>{contractor.contactName}</TableCell>
-            <TableCell>{contractor.contactEmail}</TableCell>
+            <TableCell>{contractor.contactName.split(';')[0]}</TableCell>
             <TableCell>{contractor.type}</TableCell>
+            <TableCell>{contractor.metroSite}</TableCell>
             <TableCell>{contractor.region}</TableCell>
             <TableCell className="text-right">
                 <Button asChild variant="outline" size="sm">
