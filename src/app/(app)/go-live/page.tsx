@@ -269,22 +269,26 @@ export default function GoLivePage() {
                                     {filteredTasks[category].map(task => (
                                         <Accordion key={task.id} type="single" collapsible className="w-full">
                                             <AccordionItem value={task.id} className="border rounded-lg">
-                                                <AccordionTrigger className="p-4 hover:no-underline">
-                                                    <div className="flex items-center justify-between w-full">
-                                                        <div className="flex items-center space-x-3">
-                                                            <Checkbox id={task.id} checked={task.completed} onClick={(e) => e.stopPropagation()} />
+                                                <div className="flex items-center p-4">
+                                                    <Checkbox 
+                                                        id={task.id} 
+                                                        checked={task.completed} 
+                                                        className="mr-3"
+                                                    />
+                                                    <AccordionTrigger className="p-0 hover:no-underline flex-1">
+                                                        <div className="flex items-center justify-between w-full">
                                                             <label
                                                                 htmlFor={task.id}
                                                                 className="text-sm font-medium leading-none"
                                                             >
                                                                 {task.text}
                                                             </label>
+                                                            <Badge variant={task.level === 'Owner' ? 'destructive' : 'secondary'}>{task.level}</Badge>
                                                         </div>
-                                                        <Badge variant={task.level === 'Owner' ? 'destructive' : 'secondary'}>{task.level}</Badge>
-                                                    </div>
-                                                </AccordionTrigger>
+                                                    </AccordionTrigger>
+                                                </div>
                                                 <AccordionContent className="px-4">
-                                                     <div className="mt-2 pl-7 text-xs text-muted-foreground space-y-1">
+                                                     <div className="mt-2 pl-10 text-xs text-muted-foreground space-y-1">
                                                         <p className="font-bold mb-2">Steps:</p>
                                                         {task.steps.map((step, index) => (
                                                             <p key={index}>{step}</p>
@@ -305,5 +309,3 @@ export default function GoLivePage() {
     </div>
   );
 }
-
-    
