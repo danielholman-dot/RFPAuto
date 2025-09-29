@@ -35,8 +35,8 @@ export function MetroMapChart({ metros }: MetroMapChartProps) {
 
   const validMetros = metros.filter(m => 
     m.region !== 'Canada' &&
-    typeof m.lat === 'number' && isFinite(m.lat) &&
-    typeof m.lon === 'number' && isFinite(m.lon)
+    typeof m.lat === 'number' && !isNaN(m.lat) &&
+    typeof m.lon === 'number' && !isNaN(m.lon)
   );
 
   return (
