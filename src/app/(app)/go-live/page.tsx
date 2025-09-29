@@ -78,13 +78,13 @@ const tasks = {
         },
         { 
             id: 'fe-2', 
-            text: 'Implement "Forgot Password" and user profile management pages.', 
+            text: 'Implement user profile management pages.', 
             completed: false, 
             level: 'Any',
             steps: [
-                "1. Create a 'Forgot Password' page that uses the Firebase Auth SDK's `sendPasswordResetEmail` function.",
-                "2. Create a 'Profile' or 'Account' page for logged-in users.",
-                "3. On the profile page, allow users to update their name and change their password using `updatePassword`."
+                "1. Create a 'Profile' or 'Account' page for logged-in users.",
+                "2. On the profile page, allow users to see their information.",
+                "3. If using custom profiles, allow users to update their name or role if permissions allow."
             ]
         },
         { 
@@ -127,12 +127,12 @@ const tasks = {
     'Authentication & Security': [
         { 
             id: 'auth-1', 
-            text: 'Implement a full authentication flow (Login, Logout, Session Management).', 
+            text: 'Implement a full authentication flow using Google Accounts.', 
             completed: false, 
             level: 'Owner',
             steps: [
-                "1. Set up Firebase Authentication and enable providers (e.g., Email/Password, Google).",
-                "2. Create Login and Sign-up pages using Firebase Auth UI or custom forms.",
+                "1. Set up Firebase Authentication and enable the Google provider.",
+                "2. Create a Login page that uses the Firebase Auth SDK's Google Sign-In popup or redirect flow.",
                 "3. Implement logic to handle user sessions, protecting pages that require login.",
                 "4. Add a 'Logout' button that calls the `signOut` function."
             ]
@@ -195,7 +195,7 @@ const tasks = {
                 "3. Configure alerts for high error rates or performance degradation."
             ]
         },
-        { _id: 'deploy-4', 
+        { 
             id: 'deploy-4', 
             text: 'Perform a final security audit and penetration testing.', 
             completed: false, 
@@ -305,3 +305,5 @@ export default function GoLivePage() {
     </div>
   );
 }
+
+    
