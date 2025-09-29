@@ -27,11 +27,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '../ui/button';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const logoImage = PlaceHolderImages.find(img => img.id === 'app-logo');
 
   const isActive = (path: string) => {
     if (path === '/rfp' && pathname.startsWith('/rfp/')) return true;
@@ -43,18 +41,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
-          {logoImage ? (
-            <Image 
-              src={logoImage.imageUrl} 
-              alt="App Logo" 
-              width={32} 
-              height={32} 
-              className="w-8 h-8"
-              data-ai-hint={logoImage.imageHint}
-            />
-          ) : (
             <Briefcase className="w-8 h-8 text-sidebar-primary" />
-          )}
           <h1 className="text-xl font-bold text-sidebar-foreground font-headline">MARCUS</h1>
         </div>
       </SidebarHeader>
