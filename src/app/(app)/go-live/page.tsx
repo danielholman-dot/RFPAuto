@@ -194,7 +194,7 @@ const tasks = {
                 "3. Configure alerts for high error rates or performance degradation."
             ]
         },
-        { 
+        { _id: 'deploy-4', 
             id: 'deploy-4', 
             text: 'Perform a final security audit and penetration testing.', 
             completed: false, 
@@ -224,7 +224,7 @@ export default function GoLivePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <Accordion type="multiple" defaultValue={Object.keys(tasks)} className="w-full space-y-4">
+            <Accordion type="multiple" className="w-full space-y-4">
                 {(Object.keys(tasks) as TaskCategory[]).map(category => (
                     <AccordionItem value={category} key={category} className="border-b-0">
                         <Card>
@@ -234,25 +234,32 @@ export default function GoLivePage() {
                             <AccordionContent className="px-6">
                                 <div className="space-y-6">
                                     {tasks[category].map(task => (
-                                        <div key={task.id} className="p-4 border rounded-lg">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center space-x-3">
-                                                    <Checkbox id={task.id} checked={task.completed} />
-                                                    <label
-                                                        htmlFor={task.id}
-                                                        className="text-sm font-medium leading-none"
-                                                    >
-                                                        {task.text}
-                                                    </label>
-                                                </div>
-                                                <Badge variant={task.level === 'Owner' ? 'destructive' : 'secondary'}>{task.level}</Badge>
-                                            </div>
-                                            <div className="mt-4 pl-7 text-xs text-muted-foreground space-y-1">
-                                                {task.steps.map((step, index) => (
-                                                    <p key={index}>{step}</p>
-                                                ))}
-                                            </div>
-                                        </div>
+                                        <Accordion key={task.id} type="single" collapsible className="w-full">
+                                            <AccordionItem value={task.id} className="border rounded-lg">
+                                                <AccordionTrigger className="p-4 hover:no-underline">
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <div className="flex items-center space-x-3">
+                                                            <Checkbox id={task.id} checked={task.completed} onClick={(e) => e.stopPropagation()} />
+                                                            <label
+                                                                htmlFor={task.id}
+                                                                className="text-sm font-medium leading-none"
+                                                            >
+                                                                {task.text}
+                                                            </label>
+                                                        </div>
+                                                        <Badge variant={task.level === 'Owner' ? 'destructive' : 'secondary'}>{task.level}</Badge>
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <AccordionContent className="px-4">
+                                                     <div className="mt-2 pl-7 text-xs text-muted-foreground space-y-1">
+                                                        <p className="font-bold mb-2">Steps:</p>
+                                                        {task.steps.map((step, index) => (
+                                                            <p key={index}>{step}</p>
+                                                        ))}
+                                                    </div>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        </Accordion>
                                     ))}
                                 </div>
                             </AccordionContent>
@@ -265,3 +272,5 @@ export default function GoLivePage() {
     </div>
   );
 }
+
+    
