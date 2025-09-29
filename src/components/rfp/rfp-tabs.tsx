@@ -105,9 +105,16 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
   const [sentEoiContractors, setSentEoiContractors] = useState<string[]>([]);
 
   const handleStageToggle = (stage: RfpStage) => {
-    const newCompletedStages = completedStages.includes(stage)
-        ? completedStages.filter(s => s !== stage)
-        : [...completedStages, stage];
+    const isCompleting = !completedStages.includes(stage);
+    let newCompletedStages = [...completedStages];
+
+    if (isCompleting) {
+        newCompletedStages.push(stage);
+    } else {
+        // If unchecking a stage, uncheck all subsequent stages
+        const stageIndex = STAGES.indexOf(stage);
+        newCompletedStages = completedStages.filter(s => STAGES.indexOf(s) < stageIndex);
+    }
 
     setCompletedStages(newCompletedStages);
 
@@ -130,7 +137,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
         title: "Status Updated",
         description: `RFP is now in the "${newStatus}" stage.`,
     });
-  };
+};
 
   const loadInvited = useCallback(async () => {
     if (isDraft) return;
@@ -317,7 +324,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-2">
                                         <Button variant="outline" size="sm" onClick={() => handleInviteClick(contractor)}>
-                                            Send
+                                            Send EOI
                                         </Button>
                                         {sentEoiContractors.includes(contractor.id) && (
                                             <Check className="h-5 w-5 text-green-600" />
@@ -637,5 +644,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
+
+    
 
     
