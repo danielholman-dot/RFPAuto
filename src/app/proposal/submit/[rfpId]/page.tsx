@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -93,8 +94,8 @@ function ProposalSubmitForm() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="proposal-file">Proposal Document (PDF)</Label>
-              <Input id="proposal-file" type="file" accept=".pdf" onChange={handleFileChange} required />
+              <Label htmlFor="proposal-file">Proposal Document</Label>
+              <Input id="proposal-file" type="file" onChange={handleFileChange} required />
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
