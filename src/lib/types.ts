@@ -8,15 +8,16 @@ export type RFP = {
   metroCode: string;
   contractorType: string;
   estimatedBudget: number;
-  rfpStartDate?: Timestamp | Date | string;
-  rfpEndDate?: Timestamp | Date | string;
-  projectStartDate?: Timestamp | Date | string;
-  projectEndDate?: Timestamp | Date | string;
+  rfpStartDate?: Date;
+  rfpEndDate?: Date;
+  projectStartDate?: Date;
+  projectEndDate?: Date;
   status: 'Selection' | 'Drafting' | 'Invitation' | 'Proposals' | 'Analysis' | 'Award' | 'Feedback' | 'Draft' | 'Completed';
   invitedContractors?: string[];
   proposals?: Proposal[];
   primaryStakeholderEmail?: string;
   additionalStakeholderEmails?: string;
+  createdAt?: Timestamp | Date;
 };
 
 export type Contractor = {
@@ -54,3 +55,5 @@ export type Scorecard = {
   missionCriticalExperience: number;
   total: number;
 };
+
+    
