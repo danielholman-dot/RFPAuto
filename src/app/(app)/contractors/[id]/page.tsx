@@ -51,6 +51,9 @@ export default function ContractorDetailPage() {
     notFound();
   }
 
+  const contactNames = contractor.contactName.split(';').map(name => name.trim());
+  const contactEmails = contractor.contactEmail.split(';').map(email => email.trim());
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
@@ -81,8 +84,12 @@ export default function ContractorDetailPage() {
                 <div>
                     <h3 className="font-semibold mb-2">Contact Information</h3>
                     <div className="space-y-2 text-sm">
-                        <p><strong>Primary Contact:</strong> {contractor.contactName.split(';')[0]}</p>
-                        <p><strong>Contact Email:</strong> {contractor.contactEmail.split(';')[0]}</p>
+                        {contactNames.map((name, index) => (
+                            <div key={index}>
+                                <p><strong>Contact:</strong> {name}</p>
+                                {contactEmails[index] && <p className="text-muted-foreground"><strong>Email:</strong> {contactEmails[index]}</p>}
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div>
@@ -110,4 +117,3 @@ export default function ContractorDetailPage() {
     </div>
   );
 }
-
