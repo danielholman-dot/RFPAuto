@@ -1,8 +1,14 @@
-'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectIntakeForm } from "@/components/rfp/project-intake-form";
+import { getContractorTypes, getMetroCodes } from "@/lib/data";
 
-export default function NewRfpPage() {
+export default async function NewRfpPage() {
+  const [metroCodes, contractorTypes] = await Promise.all([
+    getMetroCodes(),
+    getContractorTypes(),
+  ]);
+
   return (
     <div className="max-w-4xl mx-auto">
       <Card>
@@ -13,7 +19,7 @@ export default function NewRfpPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectIntakeForm />
+          <ProjectIntakeForm metroCodes={metroCodes} contractorTypes={contractorTypes} />
         </CardContent>
       </Card>
     </div>

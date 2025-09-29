@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input"
 import Textarea from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getContractorTypes, getMetroCodes, addRfp } from "@/lib/data"
+import { addRfp } from "@/lib/data"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
@@ -28,43 +28,40 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 
 const formSchema = z.object({
-  projectName: z.string().optional(),
-  scopeOfWork: z.string().optional(),
+  projectName: z.string().min(1, "Project name is required."),
+  scopeOfWork: z.string().min(1, "Scope of work is required."),
   primaryStakeholderEmail: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
   additionalStakeholderEmails: z.string().optional(),
-  metroCode: z.string().optional(),
-  contractorType: z.string().optional(),
-  estimatedBudget: z.coerce.number().optional(),
+  metroCode: z.string().min(1, "Metro code is required."),
+  contractorType: z.string().min(1, "Contractor type is required."),
+  estimatedBudget: z.coerce.number().min(0, "Budget must be a positive number."),
   rfpStartDate: z.date().optional(),
   rfpEndDate: z.date().optional(),
-  projectStartDate: z.date().optional(),
+  projectStartDate: z.date({ required_error: "A project start date is required."}),
   projectEndDate: z.date().optional(),
   technicalDocuments: z.any().optional(),
 })
 
-export function ProjectIntakeForm() {
+type ProjectIntakeFormProps = {
+    metroCodes: {code: string, city: string}[];
+    contractorTypes: string[];
+}
+
+export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntakeFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [metroCodes, setMetroCodes] = useState<{code: string, city: string}[]>([]);
-  const [contractorTypes, setContractorTypes] = useState<string[]>([]);
   const [formattedBudget, setFormattedBudget] = useState("");
-
-
-  useEffect(() => {
-    async function loadData() {
-      const [metros, types] = await Promise.all([getMetroCodes(), getContractorTypes()]);
-      setMetroCodes(metros);
-      setContractorTypes(types);
-    }
-    loadData();
-  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: "",
       scopeOfWork: "",
+      primaryStakeholderEmail: "",
+      additionalStakeholderEmails: "",
+      metroCode: "",
+      contractorType: "",
     },
   })
 
@@ -246,8 +243,7 @@ export function ProjectIntakeForm() {
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
                     <Input 
                       type="text"
-                      placeholder="5.000.000" 
-                      {...field}
+                      placeholder="5,000,000" 
                       value={formattedBudget}
                       onChange={handleBudgetChange}
                       className="pl-7"
@@ -451,5 +447,3 @@ export function ProjectIntakeForm() {
     </Form>
   )
 }
-
-    
