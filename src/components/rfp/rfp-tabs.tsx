@@ -385,7 +385,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                         <p className="text-sm text-muted-foreground">{c.contactEmail}</p>
                     </div>
                     <div className="space-x-2">
-                        <Button variant="outline" onClick={() => handleInviteClick(c)}><Mail className="mr-2 h-4 w-4"/> Generate EOI</Button>
+                        <Button variant="outline" onClick={() => handleInviteClick(c)}><Mail className="mr-2 h-4 w-4"/> RFP Release</Button>
                     </div>
                     </div>
                 ))}
@@ -644,7 +644,3 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
-
-    
-
-    

@@ -12,13 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Send, Pencil, Save } from "lucide-react";
-import { generateRfpInvitation } from "@/ai/flows/generate-rfp-invitations";
+import { generateRfpReleaseEmail } from "@/ai/flows/generate-rfp-release-email";
 import type { RFP, Contractor } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import Textarea from "../ui/textarea";
-import { cn } from "@/lib/utils";
 
 type RfpInvitationDialogProps = {
   isOpen: boolean;
@@ -37,7 +36,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
   const formatDate = (date: any) => {
     if (!date) return 'TBD';
     const d = date.toDate ? date.toDate() : new Date(date);
-    return format(d, 'MMMM d, yyyy');
+    return format(d, 'MM/dd/yyyy');
   };
 
   useEffect(() => {
@@ -46,17 +45,16 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
       setIsEditing(false);
       setEmailContent(null);
       
-      const eoiDueDate = rfp.rfpEndDate ? format(new Date(rfp.rfpEndDate), 'MMMM d, yyyy') + ' at 5:00 PM PST' : 'TBD';
+      const rfpEndDate = rfp.rfpEndDate ? new Date(rfp.rfpEndDate) : new Date();
 
-      generateRfpInvitation({
+      generateRfpReleaseEmail({
         projectName: rfp.projectName,
         contractorName: contractor.name,
         campusLocation: rfp.metroCode,
-        eoiDueDate: eoiDueDate,
-        rfpStartDate: formatDate(rfp.rfpStartDate),
-        rfpEndDate: formatDate(rfp.rfpEndDate),
-        projectStartDate: formatDate(rfp.projectStartDate),
-        projectEndDate: formatDate(rfp.projectEndDate),
+        year: new Date().getFullYear().toString(),
+        confirmationDueDate: formatDate(new Date(rfpEndDate.getTime() - 18 * 24 * 60 * 60 * 1000)), // 2 days after start
+        qnaDueDate: formatDate(new Date(rfpEndDate.getTime() - 13 * 24 * 60 * 60 * 1000)), // 7 days after start
+        submissionDueDate: formatDate(rfpEndDate),
       }).then(result => {
         setEmailContent({
             to: contractor.contactEmail,
@@ -80,8 +78,8 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
   const handleSendEmail = () => {
     // In a real app, this would integrate with an email sending service
     toast({
-        title: "EOI Sent",
-        description: `Expression of Interest email sent to ${contractor.name}.`
+        title: "RFP Release Sent",
+        description: `RFP Release email sent to ${contractor.name}.`
     });
     onEoiSent(contractor.id);
   };
@@ -91,7 +89,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle>Generate EOI Invitation</DialogTitle>
+          <DialogTitle>Generate RFP Release Email</DialogTitle>
           <DialogDescription>
             An email will be generated for {contractor.name}. Review and send.
           </DialogDescription>
@@ -122,14 +120,14 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
                   {isEditing ? (
                     <Textarea 
                       id="body"
-                      value={emailContent.body.replace(/<br\s*\/?>/gi, '\n').replace(/<b>/g, '').replace(/<\/b>/g, '')}
+                      value={emailContent.body.replace(/<br\s*\/?>/gi, '\n')}
                       onChange={(e) => handleContentChange('body', e.target.value.replace(/\n/g, '<br/>'))}
-                      className="h-64 text-sm bg-background"
+                      className="h-96 text-sm bg-background"
                     />
                   ) : (
                     <div 
                       id="body"
-                      className="h-64 border rounded-md p-2 text-sm overflow-auto bg-muted/50"
+                      className="h-96 border rounded-md p-2 text-sm overflow-auto bg-muted/50"
                       dangerouslySetInnerHTML={{ __html: emailContent.body }}
                     />
                   )}

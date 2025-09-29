@@ -12,3 +12,4 @@ import '@/ai/flows/generate-comparative-analysis.ts';
 import '@/ai/flows/generate-award-letter.ts';
 import '@/ai/flows/generate-non-award-letter.ts';
 import '@/ai/flows/generate-user-guide.ts';
+import '@/ai/flows/generate-rfp-release-email.ts';
