@@ -281,6 +281,17 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     }
   };
 
+  const handleSelectAllForContractor = (contractorId: string, shouldSelect: boolean) => {
+    const contractorProposals = proposalsByContractor.get(contractorId) || [];
+    const proposalIds = contractorProposals.map(p => p.id);
+
+    if (shouldSelect) {
+        setSelectedProposals(prev => [...new Set([...prev, ...proposalIds])]);
+    } else {
+        setSelectedProposals(prev => prev.filter(id => !proposalIds.includes(id)));
+    }
+};
+
   const handleProposalSelection = (proposalId: string) => {
     setSelectedProposals(prev => 
       prev.includes(proposalId) 
@@ -314,6 +325,17 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
         value: p.bidAmount,
       }));
   }, [proposals, selectedProposals, getContractorById]);
+
+  const analysisSelectionProposals = useMemo(() => {
+    const grouped: { [key: string]: Proposal[] } = {};
+    proposals.forEach(p => {
+        if (!grouped[p.contractorId]) {
+            grouped[p.contractorId] = [];
+        }
+        grouped[p.contractorId].push(p);
+    });
+    return Object.entries(grouped);
+}, [proposals]);
 
 
   return (
@@ -464,7 +486,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                     <TableCell className="font-medium">{contractor.name}</TableCell>
                                     <TableCell>
                                         <Badge variant={hasSubmitted ? 'default' : 'outline'}>
-                                            {hasSubmitted ? 'Submitted' : 'Pending'}
+                                            {hasSubmitted ? `Submitted (${contractorProposals.length})` : 'Pending'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
@@ -517,27 +539,57 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
         
         <TabsContent value="Analysis" className="mt-4">
             <div className="space-y-6">
-                <div className="border rounded-lg p-4">
-                <h3 className="font-semibold mb-3">1. Select Proposals for Analysis</h3>
-                <div className="space-y-3">
-                    {proposals?.length > 0 ? proposals.map(p => (
-                    <div key={p.id} className="flex items-center space-x-3">
-                        <Checkbox 
-                        id={`proposal-${p.id}`}
-                        checked={selectedProposals.includes(p.id)}
-                        onCheckedChange={() => handleProposalSelection(p.id)}
-                        disabled={!p.proposalText}
-                        />
-                        <label htmlFor={`proposal-${p.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Proposal from <strong>{getContractorById(p.contractorId)?.name}</strong>
-                        </label>
-                        {!p.proposalText && <Badge variant="outline">No text</Badge>}
-                    </div>
-                    )) : (
-                    <p className="text-muted-foreground text-center py-4">No proposals submitted yet.</p>
-                    )}
-                </div>
-                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Select Proposals for Analysis</CardTitle>
+                        <CardDescription>Choose the documents you want the AI to evaluate.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {analysisSelectionProposals.length > 0 ? (
+                             <div className="space-y-4">
+                                {analysisSelectionProposals.map(([contractorId, contractorProposals]) => {
+                                    const contractor = getContractorById(contractorId);
+                                    const allSelected = contractorProposals.every(p => selectedProposals.includes(p.id));
+                                    const someSelected = contractorProposals.some(p => selectedProposals.includes(p.id));
+
+                                    return (
+                                        <div key={contractorId} className="border p-4 rounded-lg">
+                                            <div className="flex items-center space-x-3 mb-3 pb-3 border-b">
+                                                <Checkbox
+                                                    id={`select-all-${contractorId}`}
+                                                    checked={allSelected}
+                                                    onCheckedChange={(checked) => handleSelectAllForContractor(contractorId, !!checked)}
+                                                />
+                                                <label htmlFor={`select-all-${contractorId}`} className="font-semibold leading-none">
+                                                    Select All for {contractor?.name}
+                                                </label>
+                                            </div>
+                                            <div className="space-y-2 pl-7">
+                                                {contractorProposals.map(p => (
+                                                    <div key={p.id} className="flex items-center space-x-3">
+                                                        <Checkbox
+                                                            id={`proposal-${p.id}`}
+                                                            checked={selectedProposals.includes(p.id)}
+                                                            onCheckedChange={() => handleProposalSelection(p.id)}
+                                                            disabled={!p.proposalText}
+                                                        />
+                                                        <label htmlFor={`proposal-${p.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
+                                                            <File size={14} />
+                                                            {p.proposalDocumentUrl?.split('/').pop()}
+                                                        </label>
+                                                        {!p.proposalText && <Badge variant="outline">No text</Badge>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground text-center py-4">No proposals submitted yet.</p>
+                        )}
+                    </CardContent>
+                </Card>
                 
                 <div className="text-center">
                 <Button onClick={handleAnalyze} disabled={isAnalyzing || selectedProposals.length === 0}>
@@ -702,3 +754,5 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
+
+    
