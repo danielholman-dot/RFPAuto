@@ -47,7 +47,7 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableHead>Contractor Type</TableHead>
           <TableHead>Metro/Site</TableHead>
           <TableHead>Region</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead className="text-right">Details</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
