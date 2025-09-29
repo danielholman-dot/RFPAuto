@@ -119,7 +119,15 @@ export function ProjectIntakeForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form 
+        onSubmit={form.handleSubmit(onSubmit)} 
+        className="space-y-8"
+        onKeyDown={(e) => {
+            if (e.key === 'Enter' && !(e.target instanceof HTMLTextAreaElement)) {
+                e.preventDefault();
+            }
+        }}
+    >
         <FormField
           control={form.control}
           name="projectName"
