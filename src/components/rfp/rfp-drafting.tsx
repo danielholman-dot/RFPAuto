@@ -42,7 +42,8 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
         setIsGenerating(true);
         setDraftContent(null);
         try {
-            const startDateValue = rfp.projectStartDate ? new Date(rfp.projectStartDate.toString()) : new Date();
+            const startDateValue = rfp.projectStartDate ? (rfp.projectStartDate instanceof Date ? rfp.projectStartDate : rfp.projectStartDate.toDate()) : new Date();
+
             const result = await generateProjectRFPInstructions({
                 projectName: rfp.projectName,
                 scopeOfWork: rfp.scopeOfWork,
@@ -50,7 +51,8 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
                 contractorType: rfp.contractorType,
                 estimatedBudget: rfp.estimatedBudget,
                 startDate: format(startDateValue, 'MM/dd/yyyy'),
-                technicalDocuments: "N/A"
+                technicalDocuments: "N/A",
+                primaryStakeholderEmail: rfp.primaryStakeholderEmail,
             });
             setDraftContent(result.rfpInstructions);
         } catch (error) {

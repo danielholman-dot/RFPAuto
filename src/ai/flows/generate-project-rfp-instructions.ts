@@ -21,6 +21,7 @@ const GenerateProjectRFPInstructionsInputSchema = z.object({
   estimatedBudget: z.number().describe('The estimated budget for the project.'),
   startDate: z.string().describe('The start date for the project.'),
   technicalDocuments: z.string().describe('Technical documents related to the project.'),
+  primaryStakeholderEmail: z.string().optional().describe('The primary stakeholder\'s email.'),
 });
 export type GenerateProjectRFPInstructionsInput = z.infer<
   typeof GenerateProjectRFPInstructionsInputSchema
@@ -44,8 +45,8 @@ export async function generateProjectRFPInstructions(
   const rfpTimeline = {
       currentMonth: format(new Date(), 'MMMM'),
       currentYear: format(new Date(), 'yyyy'),
-      googleContactName: "MARCUS Program Team",
-      googleContactEmail: "marcus-rfp-support@google.com",
+      googleContactName: input.primaryStakeholderEmail ? input.primaryStakeholderEmail.split('@')[0] : "MARCUS Program Team",
+      googleContactEmail: input.primaryStakeholderEmail || "marcus-rfp-support@google.com",
       eoiResponseDate: format(addBusinessDays(validStartDate, 5), 'MM/dd/yyyy'),
       rfpStartDate: format(validStartDate, 'MM/dd/yyyy'),
       rfpConfirmationDate: format(addBusinessDays(validStartDate, 2), 'MM/dd/yyyy'),
