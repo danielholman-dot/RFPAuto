@@ -59,7 +59,6 @@ export {
     Loader2,
     UploadCloud,
     PlusCircle,
-    CheckSquare
+    CheckSquare,
+    File
 } from 'lucide-react';
-
-    

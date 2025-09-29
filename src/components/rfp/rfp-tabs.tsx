@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "../ui/button"
-import { Mail, Send, Bot, Trophy, Star, Loader2, UploadCloud, PlusCircle, Settings, Award, CheckCircle, Check } from "lucide-react"
+import { Mail, Send, Bot, Trophy, Star, Loader2, UploadCloud, PlusCircle, Settings, Award, CheckCircle, Check, File } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -188,12 +188,11 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     setSelectedContractorToAdd('');
   };
 
-
-  const proposalStatusByContractor = useMemo(() => {
-    const statusMap = new Map<string, Proposal | null>();
+  const proposalsByContractor = useMemo(() => {
+    const statusMap = new Map<string, Proposal[]>();
     invitedContractors.forEach(c => {
-      const proposal = proposals.find(p => p.contractorId === c.id);
-      statusMap.set(c.id, proposal || null);
+      const contractorProposals = proposals.filter(p => p.contractorId === c.id);
+      statusMap.set(c.id, contractorProposals);
     });
     return statusMap;
   }, [invitedContractors, proposals]);
@@ -226,13 +225,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
         description: `Submitting proposal for ${getContractorById(contractorId)?.name}.`,
     });
     
-    // Simulate reading the file and creating a proposal
-    const proposalText = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string || `Dummy text for ${file.name}`);
-      reader.onerror = () => resolve(`Could not read file: ${file.name}`);
-      reader.readAsText(file);
-    });
+    const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
 
     const newProposalData: Omit<Proposal, 'id'> = {
         contractorId: contractorId,
@@ -244,13 +237,11 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
         bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8,
     };
     
-    // This function adds to a local array, but in a real app would hit a database
-    await addProposal(rfp.id, newProposalData);
+    const newProposalId = await addProposal(rfp.id, newProposalData);
     
-    // Create a complete proposal object to update local state
     const newProposal: Proposal = {
       ...newProposalData,
-      id: `proposal-${Math.random()}`, // Dummy ID for local state
+      id: newProposalId,
     };
 
     setProposals(prev => [...prev, newProposal]);
@@ -461,44 +452,59 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                         <TableHead>Contractor</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Documents</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {invitedContractors.map(contractor => {
-                        const proposal = proposalStatusByContractor.get(contractor.id);
-                        const hasSubmitted = !!proposal;
-                        return (
-                            <TableRow key={contractor.id}>
-                            <TableCell className="font-medium">{contractor.name}</TableCell>
-                            <TableCell>
-                                <Badge variant={hasSubmitted ? 'default' : 'outline'}>
-                                {hasSubmitted ? 'Submitted' : 'Pending'}
-                                </Badge>
-                                {hasSubmitted && <div className="text-xs text-muted-foreground mt-1">on {formatDate(proposal.submittedDate)}</div>}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex gap-2">
-                                    <label className="flex items-center gap-2" htmlFor={`proposal-upload-${contractor.id}`}>
-                                        <Button asChild variant="outline" size="sm" className="h-8 cursor-pointer">
-                                            <span>
-                                                <UploadCloud className="mr-2 h-4 w-4"/> Upload Proposal
-                                            </span>
-                                        </Button>
-                                        <Input 
-                                            id={`proposal-upload-${contractor.id}`} 
-                                            type="file" 
-                                            className="hidden"
-                                            onChange={(e) => {
-                                                if (e.target.files?.[0]) {
-                                                    handleFileUpload(contractor.id, e.target.files[0]);
-                                                }
-                                            }}
-                                        />
-                                    </label>
-                                </div>
-                            </TableCell>
-                            </TableRow>
-                        );
+                            const contractorProposals = proposalsByContractor.get(contractor.id) || [];
+                            const hasSubmitted = contractorProposals.length > 0;
+                            return (
+                                <TableRow key={contractor.id}>
+                                    <TableCell className="font-medium">{contractor.name}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={hasSubmitted ? 'default' : 'outline'}>
+                                            {hasSubmitted ? 'Submitted' : 'Pending'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        {hasSubmitted ? (
+                                            <ul className="space-y-1">
+                                                {contractorProposals.map(p => (
+                                                    <li key={p.id} className="text-sm flex items-center gap-2">
+                                                        <File size={14} className="text-muted-foreground" />
+                                                        <a href={p.proposalDocumentUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                                            {p.proposalDocumentUrl?.split('/').pop()}
+                                                        </a>
+                                                        <span className="text-xs text-muted-foreground">({formatDate(p.submittedDate)})</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">No documents uploaded.</p>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <label className="flex items-center gap-2 justify-end" htmlFor={`proposal-upload-${contractor.id}`}>
+                                            <Button asChild variant="outline" size="sm" className="h-8 cursor-pointer">
+                                                <span>
+                                                    <UploadCloud className="mr-2 h-4 w-4"/> Upload
+                                                </span>
+                                            </Button>
+                                            <Input 
+                                                id={`proposal-upload-${contractor.id}`} 
+                                                type="file" 
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    if (e.target.files?.[0]) {
+                                                        handleFileUpload(contractor.id, e.target.files[0]);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    </TableCell>
+                                </TableRow>
+                            );
                         })}
                     </TableBody>
                     </Table>

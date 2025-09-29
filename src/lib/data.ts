@@ -105,6 +105,9 @@ export async function getRfps(): Promise<RFP[]> {
 
 export async function getRfpById(id: string): Promise<RFP | null> {
   const rfp = rfps.find(r => r.id === id) || null;
+  if (rfp) {
+    rfp.proposals = proposals.filter(p => p.rfpId === id);
+  }
   return Promise.resolve(rfp);
 }
 
@@ -130,7 +133,7 @@ export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<R
   }
   
 
-export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'id'>) {
+export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'id'>): Promise<string> {
   const rfp = rfps.find(r => r.id === rfpId);
   if (!rfp) {
     throw new Error("RFP not found");
@@ -145,12 +148,11 @@ export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'i
     rfp.proposals = [];
   }
   rfp.proposals.push(newProposal);
-  return Promise.resolve();
+  return Promise.resolve(newId);
 }
 
 export async function getProposalsForRfp(rfpId: string): Promise<Proposal[]> {
-  const rfp = rfps.find(r => r.id === rfpId);
-  return Promise.resolve(rfp?.proposals || []);
+  return Promise.resolve(proposals.filter(p => p.rfpId === rfpId));
 }
 
 export async function getSuggestedContractors(metroCode: string, contractorType: string): Promise<Contractor[]> {
@@ -183,5 +185,3 @@ export async function addInvitedContractorToRfp(rfpId: string, contractorId: str
   }
   return Promise.resolve();
 }
-
-    
