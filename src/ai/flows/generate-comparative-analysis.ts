@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {googleAI} from '@genkit-ai/googleai';
 
 const ProposalInputSchema = z.object({
     contractorName: z.string().describe('The name of the contractor who submitted the proposal.'),
@@ -44,6 +45,7 @@ const prompt = ai.definePrompt({
   name: 'generateComparativeAnalysisPrompt',
   input: {schema: GenerateComparativeAnalysisInputSchema},
   output: {schema: GenerateComparativeAnalysisOutputSchema},
+  model: googleAI.model('gemini-1.5-pro'),
   prompt: `You are an expert procurement analyst. Your task is to perform a comparative analysis of multiple proposals based on the provided RFP scope.
 
   RFP Scope of Work:
@@ -79,3 +81,4 @@ const generateComparativeAnalysisFlow = ai.defineFlow(
     return output!;
   }
 );
+
