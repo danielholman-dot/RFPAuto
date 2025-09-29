@@ -1,6 +1,6 @@
 
 'use client';
-
+import { useState, useMemo } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { ClipboardList } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const tasks = {
     'Backend & Data Persistence': [
@@ -211,21 +212,53 @@ const tasks = {
 type TaskCategory = keyof typeof tasks;
 
 export default function GoLivePage() {
+  const [levelFilter, setLevelFilter] = useState('all');
+
+  const filteredTasks = useMemo(() => {
+    if (levelFilter === 'all') {
+      return tasks;
+    }
+    const filtered: { [key: string]: any[] } = {};
+    for (const category in tasks) {
+      const categoryTasks = (tasks as any)[category].filter(
+        (task: any) => task.level === levelFilter
+      );
+      if (categoryTasks.length > 0) {
+        filtered[category] = categoryTasks;
+      }
+    }
+    return filtered;
+  }, [levelFilter]);
+
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ClipboardList className="w-6 h-6" />
-            To-Do List: Go-Live Checklist
-          </CardTitle>
-          <CardDescription>
-            A high-level overview of the remaining tasks to make this application production-ready.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="w-6 h-6" />
+                To-Do List: Go-Live Checklist
+              </CardTitle>
+              <CardDescription>
+                A high-level overview of the remaining tasks to make this application production-ready.
+              </CardDescription>
+            </div>
+            <div className="w-48">
+              <Select value={levelFilter} onValueChange={setLevelFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="Owner">Owner</SelectItem>
+                  <SelectItem value="Any">Any</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
         </CardHeader>
         <CardContent>
             <Accordion type="multiple" className="w-full space-y-4">
-                {(Object.keys(tasks) as TaskCategory[]).map(category => (
+                {(Object.keys(filteredTasks) as TaskCategory[]).map(category => (
                     <AccordionItem value={category} key={category} className="border-b-0">
                         <Card>
                             <AccordionTrigger className="p-6 hover:no-underline text-xl">
@@ -233,7 +266,7 @@ export default function GoLivePage() {
                             </AccordionTrigger>
                             <AccordionContent className="px-6">
                                 <div className="space-y-6">
-                                    {tasks[category].map(task => (
+                                    {filteredTasks[category].map(task => (
                                         <Accordion key={task.id} type="single" collapsible className="w-full">
                                             <AccordionItem value={task.id} className="border rounded-lg">
                                                 <AccordionTrigger className="p-4 hover:no-underline">
@@ -272,5 +305,3 @@ export default function GoLivePage() {
     </div>
   );
 }
-
-    
