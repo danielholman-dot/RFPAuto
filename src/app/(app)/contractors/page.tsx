@@ -18,7 +18,7 @@ import {
 import { getContractors, getContractorTypes, getAllMetroCodes } from '@/lib/data';
 import type { Contractor } from '@/lib/types';
 import { useEffect, useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, Eye } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -28,6 +28,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -43,9 +45,8 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableHead>POC Name</TableHead>
           <TableHead>POC Email</TableHead>
           <TableHead>Contractor Type</TableHead>
-          <TableHead>Most Preferred/Preferred</TableHead>
           <TableHead>Region</TableHead>
-          <TableHead>Metro/Site</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -60,9 +61,15 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
             <TableCell>{contractor.contactName}</TableCell>
             <TableCell>{contractor.contactEmail}</TableCell>
             <TableCell>{contractor.type}</TableCell>
-            <TableCell>{contractor.preferredStatus}</TableCell>
             <TableCell>{contractor.region}</TableCell>
-            <TableCell>{contractor.metroSite}</TableCell>
+            <TableCell className="text-right">
+                <Button asChild variant="outline" size="sm">
+                    <Link href={`/contractors/${contractor.id}`}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                    </Link>
+                </Button>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
