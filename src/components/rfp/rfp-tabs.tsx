@@ -507,23 +507,26 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <label className="flex items-center gap-2 justify-end" htmlFor={`proposal-upload-${contractor.id}`}>
-                                            <Button asChild variant="outline" size="sm" className="h-8 cursor-pointer">
-                                                <span>
-                                                    <UploadCloud className="mr-2 h-4 w-4"/> Upload
-                                                </span>
-                                            </Button>
-                                            <Input 
-                                                id={`proposal-upload-${contractor.id}`} 
-                                                type="file" 
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                    if (e.target.files?.[0]) {
-                                                        handleFileUpload(contractor.id, e.target.files[0]);
-                                                    }
-                                                }}
-                                            />
-                                        </label>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <label className="flex items-center gap-2" htmlFor={`proposal-upload-${contractor.id}`}>
+                                                <Button asChild variant="outline" size="sm" className="h-8 cursor-pointer">
+                                                    <span>
+                                                        <UploadCloud className="mr-2 h-4 w-4"/> Upload
+                                                    </span>
+                                                </Button>
+                                                <Input 
+                                                    id={`proposal-upload-${contractor.id}`} 
+                                                    type="file" 
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        if (e.target.files?.[0]) {
+                                                            handleFileUpload(contractor.id, e.target.files[0]);
+                                                        }
+                                                    }}
+                                                />
+                                            </label>
+                                            <p className="text-xs text-muted-foreground">To upload a Google Sheet, first export it as .xlsx</p>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             );
@@ -754,5 +757,3 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     </>
   )
 }
-
-    
