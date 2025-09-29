@@ -595,14 +595,6 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                                 <div className="flex flex-col items-end gap-2 w-full">
                                                     {contractorLinks.map((link, index) => (
                                                         <div key={index} className="flex w-full gap-2 items-center">
-                                                            <Input
-                                                                id={`proposal-link-${contractor.id}-${index}`}
-                                                                type="url"
-                                                                placeholder="Paste Google Sheet link..."
-                                                                value={link}
-                                                                onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
-                                                                className="flex-grow"
-                                                            />
                                                             <Button 
                                                                 variant="secondary" 
                                                                 size="sm" 
@@ -611,6 +603,14 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                                             >
                                                                 <Send />
                                                             </Button>
+                                                            <Input
+                                                                id={`proposal-link-${contractor.id}-${index}`}
+                                                                type="url"
+                                                                placeholder="Paste Google Sheet link..."
+                                                                value={link}
+                                                                onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
+                                                                className="flex-grow"
+                                                            />
                                                         </div>
                                                     ))}
                                                 </div>
