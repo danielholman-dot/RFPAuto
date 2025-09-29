@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type RfpTabsProps = {
   rfp: RFP;
+  setRfp: React.Dispatch<React.SetStateAction<RFP | null>>;
   isDraft?: boolean;
 }
 
@@ -65,8 +66,7 @@ const StageCompletion = ({ stage, completedStages, onStageToggle }: { stage: Rfp
 };
 
 
-export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
-  const [rfp, setRfp] = useState(initialRfp);
+export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
   const [activeTab, setActiveTab] = useState(rfp.status === 'Draft' ? 'Selection' : rfp.status);
   
   // Initialize completed stages based on current RFP status
@@ -240,7 +240,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     const contractor = allContractors.find(c => c.id === selectedContractorToAdd);
     if (contractor && !invitedContractors.find(c => c.id === contractor.id)) {
         setInvitedContractors(prev => [...prev, contractor]);
-        setRfp(prev => ({ ...prev, invitedContractors: [...(prev.invitedContractors || []), contractor.id]}));
+        setRfp(prev => prev ? ({ ...prev, invitedContractors: [...(prev.invitedContractors || []), contractor.id]}) : null);
     }
     setSelectedContractorToAdd('');
   };
@@ -536,7 +536,7 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                 <div>
                     <CardTitle>Proposal Submissions</CardTitle>
                     <CardDescription>
-                        For cloud documents like Google Sheets, paste a shareable link. For local files, use the upload button.
+                        For Google Docs/Sheets, paste a shareable link. For local files, use the upload button.
                     </CardDescription>
                 </div>
                 <Button variant="outline" onClick={() => setIsChecklistDialogOpen(true)}>
@@ -594,7 +594,15 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                                 {/* Link submission */}
                                                 <div className="flex flex-col items-end gap-2 w-full">
                                                     {contractorLinks.map((link, index) => (
-                                                        <div key={index} className="flex w-full gap-2 items-center">
+                                                        <div key={index} className="flex w-full gap-2 items-center justify-end">
+                                                             <Input
+                                                                id={`proposal-link-${contractor.id}-${index}`}
+                                                                type="url"
+                                                                placeholder="Paste Google Sheet link..."
+                                                                value={link}
+                                                                onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
+                                                                className="flex-grow"
+                                                            />
                                                             <Button 
                                                                 variant="secondary" 
                                                                 size="sm" 
@@ -603,14 +611,6 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                                                             >
                                                                 <Send />
                                                             </Button>
-                                                            <Input
-                                                                id={`proposal-link-${contractor.id}-${index}`}
-                                                                type="url"
-                                                                placeholder="Paste Google Sheet link..."
-                                                                value={link}
-                                                                onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
-                                                                className="flex-grow"
-                                                            />
                                                         </div>
                                                     ))}
                                                 </div>

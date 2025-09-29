@@ -88,7 +88,7 @@ export default function RfpDetailPage() {
                         </div>
                     </CardHeader>
                 </Card>
-                 <RfpTabs rfp={newRfp} isDraft={true} />
+                 <RfpTabs rfp={newRfp} setRfp={setRfp} isDraft={true} />
             </div>
         )
     }
@@ -122,7 +122,7 @@ export default function RfpDetailPage() {
             </div>
         </CardContent>
       </Card>
-      <RfpTabs rfp={rfp} />
+      <RfpTabs rfp={rfp} setRfp={setRfp} />
     </div>
   );
 }
