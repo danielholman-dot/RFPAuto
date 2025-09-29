@@ -22,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { generateComparativeAnalysis, GenerateComparativeAnalysisOutput } from "@/ai/flows/generate-comparative-analysis";
-import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp, updateRfp } from "@/lib/data";
+import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp, updateRfp, addProposal } from "@/lib/data";
 import { RfpInvitationDialog } from "./rfp-invitation-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
@@ -217,6 +217,49 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
     setContractorForDialog(contractor);
     setIsNonAwardDialogOpen(true);
   }
+
+  const handleFileUpload = async (contractorId: string, file: File) => {
+    if (!file) return;
+
+    toast({
+        title: "Uploading proposal...",
+        description: `Submitting proposal for ${getContractorById(contractorId)?.name}.`,
+    });
+    
+    // Simulate reading the file and creating a proposal
+    const proposalText = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string || `Dummy text for ${file.name}`);
+      reader.onerror = () => resolve(`Could not read file: ${file.name}`);
+      reader.readAsText(file);
+    });
+
+    const newProposalData: Omit<Proposal, 'id'> = {
+        contractorId: contractorId,
+        rfpId: rfp.id,
+        submittedDate: new Date(),
+        status: 'Submitted',
+        proposalDocumentUrl: `simulated/path/${file.name}`,
+        proposalText: proposalText,
+        bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8,
+    };
+    
+    // This function adds to a local array, but in a real app would hit a database
+    await addProposal(rfp.id, newProposalData);
+    
+    // Create a complete proposal object to update local state
+    const newProposal: Proposal = {
+      ...newProposalData,
+      id: `proposal-${Math.random()}`, // Dummy ID for local state
+    };
+
+    setProposals(prev => [...prev, newProposal]);
+    
+    toast({
+        title: "Proposal Submitted",
+        description: `Proposal for ${getContractorById(contractorId)?.name} has been uploaded.`,
+    });
+};
 
   const handleAnalyze = async () => {
     const proposalsToAnalyze = proposals.filter(p => selectedProposals.includes(p.id));
@@ -436,12 +479,21 @@ export function RfpTabs({ rfp: initialRfp, isDraft = false }: RfpTabsProps) {
                             <TableCell>
                                 <div className="flex gap-2">
                                     <label className="flex items-center gap-2" htmlFor={`proposal-upload-${contractor.id}`}>
-                                        <Button asChild variant="outline" size="sm" className="h-8">
+                                        <Button asChild variant="outline" size="sm" className="h-8 cursor-pointer">
                                             <span>
                                                 <UploadCloud className="mr-2 h-4 w-4"/> Upload Proposal
                                             </span>
                                         </Button>
-                                        <Input id={`proposal-upload-${contractor.id}`} type="file" className="hidden"/>
+                                        <Input 
+                                            id={`proposal-upload-${contractor.id}`} 
+                                            type="file" 
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                if (e.target.files?.[0]) {
+                                                    handleFileUpload(contractor.id, e.target.files[0]);
+                                                }
+                                            }}
+                                        />
                                     </label>
                                 </div>
                             </TableCell>
