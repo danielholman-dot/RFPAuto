@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "RFP": {
@@ -63,6 +64,15 @@
             "description": "Contractor ID"
           },
           "description": "List of contractor IDs who have been invited to submit a proposal."
+        },
+        "primaryStakeholderEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The email of the primary stakeholder for the project."
+        },
+        "additionalStakeholderEmails": {
+          "type": "string",
+          "description": "A comma-separated list of additional stakeholder emails."
         }
       }
     },

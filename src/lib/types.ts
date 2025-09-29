@@ -15,6 +15,8 @@ export type RFP = {
   status: 'Selection' | 'Drafting' | 'Invitation' | 'Proposals' | 'Analysis' | 'Award' | 'Feedback' | 'Draft' | 'Completed';
   invitedContractors?: string[];
   proposals?: Proposal[];
+  primaryStakeholderEmail?: string;
+  additionalStakeholderEmails?: string;
 };
 
 export type Contractor = {
@@ -52,4 +54,3 @@ export type Scorecard = {
   missionCriticalExperience: number;
   total: number;
 };
-

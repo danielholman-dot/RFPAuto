@@ -30,6 +30,8 @@ import { useState, useEffect } from "react"
 const formSchema = z.object({
   projectName: z.string().optional(),
   scopeOfWork: z.string().optional(),
+  primaryStakeholderEmail: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
+  additionalStakeholderEmails: z.string().optional(),
   metroCode: z.string().optional(),
   contractorType: z.string().optional(),
   estimatedBudget: z.coerce.number().optional(),
@@ -80,6 +82,8 @@ export function ProjectIntakeForm() {
         rfpEndDate: values.rfpEndDate,
         projectStartDate: values.projectStartDate,
         projectEndDate: values.projectEndDate,
+        primaryStakeholderEmail: values.primaryStakeholderEmail,
+        additionalStakeholderEmails: values.additionalStakeholderEmails,
         status: "Draft",
         createdAt: new Date(),
       };
@@ -147,6 +151,35 @@ export function ProjectIntakeForm() {
             </FormItem>
           )}
         />
+         <div className="grid md:grid-cols-2 gap-8">
+            <FormField
+            control={form.control}
+            name="primaryStakeholderEmail"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Primary Stakeholder Email</FormLabel>
+                <FormControl>
+                    <Input type="email" placeholder="stakeholder@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="additionalStakeholderEmails"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Additional Stakeholder Emails</FormLabel>
+                <FormControl>
+                    <Input placeholder="email1@example.com, email2@example.com" {...field} />
+                </FormControl>
+                 <FormDescription>A comma-separated list of emails.</FormDescription>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+        </div>
         <div className="grid md:grid-cols-2 gap-8">
           <FormField
             control={form.control}
@@ -398,5 +431,3 @@ export function ProjectIntakeForm() {
     </Form>
   )
 }
-
-    
