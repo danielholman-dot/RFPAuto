@@ -21,6 +21,7 @@ import {
   FileText,
   Briefcase,
   HelpCircle,
+  ClipboardList,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -135,6 +136,20 @@ export function AppSidebar() {
 
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
+            <SidebarMenuItem>
+                <Link href="/go-live" passHref>
+                <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/go-live')}
+                    tooltip={{ children: 'To-Do List' }}
+                >
+                    <span>
+                    <ClipboardList />
+                    <span>To-Do List</span>
+                    </span>
+                </SidebarMenuButton>
+                </Link>
+            </SidebarMenuItem>
             <SidebarMenuItem>
                 <Link href="/user-guide" passHref>
                 <SidebarMenuButton
