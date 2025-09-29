@@ -8,10 +8,10 @@ export type RFP = {
   metroCode: string;
   contractorType: string;
   estimatedBudget: number;
-  rfpStartDate?: Timestamp | Date;
-  rfpEndDate?: Timestamp | Date;
-  projectStartDate?: Timestamp | Date;
-  projectEndDate?: Timestamp | Date;
+  rfpStartDate?: Timestamp | Date | string;
+  rfpEndDate?: Timestamp | Date | string;
+  projectStartDate?: Timestamp | Date | string;
+  projectEndDate?: Timestamp | Date | string;
   status: 'Selection' | 'Drafting' | 'Invitation' | 'Proposals' | 'Analysis' | 'Award' | 'Feedback' | 'Draft' | 'Completed';
   invitedContractors?: string[];
   proposals?: Proposal[];
