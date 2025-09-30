@@ -13,6 +13,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // If the user is already logged in, redirect them to the dashboard.
     if (!isUserLoading && user) {
       router.push('/dashboard');
     }
@@ -25,6 +26,7 @@ export default function LoginPage() {
     }
   };
 
+  // While checking auth state or if the user exists (and is about to be redirected), show a loader.
   if (isUserLoading || user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -34,6 +36,7 @@ export default function LoginPage() {
     );
   }
 
+  // If not loading and no user, show the login page.
   return (
     <div className="flex h-screen w-full items-center justify-center bg-muted">
         <Card className="w-full max-w-md shadow-2xl">

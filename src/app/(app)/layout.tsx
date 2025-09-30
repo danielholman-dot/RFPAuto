@@ -23,7 +23,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [user, isUserLoading, router]);
 
   // While checking the user's auth state, show a loading screen.
-  // Also show loading if the user is present, to prevent flicker before redirecting.
+  // Also show loading if the user is not yet available to prevent content flicker.
   if (isUserLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
