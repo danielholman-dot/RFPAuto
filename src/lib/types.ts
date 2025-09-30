@@ -18,6 +18,7 @@ export type RFP = {
   primaryStakeholderEmail?: string;
   additionalStakeholderEmails?: string;
   createdAt?: Timestamp | Date;
+  technicalDocumentsLinks?: string;
 };
 
 export type Contractor = {
