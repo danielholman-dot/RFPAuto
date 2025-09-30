@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { useFirebase } from "@/firebase/provider";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { LogIn, LogOut } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 
@@ -56,20 +56,20 @@ export function Header() {
       </div>
 
       {isUserLoading ? (
-        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-8 w-32" />
       ) : user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="rounded-full">
-              <Avatar>
+            <Button variant="ghost" className="flex items-center gap-3">
+              <Avatar className="h-8 w-8">
                 {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User Avatar'} />}
                 <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
               </Avatar>
-              <span className="sr-only">Toggle user menu</span>
+              <span className="hidden md:inline-block">{user.displayName}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{user.displayName || 'My Account'}</DropdownMenuLabel>
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
@@ -81,9 +81,9 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button onClick={handleLogin}>
+        <Button variant="outline" onClick={handleLogin}>
           <LogIn className="mr-2 h-4 w-4" />
-          Login with Google
+          Sign In
         </Button>
       )}
     </header>
