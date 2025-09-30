@@ -15,6 +15,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // If the user is already logged in, redirect them to the dashboard.
+    // This prevents logged-in users from seeing the login page.
     if (!isUserLoading && user) {
       router.push('/dashboard');
     }
@@ -23,11 +24,12 @@ export default function LoginPage() {
   const handleSignIn = () => {
     if (auth) {
       const provider = new GoogleAuthProvider();
+      // Use signInWithRedirect for a full-page login flow.
       signInWithRedirect(auth, provider);
     }
   };
 
-  // While checking auth state or if the user exists (and is about to be redirected), show a loader.
+  // While checking the user's auth state or if they are being redirected, show a loader.
   if (isUserLoading || user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -37,7 +39,7 @@ export default function LoginPage() {
     );
   }
 
-  // If not loading and no user, show the login page.
+  // If not loading and no user, show the main login page.
   return (
     <div className="flex h-screen w-full items-center justify-center bg-muted">
         <Card className="w-full max-w-md shadow-2xl">

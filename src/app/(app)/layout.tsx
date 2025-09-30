@@ -15,15 +15,15 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // If the initial auth state check is done and there's no user,
-    // redirect them to the login page.
+    // If the initial auth state check is done and there's still no user,
+    // redirect them to the root login page.
     if (!isUserLoading && !user) {
       router.push('/');
     }
   }, [user, isUserLoading, router]);
 
-  // While checking the user's auth state, show a loading screen.
-  // Also show loading if the user is not yet available to prevent content flicker.
+  // While checking the user's auth state, show a full-screen loading indicator.
+  // This prevents any of the protected app from rendering until the user is confirmed.
   if (isUserLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -44,8 +44,8 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarProvider>
-      <AuthGuard>
+    <AuthGuard>
+      <SidebarProvider>
         <AppSidebar />
         <SidebarInset className='bg-background'>
           <Header />
@@ -53,7 +53,7 @@ export default function AppLayout({
             {children}
           </main>
         </SidebarInset>
-      </AuthGuard>
-    </SidebarProvider>
+      </SidebarProvider>
+    </AuthGuard>
   );
 }
