@@ -83,9 +83,9 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         projectEndDate: values.projectEndDate,
         primaryStakeholderEmail: values.primaryStakeholderEmail,
         additionalStakeholderEmails: values.additionalStakeholderEmails,
-        status: "Draft",
+        status: "Draft" as const,
         createdAt: new Date(),
-        // technicalDocumentsLinks: values.technicalDocumentsLinks, // This should be added
+        technicalDocumentsLinks: values.technicalDocumentsLinks,
       };
       
       const docId = await addRfp(newRfp);

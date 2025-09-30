@@ -118,7 +118,7 @@ export async function getContractorById(id: string): Promise<Contractor | null> 
 export async function getRfps(): Promise<RFP[]> {
   const db = getDb();
   const rfpsCol = collection(db, 'rfps');
-  const rfpSnapshot = await getDocs(query(rfpsCol, orderBy('projectStartDate', 'desc')));
+  const rfpSnapshot = await getDocs(query(rfpsCol, orderBy('createdAt', 'desc')));
   const rfpList = rfpSnapshot.docs.map(doc => {
       const data = doc.data();
       return { 
@@ -155,15 +155,18 @@ export async function getRfpById(id: string): Promise<RFP | null> {
 }
 
 export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedContractors'>): Promise<string> {
-  const db = getDb();
-  const rfpsCol = collection(db, 'rfps');
-  const docRef = await addDocumentNonBlocking(rfpsCol, {
-      ...rfpData,
-      createdAt: Timestamp.now(),
-      invitedContractors: [], // Initialize as empty array
-      status: 'Draft'
-  });
-  return docRef.id;
+    const db = getDb();
+    const rfpsCol = collection(db, 'rfps');
+    const docRef = await addDocumentNonBlocking(rfpsCol, {
+        ...rfpData,
+        createdAt: Timestamp.now(),
+        invitedContractors: [], // Initialize as empty array
+        status: 'Draft'
+    });
+    if (!docRef) {
+        throw new Error("Failed to create RFP document.");
+    }
+    return docRef.id;
 }
 
 export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<void> {
@@ -187,6 +190,9 @@ export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'i
         ...proposalData,
         submittedDate: Timestamp.now()
     });
+    if (!docRef) {
+        throw new Error("Failed to create proposal document.");
+    }
     return docRef.id;
 }
 
