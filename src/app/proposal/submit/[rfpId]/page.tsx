@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
+import { useFirebase } from '@/firebase';
 
 function ProposalSubmitForm() {
   const { rfpId } = useParams();
@@ -20,13 +21,16 @@ function ProposalSubmitForm() {
   const [rfp, setRfp] = useState<RFP | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { firestore } = useFirebase();
+
   useEffect(() => {
     async function loadData() {
+      if (!firestore) return;
       const rfpData = await getRfpById(rfpId as string);
       setRfp(rfpData);
 
-      // Dummy implementation for getting a contractor ID.
-      // In a real app, you would get this from the authenticated user.
+      // In a real app, you might get this from an auth context or URL param
+      // For now, we'll just pick a random one for demonstration
       const contractors = await getContractors();
       if (contractors.length > 0) {
         const randomContractor = contractors[Math.floor(Math.random() * contractors.length)];
@@ -35,7 +39,7 @@ function ProposalSubmitForm() {
       setLoading(false);
     }
     loadData();
-  }, [rfpId]);
+  }, [rfpId, firestore]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -53,8 +57,10 @@ function ProposalSubmitForm() {
     setIsSubmitting(true);
 
     try {
-      // Dummy URL and text extraction
-      const proposalDocumentUrl = `https://example.com/proposals/${rfpId}/${file.name}`;
+      // In a real app, you would upload the file to Firebase Storage
+      // and get the download URL. Here we'll simulate it.
+      const proposalDocumentUrl = `proposals/${rfpId}/${file.name}`;
+      // In a real app, you might use a Cloud Function to extract text.
       const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
 
       await addProposal(rfpId as string, {

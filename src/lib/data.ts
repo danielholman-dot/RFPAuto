@@ -1,13 +1,31 @@
 
-import { ContractorsData, RFPData } from './seed';
+'use client';
+
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  arrayUnion,
+  query,
+  where,
+  limit,
+  orderBy,
+  Timestamp,
+  documentId,
+} from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { initializeFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import type { Contractor, RFP, Proposal } from './types';
 
-// Simulate a database
-let contractors: (Contractor & { id: string })[] = ContractorsData.map((c, i) => ({ ...c, id: `contractor-${i}`}));
-let rfps: (RFP & { id: string })[] = RFPData.map((r, i) => ({ ...r, id: `rfp-${i}`, proposals: [], invitedContractors: [] }));
-let proposals: (Proposal & { id: string })[] = [];
+// This function should be called within a component or context where Firebase is initialized.
+const getDb = () => {
+    return initializeFirebase().firestore;
+};
 
-// Metro Codes
+// Metro Codes - This can remain as static data or be moved to Firestore if it needs to be dynamic.
 export const metroCodes = [
   { code: 'CMH', city: 'Columbus', state: 'Ohio', region: 'East', lat: 39.96, lon: -82.99 },
   { code: 'IAD', city: 'Gainsville', state: 'Virginia', region: 'East', lat: 38.79, lon: -77.61 },
@@ -65,8 +83,7 @@ export const getMetrosByRegion = async (region: string) => {
     return Promise.resolve(metroCodes.filter(m => m.region === region).map(m => ({ code: m.code, city: m.city })));
 }
 
-
-// Contractor Types
+// Contractor Types - Can also remain static or be moved to Firestore.
 export const contractorTypes = [
   'General Contractor', 
   'Mechanical', 
@@ -80,108 +97,148 @@ export const contractorTypes = [
 ];
 
 export const getContractorTypes = async () => {
-  return contractorTypes;
+  return Promise.resolve(contractorTypes);
 }
 
 // Data access functions
 export async function getContractors(): Promise<Contractor[]> {
-  return Promise.resolve(contractors);
+  const db = getDb();
+  const contractorsCol = collection(db, 'contractors');
+  const contractorSnapshot = await getDocs(contractorsCol);
+  const contractorList = contractorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contractor));
+  return contractorList;
 }
 
 export async function getContractorById(id: string): Promise<Contractor | null> {
-  const contractor = contractors.find(c => c.id === id);
-  return Promise.resolve(contractor || null);
+  const db = getDb();
+  const contractorDocRef = doc(db, 'contractors', id);
+  const contractorSnap = await getDoc(contractorDocRef);
+  if (contractorSnap.exists()) {
+    return { id: contractorSnap.id, ...contractorSnap.data() } as Contractor;
+  }
+  return null;
 }
 
 
 export async function getRfps(): Promise<RFP[]> {
-  // sort by project start date descending
-  return Promise.resolve(rfps.sort((a, b) => {
-    const dateA = a.projectStartDate ? new Date(a.projectStartDate).getTime() : 0;
-    const dateB = b.projectStartDate ? new Date(b.projectStartDate).getTime() : 0;
-    return dateB - dateA;
-  }));
+  const db = getDb();
+  const rfpsCol = collection(db, 'rfps');
+  const rfpSnapshot = await getDocs(query(rfpsCol, orderBy('projectStartDate', 'desc')));
+  const rfpList = rfpSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return { 
+          id: doc.id, 
+          ...data,
+          // Convert Firestore Timestamps to JS Dates
+          rfpStartDate: data.rfpStartDate?.toDate(),
+          rfpEndDate: data.rfpEndDate?.toDate(),
+          projectStartDate: data.projectStartDate?.toDate(),
+          projectEndDate: data.projectEndDate?.toDate(),
+          createdAt: data.createdAt?.toDate(),
+      } as RFP
+  });
+  return rfpList;
 }
 
 export async function getRfpById(id: string): Promise<RFP | null> {
-  const rfp = rfps.find(r => r.id === id) || null;
-  if (rfp) {
-    rfp.proposals = proposals.filter(p => p.rfpId === id);
+  const db = getDb();
+  const rfpDocRef = doc(db, 'rfps', id);
+  const rfpSnap = await getDoc(rfpDocRef);
+  if (rfpSnap.exists()) {
+    const data = rfpSnap.data();
+    return { 
+        id: rfpSnap.id,
+        ...data,
+        rfpStartDate: data.rfpStartDate?.toDate(),
+        rfpEndDate: data.rfpEndDate?.toDate(),
+        projectStartDate: data.projectStartDate?.toDate(),
+        projectEndDate: data.projectEndDate?.toDate(),
+        createdAt: data.createdAt?.toDate(),
+    } as RFP;
   }
-  return Promise.resolve(rfp);
+  return null;
 }
 
-export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals'>): Promise<string> {
-  const newId = `rfp-${rfps.length}`;
-  const newRfp: RFP = {
-    ...rfpData,
-    id: newId,
-    proposals: [],
-    invitedContractors: [],
-  };
-  rfps.push(newRfp);
-  return Promise.resolve(newId);
+export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedContractors'>): Promise<string> {
+  const db = getDb();
+  const rfpsCol = collection(db, 'rfps');
+  const docRef = await addDocumentNonBlocking(rfpsCol, {
+      ...rfpData,
+      createdAt: Timestamp.now(),
+      invitedContractors: [], // Initialize as empty array
+      status: 'Draft'
+  });
+  return docRef.id;
 }
 
-export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<RFP | null> {
-    const rfpIndex = rfps.findIndex(r => r.id === rfpId);
-    if (rfpIndex === -1) {
-      return null;
+export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<void> {
+    const db = getDb();
+    const rfpDocRef = doc(db, 'rfps', rfpId);
+    // Convert Date objects to Timestamps before updating
+    const firestoreUpdates: { [key: string]: any } = { ...updates };
+    for (const key in firestoreUpdates) {
+        if (firestoreUpdates[key] instanceof Date) {
+            firestoreUpdates[key] = Timestamp.fromDate(firestoreUpdates[key] as Date);
+        }
     }
-    rfps[rfpIndex] = { ...rfps[rfpIndex], ...updates };
-    return Promise.resolve(rfps[rfpIndex]);
-  }
+    updateDocumentNonBlocking(rfpDocRef, firestoreUpdates);
+}
   
 
 export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'id'>): Promise<string> {
-  const rfp = rfps.find(r => r.id === rfpId);
-  if (!rfp) {
-    throw new Error("RFP not found");
-  }
-  const newId = `proposal-${proposals.length}`;
-  const newProposal = {
-    ...proposalData,
-    id: newId
-  };
-  proposals.push(newProposal);
-  if (!rfp.proposals) {
-    rfp.proposals = [];
-  }
-  rfp.proposals.push(newProposal);
-  return Promise.resolve(newId);
+    const db = getDb();
+    const proposalsCol = collection(db, 'rfps', rfpId, 'proposals');
+    const docRef = await addDocumentNonBlocking(proposalsCol, {
+        ...proposalData,
+        submittedDate: Timestamp.now()
+    });
+    return docRef.id;
 }
 
 export async function getProposalsForRfp(rfpId: string): Promise<Proposal[]> {
-  return Promise.resolve(proposals.filter(p => p.rfpId === rfpId));
+  const db = getDb();
+  const proposalsCol = collection(db, 'rfps', rfpId, 'proposals');
+  const proposalSnapshot = await getDocs(proposalsCol);
+  const proposalList = proposalSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return { 
+          id: doc.id,
+          ...data,
+          submittedDate: data.submittedDate.toDate(),
+      } as Proposal;
+  });
+  return proposalList;
 }
 
 export async function getSuggestedContractors(metroCode: string, contractorType: string): Promise<Contractor[]> {
-  const suggested = contractors
-      .filter(c => c.metroCodes.includes(metroCode) && c.type === contractorType)
-      .sort((a,b) => (a.preference || 99) - (b.preference || 99))
-      .slice(0, 5)
-  return Promise.resolve(suggested);
+  const db = getDb();
+  const contractorsCol = collection(db, 'contractors');
+  const q = query(
+      contractorsCol,
+      where('metroCodes', 'array-contains', metroCode),
+      where('type', '==', contractorType),
+      orderBy('preference'),
+      limit(5)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contractor));
 }
 
 export async function getInvitedContractors(ids: string[]): Promise<Contractor[]> {
   if (!ids || ids.length === 0) {
     return Promise.resolve([]);
   }
-  const invited = contractors
-    .filter(c => ids.includes(c.id));
-  return Promise.resolve(invited);
+  const db = getDb();
+  const contractorsCol = collection(db, 'contractors');
+  const q = query(contractorsCol, where(documentId(), 'in', ids));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contractor));
 }
 
 export async function addInvitedContractorToRfp(rfpId: string, contractorId: string): Promise<void> {
-  const rfp = rfps.find(r => r.id === rfpId);
-  if (!rfp) {
-    throw new Error("RFP not found");
-  }
-  if (!rfp.invitedContractors) {
-    rfp.invitedContractors = [];
-  }
-  if (!rfp.invitedContractors.includes(contractorId)) {
-    rfp.invitedContractors.push(contractorId);
-  }
-  return Promise.resolve();
+  const db = getDb();
+  const rfpDocRef = doc(db, 'rfps', rfpId);
+  updateDocumentNonBlocking(rfpDocRef, {
+      invitedContractors: arrayUnion(contractorId)
+  });
 }
