@@ -24,7 +24,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // While checking the user's auth state, show a full-screen loading indicator.
   // This prevents any of the protected app from rendering until the user is confirmed.
-  if (isUserLoading || !user) {
+  if (isUserLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -32,9 +32,20 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+  
+  // If a user is found, render the protected app content.
+  if (user) {
+    return <>{children}</>;
+  }
 
-  // If the user is logged in, render the protected app content.
-  return <>{children}</>;
+  // If there's no user and we are not loading, the useEffect above will trigger a redirect.
+  // Render a loading state while the redirect happens to prevent flashing content.
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin" />
+      <p className="ml-3">Redirecting...</p>
+    </div>
+  );
 }
 
 
