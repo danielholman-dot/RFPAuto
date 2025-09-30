@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { 
@@ -19,6 +20,7 @@ import {
 import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import type { Contractor, RFP, Proposal } from './types';
+import { ContractorsData } from './seed';
 
 // This function should be called within a component or context where Firebase is initialized.
 const getDb = () => {
@@ -102,21 +104,14 @@ export const getContractorTypes = async () => {
 
 // Data access functions
 export async function getContractors(): Promise<Contractor[]> {
-  const db = getDb();
-  const contractorsCol = collection(db, 'contractors');
-  const contractorSnapshot = await getDocs(contractorsCol);
-  const contractorList = contractorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contractor));
-  return contractorList;
+  // Using mock data for contractors
+  return Promise.resolve(ContractorsData as Contractor[]);
 }
 
 export async function getContractorById(id: string): Promise<Contractor | null> {
-  const db = getDb();
-  const contractorDocRef = doc(db, 'contractors', id);
-  const contractorSnap = await getDoc(contractorDocRef);
-  if (contractorSnap.exists()) {
-    return { id: contractorSnap.id, ...contractorSnap.data() } as Contractor;
-  }
-  return null;
+  // Using mock data for contractors
+  const contractor = ContractorsData.find(c => c.id === id);
+  return Promise.resolve((contractor as Contractor) || null);
 }
 
 
@@ -211,28 +206,20 @@ export async function getProposalsForRfp(rfpId: string): Promise<Proposal[]> {
 }
 
 export async function getSuggestedContractors(metroCode: string, contractorType: string): Promise<Contractor[]> {
-  const db = getDb();
-  const contractorsCol = collection(db, 'contractors');
-  const q = query(
-      contractorsCol,
-      where('metroCodes', 'array-contains', metroCode),
-      where('type', '==', contractorType),
-      orderBy('preference'),
-      limit(5)
+  // Using mock data for contractors
+  const filtered = ContractorsData.filter(c => 
+      c.metroCodes.includes(metroCode) && c.type === contractorType
   );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contractor));
+  return Promise.resolve(filtered.sort((a, b) => (a.preference || 3) - (b.preference || 3)).slice(0, 5) as Contractor[]);
 }
 
 export async function getInvitedContractors(ids: string[]): Promise<Contractor[]> {
-  if (!ids || ids.length === 0) {
-    return Promise.resolve([]);
-  }
-  const db = getDb();
-  const contractorsCol = collection(db, 'contractors');
-  const q = query(contractorsCol, where(documentId(), 'in', ids));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contractor));
+    if (!ids || ids.length === 0) {
+        return Promise.resolve([]);
+    }
+    // Using mock data for contractors
+    const contractors = ContractorsData.filter(c => ids.includes(c.id));
+    return Promise.resolve(contractors as Contractor[]);
 }
 
 export async function addInvitedContractorToRfp(rfpId: string, contractorId: string): Promise<void> {

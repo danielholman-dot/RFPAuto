@@ -5,6 +5,7 @@
 
 
 
+
 export const ContractorsData = [
     {
         "name": "Allison-Smith Company LLC",
@@ -562,7 +563,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "IAD (Washington, D.C.)"
+        "metroSite": "Iاد (Washington, D.C.)"
     },
     {
         "name": "ABB Inc",
@@ -753,7 +754,7 @@ export const ContractorsData = [
         "region": "East",
         "metroSite": "CMH, CHS, ATL, IAD, LNK/CBF, DFW, DLS, TUL, CKV, RIC, RNO, SLC, MCI, PHX, YUL, FWA, CLT, AUS, HSV, BMI, CID, FDY, SWO, AMW, LAS, LAX, MSP, MRN, MEM, PHN, ROA, DYS, HOU"
     }
-].map(c => {
+].map((c, i) => {
     // Extract metro codes from the metroSite string
     const metroSiteString = c.metroSite || '';
     // This regex will find all 3-4 letter uppercase codes, handling cases like LNK/CBF by finding LNK and CBF
@@ -773,6 +774,7 @@ export const ContractorsData = [
 
 
     return {
+        id: `contractor-${i + 1}`,
         ...c,
         metroCodes: contractorMetroCodes,
         performance,
@@ -855,6 +857,7 @@ export const RFPData = [
     
 
     
+
 
 
 

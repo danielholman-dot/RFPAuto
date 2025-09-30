@@ -400,22 +400,6 @@
         }
       },
       {
-        "path": "/contractors/{contractorId}",
-        "definition": {
-          "entityName": "Contractor",
-          "schema": {
-            "$ref": "#/backend/entities/Contractor"
-          },
-          "description": "Stores contractor data. Contractors are globally accessible and do not require specific authorization fields.",
-          "params": [
-            {
-              "name": "contractorId",
-              "description": "The unique identifier for the contractor."
-            }
-          ]
-        }
-      },
-      {
         "path": "/projects/{projectId}",
         "definition": {
           "entityName": "Project",
