@@ -1,181 +1,28 @@
-/**
- * @description This ruleset enforces a public-read, owner-write model for most collections.
- * All write operations require authentication.
- * @dataStructure
- * - /metro_codes/{metroCodeId}: Publicly readable metro code data.
- * - /contractor_types/{contractorTypeId}: Publicly readable contractor type data.
- * - /contractors/{contractorId}: Publicly readable contractor data.
- * - /projects/{projectId}: Publicly readable project data.
- * - /rfps/{rfpId}: Publicly readable RFP data.
- * - /proposals/{proposalId}: Publicly readable proposal data, write access depends on associated RFP data.
- * - /scorecards/{scorecardId}: Publicly readable scorecard data.
- * - /technical_documents/{technicalDocumentId}: Publicly readable technical document data.
- * - /feedbacks/{feedbackId}: Publicly readable feedback data.
- * - /stakeholders/{stakeholderId}: Publicly readable stakeholder data.
- * @keySecurityDecisions
- * - All collections are publicly readable to facilitate data discovery and access.
- * - All write operations require authentication via `isSignedIn()`.
- * - No specific owner-only writes are defined due to lack of explicit ownership fields in schemas.
- * @denormalizationForAuthorization
- * - None currently.
- */
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Allows anyone to read MetroCode data, but restricts all write operations.
-     * @path /metro_codes/{metroCodeId}
-     * @allow (get, list): Any user can read MetroCode data.
-     * @deny (create, update, delete): No one can create, update, or delete MetroCode data through the client.
-     * @principle Allows public read access for general information.
-     */
-    match /metro_codes/{metroCodeId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    /**
-     * @description Allows anyone to read ContractorType data, but restricts all write operations.
-     * @path /contractor_types/{contractorTypeId}
-     * @allow (get, list): Any user can read ContractorType data.
-     * @deny (create, update, delete): No one can create, update, or delete ContractorType data.
-     * @principle Allows public read access for general information.
-     */
-    match /contractor_types/{contractorTypeId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
 
-    /**
-     * @description Allows anyone to read Contractor data, but restricts all write operations.
-     * @path /contractors/{contractorId}
-     * @allow (get, list): Any user can read Contractor data.
-     * @deny (create, update, delete): No one can create, update, or delete Contractor data.
-     * @principle Allows public read access for general information.
-     */
-    match /contractors/{contractorId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    // Rules for collections
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
     }
-
-    /**
-     * @description Allows anyone to read Project data, but restricts all write operations.
-     * @path /projects/{projectId}
-     * @allow (get, list): Any user can read Project data.
-     * @deny (create, update, delete): No one can create, update, or delete Project data.
-     * @principle Allows public read access for general information.
-     */
-    match /projects/{projectId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Allows anyone to read RFP data, but restricts all write operations.
-     * @path /rfps/{rfpId}
-     * @allow (get, list): Any user can read RFP data.
-     * @deny (create, update, delete): No one can create, update, or delete RFP data.
-     * @principle Allows public read access for general information.
-     */
+    
     match /rfps/{rfpId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Allows anyone to read Proposal data, but restricts all write operations.
-     * @path /proposals/{proposalId}
-     * @allow (get, list): Any user can read Proposal data.
-     * @deny (create, update, delete): No one can create, update, or delete Proposal data.
-     * @principle Allows public read access for general information.
-     */
-    match /proposals/{proposalId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Allows anyone to read Scorecard data, but restricts all write operations.
-     * @path /scorecards/{scorecardId}
-     * @allow (get, list): Any user can read Scorecard data.
-     * @deny (create, update, delete): No one can create, update, or delete Scorecard data.
-     * @principle Allows public read access for general information.
-     */
-    match /scorecards/{scorecardId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Allows anyone to read TechnicalDocument data, but restricts all write operations.
-     * @path /technical_documents/{technicalDocumentId}
-     * @allow (get, list): Any user can read TechnicalDocument data.
-     * @deny (create, update, delete): No one can create, update, or delete TechnicalDocument data.
-     * @principle Allows public read access for general information.
-     */
-    match /technical_documents/{technicalDocumentId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Allows anyone to read Feedback data, but restricts all write operations.
-     * @path /feedbacks/{feedbackId}
-     * @allow (get, list): Any user can read Feedback data.
-     * @deny (create, update, delete): No one can create, update, or delete Feedback data.
-     * @principle Allows public read access for general information.
-     */
-    match /feedbacks/{feedbackId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Allows anyone to read Stakeholder data, but restricts all write operations.
-     * @path /stakeholders/{stakeholderId}
-     * @allow (get, list): Any user can read Stakeholder data.
-     * @deny (create, update, delete): No one can create, update, or delete Stakeholder data.
-     * @principle Allows public read access for general information.
-     */
-    match /stakeholders/{stakeholderId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Placeholder match for future use.  All access is denied.
-     * @path /path/to/future/collection/{documentId}
-     * @allow (get, list, create, update, delete): Never.
-     * @deny (get, list, create, update, delete): Always.
-     * @principle Placeholder for future rules development; currently denies all access.
-     */
-    match /path/to/future/collection/{documentId} {
-        allow get: if false;
-        allow list: if false;
-        allow create: if false;
-        allow update: if false;
-        allow delete: if false;
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
