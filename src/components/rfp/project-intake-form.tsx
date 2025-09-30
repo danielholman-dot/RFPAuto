@@ -40,6 +40,7 @@ const formSchema = z.object({
   projectStartDate: z.date({ required_error: "A project start date is required."}),
   projectEndDate: z.date().optional(),
   technicalDocuments: z.any().optional(),
+  technicalDocumentsLinks: z.string().optional(),
 })
 
 type ProjectIntakeFormProps = {
@@ -62,6 +63,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       additionalStakeholderEmails: "",
       metroCode: "",
       contractorType: "",
+      technicalDocumentsLinks: "",
     },
   })
 
@@ -423,20 +425,40 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                 )}
             />
         </div>
-        <FormField
-          control={form.control}
-          name="technicalDocuments"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Technical Documents</FormLabel>
-              <FormControl>
-                <Input type="file" multiple />
-              </FormControl>
-              <FormDescription>Upload any relevant technical specs, drawings, or documents.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="technicalDocuments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Technical Documents (Files)</FormLabel>
+                  <FormControl>
+                    <Input type="file" multiple />
+                  </FormControl>
+                  <FormDescription>Upload any relevant local files like specs, drawings, or zipped documents.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="technicalDocumentsLinks"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Technical Documents (Links)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Paste links to Google Sheets, Docs, or other web-based resources here, one per line."
+                      className="min-h-24"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>For documents that are URLs, like Google Sheets, paste the links here.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
