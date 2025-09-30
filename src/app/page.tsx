@@ -1,5 +1,53 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-export default function Home() {
-  redirect('/dashboard');
+import { useFirebase } from '@/firebase';
+import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Briefcase } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+export default function LoginPage() {
+  const { auth, user, isUserLoading } = useFirebase();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleSignIn = () => {
+    if (auth) {
+      const provider = new GoogleAuthProvider();
+      signInWithRedirect(auth, provider);
+    }
+  };
+
+  if (isUserLoading || user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-3">Loading application...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-muted">
+        <Card className="w-full max-w-md shadow-2xl">
+            <CardHeader className="text-center">
+                <Briefcase className="mx-auto h-12 w-12 text-primary" />
+                <CardTitle className="text-3xl font-bold mt-4">MARCUS Automation Suite</CardTitle>
+                <CardDescription>Google Procurement System</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button className="w-full" onClick={handleSignIn} size="lg">
+                    Sign in with Google
+                </Button>
+            </CardContent>
+        </Card>
+    </div>
+  );
 }

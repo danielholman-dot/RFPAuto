@@ -5,58 +5,26 @@ import { Header } from '@/components/layout/header';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useFirebase } from '@/firebase';
-import { GoogleAuthProvider, getRedirectResult, onAuthStateChanged, signInWithRedirect } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 
-function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { auth } = useFirebase();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!auth) return;
-
-    // This is the primary listener for auth state changes.
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [auth]);
-  
-  useEffect(() => {
-    if (!auth) return;
-  
-    // This effect handles the result of a sign-in redirect.
-    // It should run on mount to catch the redirect from the IdP.
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // User has just signed in via redirect.
-          // The onAuthStateChanged listener will handle the user state update.
-          setLoading(true); // Show loading while auth state propagates
-        }
-      })
-      .catch((error) => {
-        console.error("Error processing redirect result:", error);
-      });
-
-  }, [auth]);
-
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, isUserLoading } = useFirebase();
+  const router = useRouter();
 
   useEffect(() => {
-    // This effect triggers the redirect if there's no user after the initial check.
-    if (!loading && !user && auth) {
-      const provider = new GoogleAuthProvider();
-      signInWithRedirect(auth, provider);
+    // If the initial auth state check is done and there's no user,
+    // redirect them to the login page.
+    if (!isUserLoading && !user) {
+      router.push('/');
     }
-  }, [loading, user, auth]);
+  }, [user, isUserLoading, router]);
 
-
-  if (loading || !user) {
+  // While checking the user's auth state, show a loading screen.
+  // Also show loading if the user is present, to prevent flicker before redirecting.
+  if (isUserLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -65,6 +33,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // If the user is logged in, render the protected app content.
   return <>{children}</>;
 }
 
@@ -76,7 +45,7 @@ export default function AppLayout({
 }>) {
   return (
     <SidebarProvider>
-      <AuthWrapper>
+      <AuthGuard>
         <AppSidebar />
         <SidebarInset className='bg-background'>
           <Header />
@@ -84,7 +53,7 @@ export default function AppLayout({
             {children}
           </main>
         </SidebarInset>
-      </AuthWrapper>
+      </AuthGuard>
     </SidebarProvider>
   );
 }
