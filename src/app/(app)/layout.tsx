@@ -5,50 +5,58 @@ import { Header } from '@/components/layout/header';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useFirebase } from '@/firebase';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { GoogleAuthProvider, getRedirectResult, onAuthStateChanged, signInWithRedirect } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { user, auth, isUserLoading } = useFirebase();
-  const [isHandlingRedirect, setIsHandlingRedirect] = useState(true);
+  const { auth } = useFirebase();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
-      setIsHandlingRedirect(false);
-      return;
-    }
+    if (!auth) return;
 
-    // When the component mounts, check if there's a redirect result
+    // This is the primary listener for auth state changes.
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
+  
+  useEffect(() => {
+    if (!auth) return;
+  
+    // This effect handles the result of a sign-in redirect.
+    // It should run on mount to catch the redirect from the IdP.
     getRedirectResult(auth)
       .then((result) => {
-        // If result is null, it means we are not coming back from a redirect
-        // or the user closed the login page.
-        // The onAuthStateChanged listener will handle the user state.
+        if (result) {
+          // User has just signed in via redirect.
+          // The onAuthStateChanged listener will handle the user state update.
+          setLoading(true); // Show loading while auth state propagates
+        }
       })
       .catch((error) => {
-        console.error("Error handling redirect result:", error);
-      })
-      .finally(() => {
-        setIsHandlingRedirect(false);
+        console.error("Error processing redirect result:", error);
       });
 
   }, [auth]);
 
-  useEffect(() => {
-    // This effect triggers the redirect if the user is not logged in
-    // and we are not currently handling a redirect result.
-    if (!isUserLoading && !user && auth && !isHandlingRedirect) {
-      const provider = new GoogleAuthProvider();
-      signInWithRedirect(auth, provider).catch((error) => {
-        console.error("Error during sign-in redirect:", error);
-      });
-    }
-  }, [isUserLoading, user, auth, isHandlingRedirect]);
 
-  // Show a loading screen while checking auth state or handling the redirect
-  if (isUserLoading || isHandlingRedirect || !user) {
+  useEffect(() => {
+    // This effect triggers the redirect if there's no user after the initial check.
+    if (!loading && !user && auth) {
+      const provider = new GoogleAuthProvider();
+      signInWithRedirect(auth, provider);
+    }
+  }, [loading, user, auth]);
+
+
+  if (loading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
