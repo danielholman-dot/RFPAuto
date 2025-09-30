@@ -157,17 +157,24 @@ export async function getRfpById(id: string): Promise<RFP | null> {
 export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedContractors'>): Promise<string> {
     const db = getDb();
     const rfpsCol = collection(db, 'rfps');
-    const docRef = await addDocumentNonBlocking(rfpsCol, {
-        ...rfpData,
+    
+    // Convert Date objects to Timestamps before sending to Firestore
+    const firestoreRfpData: { [key: string]: any } = { ...rfpData };
+    for (const key in firestoreRfpData) {
+        if (firestoreRfpData[key] instanceof Date) {
+            firestoreRfpData[key] = Timestamp.fromDate(firestoreRfpData[key] as Date);
+        }
+    }
+
+    const docRef = await addDoc(rfpsCol, {
+        ...firestoreRfpData,
         createdAt: Timestamp.now(),
         invitedContractors: [], // Initialize as empty array
         status: 'Draft'
     });
-    if (!docRef) {
-        throw new Error("Failed to create RFP document.");
-    }
     return docRef.id;
 }
+
 
 export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<void> {
     const db = getDb();
@@ -190,9 +197,6 @@ export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'i
         ...proposalData,
         submittedDate: Timestamp.now()
     });
-    if (!docRef) {
-        throw new Error("Failed to create proposal document.");
-    }
     return docRef.id;
 }
 
