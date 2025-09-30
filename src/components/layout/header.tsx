@@ -16,9 +16,15 @@ import { useFirebase } from "@/firebase/provider";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { LogIn, LogOut } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { user, auth, isUserLoading } = useFirebase();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleLogin = async () => {
     if (!auth) return;
@@ -55,7 +61,7 @@ export function Header() {
         {/* Can be used for a search bar later */}
       </div>
 
-      {isUserLoading ? (
+      {!isClient || isUserLoading ? (
         <Skeleton className="h-8 w-32" />
       ) : user ? (
         <DropdownMenu>
