@@ -15,7 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { getAllMetroCodes } from '@/lib/data';
-import { MetroMapChart } from '@/components/metro/metro-map-chart';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -147,17 +146,6 @@ export default function MetroPage() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Metro Locations</CardTitle>
-          <CardDescription>
-            A map showing the distribution of active project metros.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <MetroMapChart metros={metros} />
         </CardContent>
       </Card>
     </div>
