@@ -62,7 +62,7 @@ export function Header() {
       </div>
 
       {!isClient || isUserLoading ? (
-        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-8 w-24" />
       ) : user ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
