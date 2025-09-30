@@ -43,7 +43,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin" />
-      <p className="ml-3">Redirecting...</p>
+      <p className="ml-3">Redirecting to login...</p>
     </div>
   );
 }
