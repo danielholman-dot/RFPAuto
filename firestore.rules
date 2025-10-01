@@ -1,35 +1,26 @@
 /**
  * @fileoverview Firestore Security Rules for the MARCUS Automation Suite.
  *
- * Core Philosophy: This ruleset provides open access to most data, but enforces
- * authorization for proposal modifications by ensuring the request is made by a
- * contractor listed in the RFP associated with the proposal.
+ * Core Philosophy: This ruleset provides open access to most data while ensuring that authorization logic can be added in the future if necessary.
  *
- * Data Structure: The data is organized into top-level collections like
- * /metro_codes, /contractor_types, /projects, /rfps, /proposals, /scorecards,
- * /technical_documents, /feedbacks, and /stakeholders.
+ * Data Structure:
+ * - Top-level collections like `/metro_codes`, `/contractor_types`, `/projects`, `/rfps`, `/proposals`, `/scorecards`, `/technical_documents`, `/feedbacks`, and `/stakeholders` are used to store application data.
  *
  * Key Security Decisions:
- * - Most collections are publicly readable.
- * - Proposal creation, update, and deletion are restricted to authorized contractors.
- * - No user-specific data trees are present, so ownership patterns are not used.
- * - List operations are generally open, as all collections are designed for public
- *   read access.
- *
- * Denormalization for Authorization: The `Proposal` documents are secured by
- * denormalizing the `contractorIds` from the associated `RFP`. This avoids the
- * need for costly `get()` calls to the `RFP` document during security checks.
+ * - Unauthenticated access is allowed for all `get` and `list` operations on all collections.
+ * - No write access is granted by default and writes are disabled using `allow create, update, delete: if false;`.
+ * - This configuration prioritizes rapid prototyping and open access, providing a foundation for implementing more fine-grained access control later.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to metro code data. Write access is denied.
+     * @description Allows anyone to read metro code data. Write operations are disabled.
      * @path /metro_codes/{metroCodeId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all metro codes.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /metro_codes/{metroCodeId} {
       allow get, list: if true;
@@ -37,11 +28,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to contractor type data. Write access is denied.
+     * @description Allows anyone to read contractor type data. Write operations are disabled.
      * @path /contractor_types/{contractorTypeId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all contractor types.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /contractor_types/{contractorTypeId} {
       allow get, list: if true;
@@ -49,11 +40,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to project data. Write access is denied.
+     * @description Allows anyone to read project data. Write operations are disabled.
      * @path /projects/{projectId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all projects.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /projects/{projectId} {
       allow get, list: if true;
@@ -61,11 +52,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to RFP data. Write access is denied.
+     * @description Allows anyone to read RFP data. Write operations are disabled.
      * @path /rfps/{rfpId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all RFPs.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /rfps/{rfpId} {
       allow get, list: if true;
@@ -73,11 +64,23 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to scorecard data. Write access is denied.
+     * @description Allows anyone to read proposal data. Write operations are disabled.
+     * @path /proposals/{proposalId}
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
+     */
+    match /proposals/{proposalId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows anyone to read scorecard data. Write operations are disabled.
      * @path /scorecards/{scorecardId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all scorecards.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /scorecards/{scorecardId} {
       allow get, list: if true;
@@ -85,11 +88,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to technical document data. Write access is denied.
+     * @description Allows anyone to read technical document data. Write operations are disabled.
      * @path /technical_documents/{technicalDocumentId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all technical documents.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /technical_documents/{technicalDocumentId} {
       allow get, list: if true;
@@ -97,11 +100,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to feedback data. Write access is denied.
+     * @description Allows anyone to read feedback data. Write operations are disabled.
      * @path /feedbacks/{feedbackId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all feedback.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /feedbacks/{feedbackId} {
       allow get, list: if true;
@@ -109,34 +112,15 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to stakeholder data. Write access is denied.
+     * @description Allows anyone to read stakeholder data. Write operations are disabled.
      * @path /stakeholders/{stakeholderId}
-     * @allow (get, list): if true
-     * @deny (create, update, delete): if false
-     * @principle Allows public read access for all stakeholders.
+     * @allow (get, list) Read access is allowed for all users.
+     * @deny (create, update, delete) Write access is always denied.
+     * @principle Public read access with no write access.
      */
     match /stakeholders/{stakeholderId} {
       allow get, list: if true;
       allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Controls access to proposal data based on contractor authorization.
-     * @path /proposals/{proposalId}
-     * @allow (get, list): if true
-     * @allow (create): if request.auth.uid in request.resource.data.contractorIds
-     * @allow (update): if resource != null && request.auth.uid in resource.data.contractorIds
-     * @allow (delete): if resource != null && request.auth.uid in resource.data.contractorIds
-     * @deny (create): if !(request.auth.uid in request.resource.data.contractorIds)
-     * @deny (update): if resource == null || !(request.auth.uid in resource.data.contractorIds)
-     * @deny (delete): if resource == null || !(request.auth.uid in resource.data.contractorIds)
-     * @principle Restricts proposal modifications to authorized contractors.
-     */
-    match /proposals/{proposalId} {
-      allow get, list: if true;
-      allow create: if request.auth.uid in request.resource.data.contractorIds;
-      allow update: if resource != null && request.auth.uid in resource.data.contractorIds;
-      allow delete: if resource != null && request.auth.uid in resource.data.contractorIds;
     }
   }
 }
