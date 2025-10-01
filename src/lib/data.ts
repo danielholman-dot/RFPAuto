@@ -6,7 +6,7 @@ import {
   collection, 
   getDocs, 
   getDoc, 
-  doc, 
+  doc, _content_
   addDoc, 
   updateDoc, 
   arrayUnion,
@@ -179,13 +179,15 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedCon
 export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<void> {
     const db = getDb();
     const rfpDocRef = doc(db, 'rfps', rfpId);
-    // Convert Date objects to Timestamps before updating
+    
     const firestoreUpdates: { [key: string]: any } = { ...updates };
     for (const key in firestoreUpdates) {
-        if (firestoreUpdates[key] instanceof Date) {
-            firestoreUpdates[key] = Timestamp.fromDate(firestoreUpdates[key] as Date);
-        }
+      if (firestoreUpdates[key] instanceof Date) {
+        firestoreUpdates[key] = Timestamp.fromDate(firestoreUpdates[key] as Date);
+      }
     }
+  
+    // We use the non-blocking update function to avoid UI freezes.
     updateDocumentNonBlocking(rfpDocRef, firestoreUpdates);
 }
   

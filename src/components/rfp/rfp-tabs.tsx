@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -154,31 +155,22 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
   const handleStageToggle = (stage: RfpStage) => {
     const isCompleting = !completedStages.includes(stage);
     let newCompletedStages = [...completedStages];
+    let newStatus: RfpStage | 'Completed';
 
     if (isCompleting) {
         newCompletedStages.push(stage);
+        const nextStageIndex = STAGES.indexOf(stage) + 1;
+        newStatus = STAGES[nextStageIndex] || 'Completed';
     } else {
-        // If unchecking a stage, uncheck all subsequent stages
         const stageIndex = STAGES.indexOf(stage);
         newCompletedStages = completedStages.filter(s => STAGES.indexOf(s) < stageIndex);
+        newStatus = stage;
     }
-
     setCompletedStages(newCompletedStages);
 
-    const findNextStage = () => {
-        for (const s of STAGES) {
-            if (!newCompletedStages.includes(s)) {
-                return s;
-            }
-        }
-        return 'Completed';
-    };
-
-    const newStatus = findNextStage();
-    
-    const updatedRfp = { ...rfp, status: newStatus as RFP['status'] };
+    const updatedRfp = { ...rfp, status: newStatus as RFP['status'], completedStages: newCompletedStages };
     setRfp(updatedRfp);
-    updateRfp(rfp.id, { status: newStatus as RFP['status'] });
+    updateRfp(rfp.id, { status: newStatus as RFP['status'], completedStages: newCompletedStages });
 
     toast({
         title: "Status Updated",

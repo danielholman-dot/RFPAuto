@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from "firebase/firestore";
 
 export type RFP = {
@@ -19,6 +20,7 @@ export type RFP = {
   additionalStakeholderEmails?: string;
   createdAt?: Timestamp | Date;
   technicalDocumentsLinks?: string;
+  completedStages?: string[];
 };
 
 export type Contractor = {
