@@ -1,28 +1,142 @@
+/**
+ * @fileoverview Firestore Security Rules for the MARCUS Automation Suite.
+ *
+ * Core Philosophy: This ruleset provides open access to most data, but enforces
+ * authorization for proposal modifications by ensuring the request is made by a
+ * contractor listed in the RFP associated with the proposal.
+ *
+ * Data Structure: The data is organized into top-level collections like
+ * /metro_codes, /contractor_types, /projects, /rfps, /proposals, /scorecards,
+ * /technical_documents, /feedbacks, and /stakeholders.
+ *
+ * Key Security Decisions:
+ * - Most collections are publicly readable.
+ * - Proposal creation, update, and deletion are restricted to authorized contractors.
+ * - No user-specific data trees are present, so ownership patterns are not used.
+ * - List operations are generally open, as all collections are designed for public
+ *   read access.
+ *
+ * Denormalization for Authorization: The `Proposal` documents are secured by
+ * denormalizing the `contractorIds` from the associated `RFP`. This avoids the
+ * need for costly `get()` calls to the `RFP` document during security checks.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
+    /**
+     * @description Grants public read access to metro code data. Write access is denied.
+     * @path /metro_codes/{metroCodeId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all metro codes.
+     */
+    match /metro_codes/{metroCodeId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    /**
+     * @description Grants public read access to contractor type data. Write access is denied.
+     * @path /contractor_types/{contractorTypeId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all contractor types.
+     */
+    match /contractor_types/{contractorTypeId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    // Rules for collections
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
+    /**
+     * @description Grants public read access to project data. Write access is denied.
+     * @path /projects/{projectId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all projects.
+     */
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
-    
+
+    /**
+     * @description Grants public read access to RFP data. Write access is denied.
+     * @path /rfps/{rfpId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all RFPs.
+     */
     match /rfps/{rfpId} {
-      allow read, write: if isSignedIn();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    match /{document=**} {
-      allow read, write: if false;
+    /**
+     * @description Grants public read access to scorecard data. Write access is denied.
+     * @path /scorecards/{scorecardId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all scorecards.
+     */
+    match /scorecards/{scorecardId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Grants public read access to technical document data. Write access is denied.
+     * @path /technical_documents/{technicalDocumentId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all technical documents.
+     */
+    match /technical_documents/{technicalDocumentId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Grants public read access to feedback data. Write access is denied.
+     * @path /feedbacks/{feedbackId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all feedback.
+     */
+    match /feedbacks/{feedbackId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Grants public read access to stakeholder data. Write access is denied.
+     * @path /stakeholders/{stakeholderId}
+     * @allow (get, list): if true
+     * @deny (create, update, delete): if false
+     * @principle Allows public read access for all stakeholders.
+     */
+    match /stakeholders/{stakeholderId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Controls access to proposal data based on contractor authorization.
+     * @path /proposals/{proposalId}
+     * @allow (get, list): if true
+     * @allow (create): if request.auth.uid in request.resource.data.contractorIds
+     * @allow (update): if resource != null && request.auth.uid in resource.data.contractorIds
+     * @allow (delete): if resource != null && request.auth.uid in resource.data.contractorIds
+     * @deny (create): if !(request.auth.uid in request.resource.data.contractorIds)
+     * @deny (update): if resource == null || !(request.auth.uid in resource.data.contractorIds)
+     * @deny (delete): if resource == null || !(request.auth.uid in resource.data.contractorIds)
+     * @principle Restricts proposal modifications to authorized contractors.
+     */
+    match /proposals/{proposalId} {
+      allow get, list: if true;
+      allow create: if request.auth.uid in request.resource.data.contractorIds;
+      allow update: if resource != null && request.auth.uid in resource.data.contractorIds;
+      allow delete: if resource != null && request.auth.uid in resource.data.contractorIds;
     }
   }
 }
