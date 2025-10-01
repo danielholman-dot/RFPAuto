@@ -1,13 +1,23 @@
+
+'use client';
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
+import { AppSidebar } from '@/components/layout/sidebar';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { Header } from '@/components/layout/header';
 
+// Since we're using 'use client', we can't export metadata from here.
+// This should be moved to a non-client file or handled differently if needed.
+/*
 export const metadata: Metadata = {
   title: 'MARCUS Automation Suite',
   description: 'MARCUS Automation Suite for RFP Management',
 };
+*/
 
 export default function RootLayout({
   children,
@@ -17,13 +27,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <title>MARCUS Automation Suite</title>
+        <meta name="description" content="MARCUS Automation Suite for RFP Management" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased', 'min-h-screen bg-background font-sans')}>
         <FirebaseClientProvider>
-          {children}
+            <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset className='bg-background'>
+                    <Header />
+                    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+                        {children}
+                    </main>
+                </SidebarInset>
+            </SidebarProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>

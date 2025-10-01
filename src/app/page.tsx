@@ -37,9 +37,6 @@ import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
 import { getContractors, getRfps, getAllMetroCodes, getMetroRegions, getMetrosByRegion } from '@/lib/data';
 import { useEffect, useState, useMemo } from 'react';
 import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
-import { AppSidebar } from '@/components/layout/sidebar';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { Header } from '@/components/layout/header';
 
 type MetroInfo = {
   code: string;
@@ -142,7 +139,7 @@ export default function Dashboard() {
     }
   };
 
-  const PageContent = () => (
+  return (
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -304,16 +301,4 @@ export default function Dashboard() {
       </div>
     </>
   );
-
-  return (
-    <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset className='bg-background'>
-            <Header />
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-                <PageContent />
-            </main>
-        </SidebarInset>
-    </SidebarProvider>
-  )
 }
