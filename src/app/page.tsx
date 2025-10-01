@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuth, signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
 import { useUser } from '@/firebase/auth/use-user';
 import { useFirebase } from '@/firebase';
 import { Loader2 } from 'lucide-react';
@@ -25,13 +25,16 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
+    // If the user is logged in, redirect them to the dashboard.
+    // This is useful for users who are already signed in and revisit the root URL.
     if (!loading && user) {
       router.replace('/dashboard');
     }
   }, [user, loading, router]);
 
   const landingImage = PlaceHolderImages.find(img => img.id === 'dashboard-hero');
-
+  
+  // Show a loading spinner while checking auth state or if user exists (to redirect).
   if (loading || user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -41,6 +44,7 @@ export default function LoginPage() {
     );
   }
   
+  // If not loading and no user, show the login page.
   return (
      <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
       <div className="flex items-center justify-center py-12">

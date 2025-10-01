@@ -14,11 +14,14 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    // If loading is finished and there's no user, redirect to login.
     if (!loading && !user) {
-      router.push('/');
+      router.replace('/');
     }
   }, [user, loading, router]);
 
+  // While loading, or if there's no user yet (and we're about to redirect),
+  // show a loading screen. This prevents the children from rendering prematurely.
   if (loading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -36,7 +39,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         </div>
     );
   }
-
+  
+  // If loading is done and we have a user, render the protected content.
   return <>{children}</>;
 }
 
