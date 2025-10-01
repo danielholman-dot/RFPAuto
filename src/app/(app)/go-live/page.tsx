@@ -40,18 +40,6 @@ const tasks = {
             ]
         },
         { 
-            id: 'be-3', 
-            text: 'Secure all backend API endpoints and server actions.', 
-            completed: false, 
-            level: 'Any',
-            steps: [
-                "1. In each server action or API route, get the current authenticated user.",
-                "2. Check if the user has the required role/permission for the action.",
-                "3. If the user is not authenticated or authorized, throw an error.",
-                "4. Implement this for all data mutation endpoints (create, update, delete)."
-            ]
-        },
-        { 
             id: 'be-4', 
             text: 'Create database logic to save RFP progress, stage completions, and user edits.', 
             completed: false, 
@@ -74,29 +62,6 @@ const tasks = {
                 "2. Create a server action that takes recipient, subject, and body, and sends the email.",
                 "3. In the dialog components, call this server action when the 'Send' button is clicked.",
                 "4. Add success and error handling with toasts."
-            ]
-        },
-        { 
-            id: 'fe-2', 
-            text: 'Implement user profile management pages.', 
-            completed: false, 
-            level: 'Any',
-            steps: [
-                "1. Create a 'Profile' or 'Account' page for logged-in users.",
-                "2. On the profile page, allow users to see their information.",
-                "3. If using custom profiles, allow users to update their name or role if permissions allow."
-            ]
-        },
-        { 
-            id: 'fe-3', 
-            text: 'Wire up the "Permissions" table on the Settings page to a user role management system.', 
-            completed: false, 
-            level: 'Owner',
-            steps: [
-                "1. Store permissions configuration in the database instead of local state.",
-                "2. Create functions to fetch and update these permissions.",
-                "3. The Settings page should use these functions to display and save changes.",
-                "4. This database config will be the source of truth for securing backend actions."
             ]
         },
         { 
@@ -124,48 +89,11 @@ const tasks = {
             ]
         },
     ],
-    'Authentication & Security': [
-        { 
-            id: 'auth-1', 
-            text: 'Implement a full authentication flow using Google Accounts.', 
-            completed: false, 
-            level: 'Owner',
-            steps: [
-                "1. Set up Firebase Authentication and enable the Google provider.",
-                "2. Create a Login page that uses the Firebase Auth SDK's Google Sign-In popup or redirect flow.",
-                "3. Implement logic to handle user sessions, protecting pages that require login.",
-                "4. Add a 'Logout' button that calls the `signOut` function."
-            ]
-        },
-        { 
-            id: 'auth-2', 
-            text: 'Enforce role-based access control (RBAC) based on the permissions set in Settings.', 
-            completed: false, 
-            level: 'Owner',
-            steps: [
-                "1. When a user logs in, fetch their role (e.g., 'gpo', 'pm') from the database.",
-                "2. Store the user's role in their session or auth token (using custom claims).",
-                "3. On the frontend, conditionally render UI elements based on the user's role.",
-                "4. In the backend, verify the user's role before allowing sensitive operations."
-            ]
-        },
-        { 
-            id: 'auth-3', 
-            text: 'Add security headers and configure Cross-Origin Resource Sharing (CORS) policies.', 
-            completed: false, 
-            level: 'Owner',
-            steps: [
-                "1. In `next.config.js`, add a `headers` function to apply security headers (CSP, X-XSS-Protection, etc.).",
-                "2. If the frontend and backend are on different domains, configure CORS policies.",
-                "3. Ensure `HttpOnly` and `Secure` flags are set on session cookies."
-            ]
-        },
-    ],
     'Deployment & Operations': [
         { 
             id: 'deploy-1', 
             text: 'Set up production and staging deployment environments.', 
-            completed: false, 
+            completed: true, 
             level: 'Owner',
             steps: [
                 "1. Choose a hosting provider (e.g., Firebase App Hosting, Vercel).",
@@ -201,7 +129,7 @@ const tasks = {
             completed: false, 
             level: 'Owner',
             steps: [
-                "1. Review all code for common security vulnerabilities (XSS, CSRF, SQLi-like issues with NoSQL).",
+                "1. Review all code for common security vulnerabilities (XSS, CSRF, etc.).",
                 "2. Use security scanning tools to check for dependencies with known vulnerabilities.",
                 "3. Consider hiring a third-party service to perform a penetration test on the live application."
             ]
