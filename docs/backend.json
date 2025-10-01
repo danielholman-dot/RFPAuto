@@ -360,10 +360,7 @@
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": []
   },
   "firestore": {
     "structure": [
@@ -515,3 +512,4 @@
     "reasoning": "The Firestore structure is designed to support the MARCUS Automation Suite application, emphasizing security, scalability, and ease of debugging. It leverages denormalization for authorization independence, structural segregation for simplified security rules, and standardized access modeling.  \n\n**Authorization Independence:** Access control is managed without hierarchical dependencies. For instance, access to `Proposals` depends on `RFP` data, so relevant `RFP` attributes (e.g., allowed `contractorIds`) are denormalized into each `Proposal` document, removing the need for `get()` calls in security rules.\n\n**Structural Segregation:** The structure avoids mixing data with differing access requirements within the same collections. All documents within a single collection will have the same security posture, simplifying rule creation and maintenance.\n\n**Access Modeling:**\n*   **Path-Based Ownership:** The structure primarily utilizes path-based ownership where applicable, such as `/users/{userId}/projects/{projectId}` for user-owned projects. This promotes clarity and security.\n*   **Membership Map:** For collaborative entities, a `members` map stores user roles, enabling fine-grained access control. This pattern, combined with denormalization, ensures authorization independence.\n\n**QAPs (Rules Are Not Filters):**\n*   Secure `list` operations are supported by ensuring that all documents within a collection share the same security posture. For example, listing projects within `/users/{userId}/projects` is secure because only the specified user can access documents within their own user path.\n\n**Invariants:** The design maintains data integrity through ownership and timestamp management. Denormalized data, such as `contractorIds` copied from `RFP` to `Proposal`, can be validated against the source of truth in security rules to prevent inconsistencies.\n\nThis structure ensures that security rules are simple, robust, and easily auditable, aligning with the core design principles."
   }
 }
+    
