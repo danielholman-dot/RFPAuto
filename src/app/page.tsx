@@ -100,12 +100,19 @@ export default function LoginPage() {
                 </FeatureHighlight>
             </div>
 
-            <div className="space-y-4">
-                <Button className="w-full" onClick={handleSignIn} size="lg">
-                    Sign in with Google
-                </Button>
+            <div className="space-y-4 pt-4">
+                <button onClick={handleSignIn} className="w-full flex justify-center" aria-label="Sign in with Google">
+                    <Image 
+                        src="https://developers.google.com/static/identity/images/branding_guideline_sample_lt_rd_lg.svg"
+                        alt="Sign in with Google button"
+                        width={191}
+                        height={46}
+                        className="cursor-pointer hover:opacity-90 transition-opacity"
+                        priority
+                    />
+                </button>
                 <p className="px-8 text-center text-xs text-muted-foreground">
-                    By signing in, you agree to our Terms of Service and Privacy Policy.
+                    By clicking "Sign in with Google", you agree to our Terms of Service and Privacy Policy.
                 </p>
             </div>
         </div>
