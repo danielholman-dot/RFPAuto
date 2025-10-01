@@ -55,18 +55,18 @@ export default function LoginPage() {
     );
   }
 
-  const procurementImage = PlaceHolderImages.find(img => img.id === 'procurement-landing');
+  const landingImage = PlaceHolderImages.find(img => img.id === 'dashboard-hero');
 
   // If we are done loading and there is no user, show the full login page.
   return (
     <div className="flex h-screen w-full bg-card">
       <div className="hidden lg:flex lg:w-1/2 relative">
           <Image 
-            src={procurementImage?.imageUrl || "https://picsum.photos/seed/procure/1200/1800"}
-            alt={procurementImage?.description || "An abstract image representing global procurement and logistics"}
+            src={landingImage?.imageUrl || "https://picsum.photos/seed/arch/1200/1800"}
+            alt={landingImage?.description || "An abstract image representing modern architecture"}
             fill
             className="object-cover"
-            data-ai-hint={procurementImage?.imageHint}
+            data-ai-hint={landingImage?.imageHint}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="relative z-10 flex flex-col justify-end p-12 text-white">
