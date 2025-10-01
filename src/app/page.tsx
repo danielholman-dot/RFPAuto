@@ -33,8 +33,8 @@ export default function LoginPage() {
         // ...
         router.push('/dashboard');
       }).catch((error) => {
-        // Handle specific case where user closes the popup.
-        if (error.code === 'auth/cancelled-popup-request') {
+        // Handle specific cases where user closes the popup.
+        if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
           // Don't log this error, it's expected user behavior.
           return;
         }
