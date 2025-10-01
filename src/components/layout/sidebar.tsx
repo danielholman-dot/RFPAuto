@@ -21,32 +21,18 @@ import {
   Briefcase,
   HelpCircle,
   ClipboardList,
-  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from '../ui/button';
-import { useAuth, useUser } from '@/firebase';
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const auth = useAuth();
-  const { user } = useUser();
 
   const isActive = (path: string) => {
-    if (path === '/rfp' && pathname.startsWith('/rfp/')) return true;
-    if (path === '/templates' && pathname.startsWith('/templates')) return true;
-    return pathname === path;
+    if (path === '/' && pathname === '/') return true;
+    if (path !== '/' && pathname.startsWith(path)) return true;
+    return false;
   };
-
-  const handleLogout = async () => {
-    if (auth) {
-        await auth.signOut();
-    }
-  }
-
-  // RBAC: Determine if the user has the 'gpo' role
-  const isGpo = user?.role === 'gpo';
 
   return (
     <Sidebar>
@@ -59,10 +45,10 @@ export function AppSidebar() {
       <SidebarMenu>
         <SidebarGroup>
           <SidebarMenuItem>
-            <Link href="/dashboard" passHref>
+            <Link href="/" passHref>
               <SidebarMenuButton
                 asChild
-                isActive={isActive('/dashboard')}
+                isActive={isActive('/')}
                 tooltip={{ children: 'Dashboard' }}
               >
                 <span>
@@ -128,9 +114,7 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
-          {/* RBAC: Only show Metro link if user is GPO */}
-          {isGpo && (
-            <SidebarMenuItem>
+          <SidebarMenuItem>
               <Link href="/metro" passHref>
                 <SidebarMenuButton
                   asChild
@@ -144,7 +128,6 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-          )}
         </SidebarGroup>
       </SidebarMenu>
 
@@ -178,8 +161,6 @@ export function AppSidebar() {
                 </SidebarMenuButton>
                 </Link>
             </SidebarMenuItem>
-          {/* RBAC: Only show Settings link if user is GPO */}
-          {isGpo && (
             <SidebarMenuItem>
                 <Link href="/settings" passHref>
                 <SidebarMenuButton
@@ -194,18 +175,6 @@ export function AppSidebar() {
                 </SidebarMenuButton>
                 </Link>
             </SidebarMenuItem>
-           )}
-          <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={handleLogout}
-                tooltip={{ children: 'Log Out' }}
-              >
-                <span>
-                  <LogOut />
-                  <span>Log Out</span>
-                </span>
-              </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
