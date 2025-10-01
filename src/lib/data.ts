@@ -6,7 +6,7 @@ import {
   collection, 
   getDocs, 
   getDoc, 
-  doc, _content_
+  doc,
   addDoc, 
   updateDoc, 
   arrayUnion,
@@ -241,3 +241,4 @@ export async function addInvitedContractorToRfp(rfpId: string, contractorId: str
       invitedContractors: arrayUnion(contractorId)
   });
 }
+
