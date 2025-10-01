@@ -16,6 +16,7 @@ import {
   orderBy,
   Timestamp,
   documentId,
+  deleteDoc,
 } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
 import { initializeFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
@@ -191,6 +192,13 @@ export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<v
     updateDocumentNonBlocking(rfpDocRef, firestoreUpdates);
 }
   
+export async function deleteRfp(rfpId: string): Promise<void> {
+    const db = getDb();
+    const rfpDocRef = doc(db, 'rfps', rfpId);
+    // In a real app, you might want to delete subcollections like proposals recursively.
+    // For this prototype, we'll just delete the main RFP document.
+    await deleteDoc(rfpDocRef);
+}
 
 export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'id'>): Promise<string> {
     const db = getDb();
@@ -241,4 +249,3 @@ export async function addInvitedContractorToRfp(rfpId: string, contractorId: str
       invitedContractors: arrayUnion(contractorId)
   });
 }
-
