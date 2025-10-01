@@ -46,6 +46,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
       setEmailContent(null);
       
       const rfpEndDate = rfp.rfpEndDate ? new Date(rfp.rfpEndDate) : new Date();
+      const submissionLink = `${window.location.origin}/proposal/submit/${rfp.id}`;
 
       generateRfpReleaseEmail({
         projectName: rfp.projectName,
@@ -55,6 +56,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
         confirmationDueDate: formatDate(new Date(rfpEndDate.getTime() - 18 * 24 * 60 * 60 * 1000)), // 2 days after start
         qnaDueDate: formatDate(new Date(rfpEndDate.getTime() - 13 * 24 * 60 * 60 * 1000)), // 7 days after start
         submissionDueDate: formatDate(rfpEndDate),
+        submissionLink: submissionLink,
       }).then(result => {
         setEmailContent({
             to: contractor.contactEmail,

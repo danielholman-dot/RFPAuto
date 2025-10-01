@@ -20,6 +20,7 @@ const GenerateRfpReleaseEmailInputSchema = z.object({
   confirmationDueDate: z.string().describe('The due date for confirming receipt.'),
   qnaDueDate: z.string().describe('The due date for submitting questions.'),
   submissionDueDate: z.string().describe('The due date for the final RFP proposal submission.'),
+  submissionLink: z.string().describe('The unique link for the contractor to submit their proposal.'),
 });
 
 export type GenerateRfpReleaseEmailInput = z.infer<typeof GenerateRfpReleaseEmailInputSchema>;
@@ -53,6 +54,7 @@ const rfpReleasePrompt = ai.definePrompt({
   Confirmation Due Date: {{{confirmationDueDate}}}
   Q&A Due Date: {{{qnaDueDate}}}
   Submission Due Date: {{{submissionDueDate}}}
+  Submission Link: {{{submissionLink}}}
 
   **Template:**
   Subject: Invitation to Participate - Google MARCUS {{{projectName}}}, {{{year}}} / {{{contractorName}}}
@@ -60,6 +62,8 @@ const rfpReleasePrompt = ai.definePrompt({
   Dear {{{contractorName}}} Team,<br/><br/>
 
   Google would like to invite your company to participate in the MARCUS {{{projectName}}}, {{{year}}}, where we are seeking qualified General Contractors/Suppliers to perform post-facility completion handover work at our operational data center campuses located in {{{campusLocation}}}. Google is excited to have your company as a potential partner for this project. Below is a list of key actions pertaining to the RFP.<br/><br/>
+
+  To submit your proposal, please use the following secure link: <a href="{{{submissionLink}}}">Submit Proposal</a>.<br/><br/>
 
   If you have not yet completed the RFI Prequalification Questionnaire, please ensure it is filled out as soon as possible. If you have already completed this requirement, please disregard this statement.<br/><br/>
 
@@ -74,7 +78,7 @@ const rfpReleasePrompt = ai.definePrompt({
 
   Please 'Reply All' to this email to confirm receipt of the RFP documents by {{{confirmationDueDate}}} at 5:00 PST.<br/><br/>
 
-  Please upload your RFP Submission packet by {{{submissionDueDate}}} at 5:00 PST. Please note failure to submit all required documents by the specified due date may result in disqualification from further consideration for this RFP. It is critical that all materials are provided on time to ensure your proposal is reviewed in its entirety.<br/><br/>
+  Please upload your RFP Submission packet by {{{submissionDueDate}}} at 5:00 PST using the submission link provided above. Please note failure to submit all required documents by the specified due date may result in disqualification from further consideration for this RFP. It is critical that all materials are provided on time to ensure your proposal is reviewed in its entirety.<br/><br/>
 
   We look forward to your participation in this RFP.<br/><br/>
 

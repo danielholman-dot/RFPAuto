@@ -9,6 +9,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Header } from '@/components/layout/header';
+import { usePathname } from 'next/navigation';
 
 // Since we're using 'use client', we can't export metadata from here.
 // This should be moved to a non-client file or handled differently if needed.
@@ -24,6 +25,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isPublicPage = pathname.startsWith('/proposal/submit');
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -35,15 +39,19 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased', 'min-h-screen bg-background font-sans')}>
         <FirebaseClientProvider>
+          {isPublicPage ? (
+            <main>{children}</main>
+          ) : (
             <SidebarProvider>
-                <AppSidebar />
-                <SidebarInset className='bg-background'>
-                    <Header />
-                    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-                        {children}
-                    </main>
-                </SidebarInset>
+              <AppSidebar />
+              <SidebarInset className='bg-background'>
+                <Header />
+                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+                  {children}
+                </main>
+              </SidebarInset>
             </SidebarProvider>
+          )}
         </FirebaseClientProvider>
         <Toaster />
       </body>
