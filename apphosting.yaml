@@ -6,6 +6,9 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
 
+accessControl:
+  ingress: INGRESS_TRAFFIC_INTERNAL_ONLY
+
 # Defines the behavior of your live deployment.
 deployment:
   # Specifies that the 'live' channel is updated from the 'main' branch.
