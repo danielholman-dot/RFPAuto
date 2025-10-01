@@ -33,7 +33,13 @@ export default function LoginPage() {
         // ...
         router.push('/dashboard');
       }).catch((error) => {
-        // Handle Errors here.
+        // Handle specific case where user closes the popup.
+        if (error.code === 'auth/cancelled-popup-request') {
+          // Don't log this error, it's expected user behavior.
+          return;
+        }
+
+        // Handle other Errors here.
         const errorCode = error.code;
         const errorMessage = error.message;
         // The email of the user's account used.
