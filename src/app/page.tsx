@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useUser } from '@/firebase/auth/use-user';
 import { useFirebase } from '@/firebase';
 import { Loader2 } from 'lucide-react';
@@ -18,10 +18,31 @@ export default function LoginPage() {
   const handleSignIn = () => {
     if (!auth) {
       console.error("Auth service is not available.");
+      // You could show a toast or message to the user here.
       return;
     }
     const provider = new GoogleAuthProvider();
-    signInWithRedirect(auth, provider);
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential?.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+        // IdP data available using getAdditionalUserInfo(result)
+        // ...
+        router.push('/dashboard');
+      }).catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData?.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        console.error("Login failed:", errorCode, errorMessage);
+        // You could show a toast to the user here.
+      });
   };
 
   useEffect(() => {
@@ -32,7 +53,7 @@ export default function LoginPage() {
     }
   }, [user, loading, router]);
 
-  const landingImage = PlaceHolderImages.find(img => img.id === 'dashboard-hero');
+  const landingImage = PlaceHolderImages.find(img => img.id === 'procurement-landing');
   
   // Show a loading spinner while checking auth state or if user exists (to redirect).
   if (loading || user) {
