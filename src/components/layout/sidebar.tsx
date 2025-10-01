@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -22,20 +21,28 @@ import {
   Briefcase,
   HelpCircle,
   ClipboardList,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '../ui/button';
+import { useAuth } from '@/firebase';
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const auth = useAuth();
 
   const isActive = (path: string) => {
     if (path === '/rfp' && pathname.startsWith('/rfp/')) return true;
     if (path === '/templates' && pathname.startsWith('/templates')) return true;
     return pathname === path;
   };
+
+  const handleLogout = async () => {
+    if (auth) {
+        await auth.signOut();
+    }
+  }
 
   return (
     <Sidebar>
@@ -178,15 +185,18 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={handleLogout}
+                tooltip={{ children: 'Log Out' }}
+              >
+                <span>
+                  <LogOut />
+                  <span>Log Out</span>
+                </span>
+              </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
-        <div className="p-2 group-data-[collapsible=icon]:hidden">
-            <Link href="/rfp/new">
-                <Button className="w-full">
-                    <FilePlus2 className="mr-2 h-4 w-4" />
-                    New RFP
-                </Button>
-            </Link>
-        </div>
       </SidebarFooter>
     </Sidebar>
   );
