@@ -55,7 +55,7 @@ export default function LoginPage() {
     );
   }
 
-  const landingImage = PlaceHolderImages.find(img => img.id === 'dashboard-hero');
+  const landingImage = PlaceHolderImages.find(img => img.id === 'architecture-generic');
 
   // If we are done loading and there is no user, show the full login page.
   return (
