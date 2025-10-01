@@ -5,3 +5,10 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+# Defines the behavior of your live deployment.
+deployment:
+  # Specifies that the 'live' channel is updated from the 'main' branch.
+  branch:
+    name: main
+    channel: live
