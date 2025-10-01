@@ -49,6 +49,7 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
       contractorEmail: contractor.contactEmail,
       submissionDate: formatDate(rfp.rfpEndDate),
       improvementAreas: improvementAreas,
+      primaryStakeholderEmail: rfp.primaryStakeholderEmail,
     }).then(result => {
       setEmailContent({
           to: contractor.contactEmail,
@@ -67,7 +68,7 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
     if (isOpen) {
         generateAndSetEmail();
     }
-  }, [isOpen]);
+  }, [isOpen, generateAndSetEmail]);
 
   const updateEmailBody = useCallback(() => {
     if (emailContent?.originalBody) {

@@ -21,6 +21,7 @@ const GenerateRfpReleaseEmailInputSchema = z.object({
   qnaDueDate: z.string().describe('The due date for submitting questions.'),
   submissionDueDate: z.string().describe('The due date for the final RFP proposal submission.'),
   submissionLink: z.string().describe('The unique link for the contractor to submit their proposal.'),
+  primaryStakeholderEmail: z.string().optional().describe("The primary stakeholder's email."),
 });
 
 export type GenerateRfpReleaseEmailInput = z.infer<typeof GenerateRfpReleaseEmailInputSchema>;
@@ -55,6 +56,9 @@ const rfpReleasePrompt = ai.definePrompt({
   Q&A Due Date: {{{qnaDueDate}}}
   Submission Due Date: {{{submissionDueDate}}}
   Submission Link: {{{submissionLink}}}
+  {{#if primaryStakeholderEmail}}
+  Primary Stakeholder Email: {{{primaryStakeholderEmail}}}
+  {{/if}}
 
   **Template:**
   Subject: Invitation to Participate - Google MARCUS {{{projectName}}}, {{{year}}} / {{{contractorName}}}
@@ -82,7 +86,10 @@ const rfpReleasePrompt = ai.definePrompt({
 
   We look forward to your participation in this RFP.<br/><br/>
 
-  Best Regards,
+  Best Regards,<br/>
+  {{#if primaryStakeholderEmail}}
+  {{{primaryStakeholderEmail}}}<br/>
+  {{/if}}
   `,
 });
 

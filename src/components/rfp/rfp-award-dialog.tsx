@@ -61,7 +61,8 @@ export function RfpAwardDialog({ isOpen, onOpenChange, rfp, contractor }: RfpAwa
         contractorName: contractor.name,
         contractorEmail: contractor.contactEmail,
         meetingDate: format(meetingDate, 'MMMM d, yyyy') + ' at 10:00 AM PST',
-        confirmationDate: format(confirmationDate, 'MMMM d, yyyy') + ' at 5:00 PM PST'
+        confirmationDate: format(confirmationDate, 'MMMM d, yyyy') + ' at 5:00 PM PST',
+        primaryStakeholderEmail: rfp.primaryStakeholderEmail
       }).then(result => {
         setEmailContent({
             to: contractor.contactEmail,
