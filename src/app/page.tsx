@@ -4,17 +4,34 @@
 import { useFirebase } from '@/firebase';
 import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Briefcase, Zap, Bot, GanttChartSquare } from 'lucide-react';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+// Helper component for feature highlights
+const FeatureHighlight = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
+    <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0 mt-1">
+            {icon}
+        </div>
+        <div>
+            <h3 className="font-semibold text-foreground">{title}</h3>
+            <p className="text-sm text-muted-foreground">{children}</p>
+        </div>
+    </div>
+);
 
 export default function LoginPage() {
   const { auth, user, isUserLoading } = useFirebase();
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // If a logged-in user lands here, redirect them to the dashboard.
   useEffect(() => {
-    // If the user is already logged in, redirect them to the dashboard.
     if (!isUserLoading && user) {
+      setIsRedirecting(true);
       router.push('/dashboard');
     }
   }, [user, isUserLoading, router]);
@@ -27,10 +44,9 @@ export default function LoginPage() {
     }
   };
 
-  // While checking the user's auth state or if they are already logged in,
-  // show a loading screen. This prevents the login page from flashing
-  // before a redirect to the dashboard can occur.
-  if (isUserLoading || user) {
+  // Show a loading screen during the initial auth check or while redirecting.
+  // This prevents the login page from flashing before a redirect.
+  if (isUserLoading || isRedirecting || user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -39,65 +55,59 @@ export default function LoginPage() {
     );
   }
 
-  // If we are done loading and there is no user, show the login page.
+  const procurementImage = PlaceHolderImages.find(img => img.id === 'procurement-landing');
+
+  // If we are done loading and there is no user, show the full login page.
   return (
-    <div className="flex h-screen w-full">
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-muted p-12 text-foreground">
-        <div className="flex items-center gap-3">
-          <Briefcase className="h-8 w-8 text-primary" />
-          <h1 className="text-2xl font-bold">MARCUS Automation Suite</h1>
-        </div>
-
-        <div className="space-y-6 max-w-md">
-            <h2 className="text-4xl font-bold tracking-tight">Streamline Your RFP Workflow</h2>
-            <p className="text-muted-foreground">
-                From creation to award, leverage intelligent automation to manage your Request for Proposal process with unparalleled efficiency.
-            </p>
-            <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <Zap className="h-5 w-5"/>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold">Automated RFP Generation</h3>
-                        <p className="text-sm text-muted-foreground">Create comprehensive RFP documents in minutes using AI-powered templates.</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <Bot className="h-5 w-5"/>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold">Intelligent Bid Analysis</h3>
-                        <p className="text-sm text-muted-foreground">Leverage AI for comparative analysis and bid scoring to make data-driven decisions.</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <GanttChartSquare className="h-5 w-5"/>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold">Centralized Project Tracking</h3>
-                        <p className="text-sm text-muted-foreground">Monitor all your RFPs, timelines, and budgets from a single, intuitive dashboard.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <footer className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} MARCUS Automation Suite. All rights reserved.
-        </footer>
+    <div className="flex h-screen w-full bg-card">
+      <div className="hidden lg:flex lg:w-1/2 relative">
+          <Image 
+            src={procurementImage?.imageUrl || "https://picsum.photos/seed/procure/1200/1800"}
+            alt={procurementImage?.description || "An abstract image representing global procurement and logistics"}
+            fill
+            className="object-cover"
+            data-ai-hint={procurementImage?.imageHint}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div className="relative z-10 flex flex-col justify-end p-12 text-white">
+              <h2 className="text-4xl font-bold tracking-tight">From request to resolution, intelligently.</h2>
+              <p className="mt-4 text-lg max-w-lg">
+                  The MARCUS Automation Suite transforms your procurement lifecycle with AI-driven insights, streamlined workflows, and unparalleled efficiency.
+              </p>
+          </div>
       </div>
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background p-8">
-        <div className="w-full max-w-sm text-center">
-            <h2 className="text-3xl font-bold text-foreground">Welcome Back</h2>
-            <p className="mt-2 text-muted-foreground">Sign in to access your dashboard</p>
-            <Button className="w-full mt-8" onClick={handleSignIn} size="lg">
-                Sign in with Google
-            </Button>
-            <p className="mt-4 text-xs text-muted-foreground">
-                By signing in, you agree to our Terms of Service and Privacy Policy.
-            </p>
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-8">
+        <div className="w-full max-w-md space-y-8">
+            <div className="text-left">
+                <div className="flex items-center gap-3 mb-4">
+                    <Briefcase className="h-8 w-8 text-primary" />
+                    <h1 className="text-2xl font-bold text-foreground">MARCUS Automation Suite</h1>
+                </div>
+                <p className="text-muted-foreground">
+                    Sign in to access your dashboard and manage your procurement projects.
+                </p>
+            </div>
+            
+            <div className="space-y-6">
+                 <FeatureHighlight icon={<Zap className="h-5 w-5"/>} title="Automated RFP Generation">
+                    Create comprehensive, compliant RFP documents in minutes using AI-powered templates and project data.
+                </FeatureHighlight>
+                <FeatureHighlight icon={<Bot className="h-5 w-5"/>} title="Intelligent Bid Analysis">
+                    Leverage AI for comparative analysis and bid scoring to make confident, data-driven award decisions.
+                </FeatureHighlight>
+                 <FeatureHighlight icon={<GanttChartSquare className="h-5 w-5"/>} title="Centralized Project Tracking">
+                    Monitor all your RFPs, timelines, and budgets from a single, intuitive dashboard.
+                </FeatureHighlight>
+            </div>
+
+            <div className="space-y-4">
+                <Button className="w-full" onClick={handleSignIn} size="lg">
+                    Sign in with Google
+                </Button>
+                <p className="px-8 text-center text-xs text-muted-foreground">
+                    By signing in, you agree to our Terms of Service and Privacy Policy.
+                </p>
+            </div>
         </div>
       </div>
     </div>
