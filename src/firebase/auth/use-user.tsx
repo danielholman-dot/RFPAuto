@@ -43,7 +43,7 @@ export const useUser = (): UseUserResult => {
         if (firebaseUser) {
             // **DEVELOPMENT HOOK**: In a real app, you would fetch the user's role from
             // a Firestore 'users' collection or read it from a custom claim on the auth token.
-            // For this prototype, we are assigning a default role of 'gpo'.
+            // For this prototype, we are assigning the 'gpo' role, which acts as the owner/admin.
             const appUser: AppUser = {
                 ...firebaseUser,
                 role: 'gpo',
