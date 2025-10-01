@@ -26,11 +26,12 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '../ui/button';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 
 export function AppSidebar() {
   const pathname = usePathname();
   const auth = useAuth();
+  const { user } = useUser();
 
   const isActive = (path: string) => {
     if (path === '/rfp' && pathname.startsWith('/rfp/')) return true;
@@ -43,6 +44,9 @@ export function AppSidebar() {
         await auth.signOut();
     }
   }
+
+  // RBAC: Determine if the user has the 'gpo' role
+  const isGpo = user?.role === 'gpo';
 
   return (
     <Sidebar>
@@ -124,20 +128,23 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <Link href="/metro" passHref>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive('/metro')}
-                tooltip={{ children: 'Metro' }}
-              >
-                <span>
-                  <Map />
-                  <span>Metro</span>
-                </span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
+          {/* RBAC: Only show Metro link if user is GPO */}
+          {isGpo && (
+            <SidebarMenuItem>
+              <Link href="/metro" passHref>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/metro')}
+                  tooltip={{ children: 'Metro' }}
+                >
+                  <span>
+                    <Map />
+                    <span>Metro</span>
+                  </span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          )}
         </SidebarGroup>
       </SidebarMenu>
 
@@ -171,20 +178,23 @@ export function AppSidebar() {
                 </SidebarMenuButton>
                 </Link>
             </SidebarMenuItem>
-          <SidebarMenuItem>
-            <Link href="/settings" passHref>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive('/settings')}
-                tooltip={{ children: 'Settings' }}
-              >
-                <span>
-                  <Settings />
-                  <span>Settings</span>
-                </span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
+          {/* RBAC: Only show Settings link if user is GPO */}
+          {isGpo && (
+            <SidebarMenuItem>
+                <Link href="/settings" passHref>
+                <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/settings')}
+                    tooltip={{ children: 'Settings' }}
+                >
+                    <span>
+                    <Settings />
+                    <span>Settings</span>
+                    </span>
+                </SidebarMenuButton>
+                </Link>
+            </SidebarMenuItem>
+           )}
           <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleLogout}

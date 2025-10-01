@@ -5,27 +5,32 @@ import { useState, useEffect } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 
+// In a real application, you would fetch this from Firestore or have it as a custom claim.
+export type UserRole = 'gpo' | 'pm' | 'guest';
+
+export interface AppUser extends User {
+    role: UserRole;
+}
+
 export interface UseUserResult {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
   error: Error | null;
 }
 
 /**
- * A hook to get the currently authenticated user from Firebase.
+ * A hook to get the currently authenticated user from Firebase, including their role.
  *
  * @returns {UseUserResult} An object containing the user, loading state, and error.
  */
 export const useUser = (): UseUserResult => {
   const auth = useAuth();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!auth) {
-      // If auth is not ready, we are still in a loading state.
-      // We don't set an error because the provider might just be initializing.
       setLoading(true);
       return;
     }
@@ -34,8 +39,19 @@ export const useUser = (): UseUserResult => {
 
     const unsubscribe = onAuthStateChanged(
       auth,
-      (user) => {
-        setUser(user);
+      (firebaseUser) => {
+        if (firebaseUser) {
+            // **DEVELOPMENT HOOK**: In a real app, you would fetch the user's role from
+            // a Firestore 'users' collection or read it from a custom claim on the auth token.
+            // For this prototype, we are assigning a default role of 'gpo'.
+            const appUser: AppUser = {
+                ...firebaseUser,
+                role: 'gpo',
+            };
+            setUser(appUser);
+        } else {
+            setUser(null);
+        }
         setLoading(false);
       },
       (error) => {
@@ -46,7 +62,7 @@ export const useUser = (): UseUserResult => {
     );
 
     return () => unsubscribe();
-  }, [auth]); // Rerun effect when auth object becomes available.
+  }, [auth]);
 
   return { user, loading, error };
 };
