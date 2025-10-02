@@ -14,6 +14,7 @@ const ContentSecurityPolicy = `
 
 const nextConfig: NextConfig = {
   /* config options here */
+  srcDir: 'src',
   typescript: {
     ignoreBuildErrors: true,
   },
