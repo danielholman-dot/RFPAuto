@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,7 +18,7 @@ const GenerateNonAwardLetterInputSchema = z.object({
   contractorEmail: z.string().describe('The email of the supplier contact.'),
   submissionDate: z.string().describe('The date of the RFP submission.'),
   improvementAreas: z.string().optional().describe('Specific areas for improvement for future proposals.'),
-  primaryStakeholderEmail: z.string().optional().describe("The primary stakeholder's email."),
+  primaryStakeholderName: z.string().optional().describe("The primary stakeholder's name."),
 });
 export type GenerateNonAwardLetterInput = z.infer<typeof GenerateNonAwardLetterInputSchema>;
 
@@ -59,12 +60,13 @@ const prompt = ai.definePrompt({
 
   Regards,<br/><br/>
 
-  {{#if primaryStakeholderEmail}}
-  {{{primaryStakeholderEmail}}}<br/>
-  {{/if}}
+  {{#if primaryStakeholderName}}
+  {{{primaryStakeholderName}}}<br/>
+  {{else}}
   [Your Name]<br/>
   [Your Position]<br/>
   [Your Company]
+  {{/if}}
 
   **Details:**
   Project Name: {{{projectName}}}
@@ -72,8 +74,8 @@ const prompt = ai.definePrompt({
   Contractor Email: {{{contractorEmail}}}
   Submission Date: {{{submissionDate}}}
   Improvement Areas: {{{improvementAreas}}}
-  {{#if primaryStakeholderEmail}}
-  Primary Stakeholder Email: {{{primaryStakeholderEmail}}}
+  {{#if primaryStakeholderName}}
+  Primary Stakeholder Name: {{{primaryStakeholderName}}}
   {{/if}}
 
   Generate the To, Subject, and Body fields for the email.`,

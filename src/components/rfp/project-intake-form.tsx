@@ -30,6 +30,7 @@ import { format } from "date-fns"
 const formSchema = z.object({
   projectName: z.string().min(1, "Project name is required."),
   scopeOfWork: z.string().min(1, "Scope of work is required."),
+  primaryStakeholderName: z.string().optional(),
   primaryStakeholderEmail: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
   additionalStakeholderEmails: z.string().optional(),
   metroCode: z.string().min(1, "Metro code is required."),
@@ -59,6 +60,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     defaultValues: {
       projectName: "",
       scopeOfWork: "",
+      primaryStakeholderName: "",
       primaryStakeholderEmail: "",
       additionalStakeholderEmails: "",
       metroCode: "",
@@ -81,6 +83,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         rfpEndDate: values.rfpEndDate,
         projectStartDate: values.projectStartDate,
         projectEndDate: values.projectEndDate,
+        primaryStakeholderName: values.primaryStakeholderName,
         primaryStakeholderEmail: values.primaryStakeholderEmail,
         additionalStakeholderEmails: values.additionalStakeholderEmails,
         status: "Draft" as const,
@@ -161,33 +164,46 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         />
          <div className="grid md:grid-cols-2 gap-8">
             <FormField
-            control={form.control}
-            name="primaryStakeholderEmail"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Primary Stakeholder Email</FormLabel>
-                <FormControl>
-                    <Input type="email" placeholder="stakeholder@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
+              control={form.control}
+              name="primaryStakeholderName"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Primary Stakeholder Name</FormLabel>
+                  <FormControl>
+                      <Input placeholder="Jane Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
             />
             <FormField
-            control={form.control}
-            name="additionalStakeholderEmails"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Additional Stakeholder Emails</FormLabel>
-                <FormControl>
-                    <Input placeholder="email1@example.com, email2@example.com" {...field} />
-                </FormControl>
-                 <FormDescription>A comma-separated list of emails.</FormDescription>
-                <FormMessage />
-                </FormItem>
-            )}
+              control={form.control}
+              name="primaryStakeholderEmail"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Primary Stakeholder Email</FormLabel>
+                  <FormControl>
+                      <Input type="email" placeholder="stakeholder@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
             />
         </div>
+        <FormField
+        control={form.control}
+        name="additionalStakeholderEmails"
+        render={({ field }) => (
+            <FormItem>
+            <FormLabel>Additional Stakeholder Emails</FormLabel>
+            <FormControl>
+                <Input placeholder="email1@example.com, email2@example.com" {...field} />
+            </FormControl>
+              <FormDescription>A comma-separated list of emails.</FormDescription>
+            <FormMessage />
+            </FormItem>
+        )}
+        />
         <div className="grid md:grid-cols-2 gap-8">
           <FormField
             control={form.control}

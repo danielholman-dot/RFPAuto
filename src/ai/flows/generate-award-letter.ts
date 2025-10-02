@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,7 +18,7 @@ const GenerateAwardLetterInputSchema = z.object({
   contractorEmail: z.string().describe('The email of the supplier contact.'),
   meetingDate: z.string().describe('The date and time for the project team meeting.'),
   confirmationDate: z.string().describe('The deadline for the supplier to confirm acceptance.'),
-  primaryStakeholderEmail: z.string().optional().describe("The primary stakeholder's email."),
+  primaryStakeholderName: z.string().optional().describe("The primary stakeholder's name."),
 });
 export type GenerateAwardLetterInput = z.infer<typeof GenerateAwardLetterInputSchema>;
 
@@ -61,12 +62,13 @@ const prompt = ai.definePrompt({
 
   Best regards,<br/><br/>
 
-  {{#if primaryStakeholderEmail}}
-  {{{primaryStakeholderEmail}}}<br/>
-  {{/if}}
+  {{#if primaryStakeholderName}}
+  {{{primaryStakeholderName}}}<br/>
+  {{else}}
   [Your Name]<br/>
   [Your Position]<br/>
   [Your Company]
+  {{/if}}
 
   **Details:**
   Project Name: {{{projectName}}}
@@ -74,8 +76,8 @@ const prompt = ai.definePrompt({
   Contractor Email: {{{contractorEmail}}}
   Meeting Date: {{{meetingDate}}}
   Confirmation Date: {{{confirmationDate}}}
-  {{#if primaryStakeholderEmail}}
-  Primary Stakeholder Email: {{{primaryStakeholderEmail}}}
+  {{#if primaryStakeholderName}}
+  Primary Stakeholder Name: {{{primaryStakeholderName}}}
   {{/if}}
 
   Generate the To, Subject, and Body fields for the email.`,

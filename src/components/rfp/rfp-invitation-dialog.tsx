@@ -57,7 +57,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
         qnaDueDate: formatDate(new Date(rfpEndDate.getTime() - 13 * 24 * 60 * 60 * 1000)), // 7 days after start
         submissionDueDate: formatDate(rfpEndDate),
         submissionLink: submissionLink,
-        primaryStakeholderEmail: rfp.primaryStakeholderEmail,
+        primaryStakeholderName: rfp.primaryStakeholderName,
       }).then(result => {
         setEmailContent({
             to: contractor.contactEmail,

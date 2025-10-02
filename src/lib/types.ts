@@ -16,6 +16,7 @@ export type RFP = {
   status: 'Selection' | 'Drafting' | 'Invitation' | 'Proposals' | 'Analysis' | 'Award' | 'Feedback' | 'Draft' | 'Completed';
   invitedContractors?: string[];
   proposals?: Proposal[];
+  primaryStakeholderName?: string;
   primaryStakeholderEmail?: string;
   additionalStakeholderEmails?: string;
   createdAt?: Timestamp | Date;

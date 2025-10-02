@@ -27,7 +27,7 @@ type RfpAwardDialogProps = {
 export function RfpAwardDialog({ isOpen, onOpenChange, rfp, contractor }: RfpAwardDialogProps) {
   const [emailContent, setEmailContent] = useState<{ to: string, subject: string, body: string, originalBody: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [yourName, setYourName] = useState('Google Program Owner');
+  const [yourName, setYourName] = useState(rfp.primaryStakeholderName || 'Google Program Owner');
   const [yourPosition, setYourPosition] = useState('Program Manager');
   const [yourCompany, setYourCompany] = useState('Google');
 
@@ -62,7 +62,7 @@ export function RfpAwardDialog({ isOpen, onOpenChange, rfp, contractor }: RfpAwa
         contractorEmail: contractor.contactEmail,
         meetingDate: format(meetingDate, 'MMMM d, yyyy') + ' at 10:00 AM PST',
         confirmationDate: format(confirmationDate, 'MMMM d, yyyy') + ' at 5:00 PM PST',
-        primaryStakeholderEmail: rfp.primaryStakeholderEmail
+        primaryStakeholderName: rfp.primaryStakeholderName
       }).then(result => {
         setEmailContent({
             to: contractor.contactEmail,

@@ -29,7 +29,7 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
   const [emailContent, setEmailContent] = useState<{ to: string, subject: string, body: string, originalBody: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [improvementAreas, setImprovementAreas] = useState('');
-  const [yourName, setYourName] = useState('Google Program Owner');
+  const [yourName, setYourName] = useState(rfp.primaryStakeholderName || 'Google Program Owner');
   const [yourPosition, setYourPosition] = useState('Program Manager');
   const [yourCompany, setYourCompany] = useState('Google');
   
@@ -49,7 +49,7 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
       contractorEmail: contractor.contactEmail,
       submissionDate: formatDate(rfp.rfpEndDate),
       improvementAreas: improvementAreas,
-      primaryStakeholderEmail: rfp.primaryStakeholderEmail,
+      primaryStakeholderName: rfp.primaryStakeholderName,
     }).then(result => {
       setEmailContent({
           to: contractor.contactEmail,
