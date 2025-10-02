@@ -1,14 +1,28 @@
 
 'use client';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  Activity,
+  ArrowUpRight,
+  CircleDollarSign,
+  FileText,
+  Users,
+  Trash,
+  Pencil,
+} from 'lucide-react';
+import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -16,27 +30,66 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { FilePlus2, Pencil } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import type { RFP } from '@/lib/types';
-import { getRfps } from '@/lib/data';
+import { getRfps, deleteRfp } from '@/lib/data';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export default function RfpRegistryPage() {
   const [rfps, setRfps] = useState<RFP[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     async function loadData() {
-      const data = await getRfps();
-      setRfps(data);
+      const rfpsData = await getRfps();
+      setRfps(rfpsData);
       setLoading(false);
     }
     loadData();
   }, []);
+
+  const handleDelete = async (rfpId: string) => {
+    try {
+        await deleteRfp(rfpId);
+        setRfps(prevRfps => prevRfps.filter(rfp => rfp.id !== rfpId));
+        toast({
+            title: "RFP Deleted",
+            description: "The RFP has been successfully deleted.",
+        });
+    } catch (error) {
+        console.error("Failed to delete RFP:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to delete the RFP. Please try again.",
+        });
+    }
+  };
+
+
+  const getStatusVariant = (status: RFP['status']) => {
+    switch (status) {
+      case 'Award':
+      case 'Completed':
+        return 'default';
+      case 'Analysis':
+      case 'Feedback':
+        return 'secondary';
+      case 'Draft':
+        return 'outline';
+      default:
+        return 'secondary';
+    }
+  };
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
@@ -45,45 +98,23 @@ export default function RfpRegistryPage() {
     }
     return new Date(date).toLocaleDateString();
   };
-  
-  const getStatusVariant = (status: RFP['status']) => {
-    switch (status) {
-      case 'Award':
-      case 'Completed':
-        return 'default'; // Green / primary color for success
-      case 'Analysis':
-      case 'Feedback':
-          return 'secondary'; // Blue / secondary for final stages
-      case 'Draft':
-        return 'outline'; // Grey outline for pending
-      default:
-        return 'secondary'; // Yellow / warning for active states like Selection, Invitation, etc.
-    }
-  };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading RFPs...</div>;
   }
-
-  const handleEdit = (rfpId: string) => {
-    router.push(`/rfp/${rfpId}`);
-  };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>RFP Registry</CardTitle>
-          <CardDescription>
-            A complete list of all Requests for Proposal.
-          </CardDescription>
+            <CardTitle>RFP Registry</CardTitle>
+            <CardDescription>
+                A complete list of all Requests for Proposal in the system.
+            </CardDescription>
         </div>
-        <Link href="/rfp/new">
-          <Button>
-            <FilePlus2 className="mr-2 h-4 w-4" />
-            Create New RFP
-          </Button>
-        </Link>
+        <Button asChild>
+            <Link href="/rfp/new">Create New RFP</Link>
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>
@@ -92,39 +123,53 @@ export default function RfpRegistryPage() {
               <TableHead>Project Name</TableHead>
               <TableHead>Metro</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Project Start Date</TableHead>
-              <TableHead className="text-right">Budget</TableHead>
+              <TableHead>Budget</TableHead>
+              <TableHead>Start Date</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rfps?.map((rfp) => (
+            {rfps.map((rfp) => (
               <TableRow key={rfp.id}>
-                <TableCell>
-                  <Link
-                    href={`/rfp/${rfp.id}`}
-                    className="font-medium text-primary hover:underline"
-                  >
-                    {rfp.projectName}
-                  </Link>
-                </TableCell>
+                <TableCell className="font-medium">{rfp.projectName}</TableCell>
                 <TableCell>{rfp.metroCode}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={getStatusVariant(rfp.status)}
-                  >
+                  <Badge variant={getStatusVariant(rfp.status)}>
                     {rfp.status}
                   </Badge>
                 </TableCell>
+                <TableCell>${rfp.estimatedBudget.toLocaleString('de-DE')}</TableCell>
                 <TableCell>{formatDate(rfp.projectStartDate)}</TableCell>
-                <TableCell className="text-right">
-                  ${rfp.estimatedBudget.toLocaleString('de-DE')}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(rfp.id)}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                  </Button>
+                <TableCell className="text-right space-x-2">
+                    <Button asChild variant="outline" size="sm">
+                        <Link href={`/rfp/${rfp.id}`}>
+                            <Pencil className="mr-2 h-4 w-4"/>
+                            Edit
+                        </Link>
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                                <Trash className="mr-2 h-4 w-4"/>
+                                Delete
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the RFP
+                                and all associated data from our servers.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(rfp.id)}>
+                                Continue
+                            </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </TableCell>
               </TableRow>
             ))}
