@@ -1,7 +1,6 @@
 
 'use client';
 
-import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
@@ -11,22 +10,13 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Header } from '@/components/layout/header';
 import { usePathname } from 'next/navigation';
 
-// Since we're using 'use client', we can't export metadata from here.
-// This should be moved to a non-client file or handled differently if needed.
-/*
-export const metadata: Metadata = {
-  title: 'MARCUS Automation Suite',
-  description: 'MARCUS Automation Suite for RFP Management',
-};
-*/
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isPublicPage = pathname.startsWith('/proposal/submit');
+  const isPublicPage = pathname.startsWith('/proposal/submit') || pathname === '/login';
 
   return (
     <html lang="en" suppressHydrationWarning>

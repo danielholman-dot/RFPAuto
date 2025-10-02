@@ -31,7 +31,7 @@ export const useUser = (): UseUserResult => {
 
   useEffect(() => {
     if (!auth) {
-      setLoading(true);
+      setLoading(false);
       return;
     }
 
