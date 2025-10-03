@@ -21,9 +21,11 @@ export default function LoginPage() {
     }
   }, [user, loading, router]);
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    // signInWithRedirect is a non-blocking call.
+    // We don't need to await it; it will trigger a page redirect.
+    signInWithRedirect(auth, provider);
   };
   
   // Display a loader only if we are in the initial loading phase and don't know the user's status yet.
