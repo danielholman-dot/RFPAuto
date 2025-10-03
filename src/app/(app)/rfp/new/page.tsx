@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { useCollection, useMemoFirebase, useFirestore } from "@/firebase";
 import { collection } from 'firebase/firestore';
 import type { MetroCode } from "@/lib/types";
 import { contractorTypes as allContractorTypes } from '@/lib/seed';
+import { useMemo } from "react";
 
 export default function NewRfpPage() {
   const firestore = useFirestore();
@@ -13,12 +15,12 @@ export default function NewRfpPage() {
   const metroCodesQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
   const { data: metroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
 
-  const metroOptions = useMemoFirebase(() => {
+  const metroOptions = useMemo(() => {
     if (!metroCodes) return [];
     return metroCodes.map(m => ({ code: m.code, city: m.city }));
   }, [metroCodes]);
 
-  const loading = metrosLoading;
+  const loading = metrosLoading || !allContractorTypes;
 
   if (loading) {
     return <div>Loading form...</div>;
@@ -34,7 +36,7 @@ export default function NewRfpPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectIntakeForm metroCodes={metroOptions || []} contractorTypes={allContractorTypes} />
+          <ProjectIntakeForm metroCodes={metroOptions || []} contractorTypes={allContractorTypes || []} />
         </CardContent>
       </Card>
     </div>
