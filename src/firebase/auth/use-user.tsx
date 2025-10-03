@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase/provider';
 
 // In a real application, you would fetch this from Firestore or have it as a custom claim.
 export type UserRole = 'gpo' | 'pm' | 'guest';

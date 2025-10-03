@@ -3,31 +3,34 @@
 
 import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { getRedirectResult } from 'firebase/auth';
 
 function withAuth<P extends object>(WrappedComponent: React.ComponentType<P>) {
   const WithAuthComponent = (props: P) => {
-    const { user, loading } = useUser();
+    const { user, loading: userLoading } = useUser();
     const router = useRouter();
     const auth = useAuth();
+    const [isHandlingRedirect, setIsHandlingRedirect] = useState(true);
 
     useEffect(() => {
-      // This handles the redirect result from Google Sign-In
-      // It should be placed in a layout that is loaded after the redirect.
-      getRedirectResult(auth).catch((error) => {
-        console.error('Error processing redirect result:', error);
-      });
+      getRedirectResult(auth)
+        .catch((error) => {
+          console.error('Error processing redirect result:', error);
+        })
+        .finally(() => {
+          setIsHandlingRedirect(false);
+        });
     }, [auth]);
 
     useEffect(() => {
-      if (!loading && !user) {
+      if (!userLoading && !isHandlingRedirect && !user) {
         router.push('/login');
       }
-    }, [user, loading, router]);
+    }, [user, userLoading, isHandlingRedirect, router]);
 
-    if (loading || !user) {
+    if (userLoading || isHandlingRedirect) {
       return (
         <div className="flex h-screen items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -35,6 +38,11 @@ function withAuth<P extends object>(WrappedComponent: React.ComponentType<P>) {
       );
     }
 
+    if (!user) {
+      // This prevents a flash of the content before the redirect happens.
+      return null;
+    }
+    
     return <WrappedComponent {...props} />;
   };
 
