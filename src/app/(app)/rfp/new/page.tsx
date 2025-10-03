@@ -3,16 +3,21 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectIntakeForm } from "@/components/rfp/project-intake-form";
-import { useCollection, useMemoFirebase, useFirestore } from "@/firebase";
+import { useCollection, useMemoFirebase, useFirestore, useUser } from "@/firebase";
 import { collection } from 'firebase/firestore';
 import type { MetroCode } from "@/lib/types";
 import { contractorTypes as allContractorTypes } from '@/lib/seed';
 import { useMemo } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function NewRfpPage() {
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
-  const metroCodesQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const metroCodesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, 'metro_codes');
+  }, [firestore, user]);
   const { data: metroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
 
   const metroOptions = useMemo(() => {
@@ -20,10 +25,14 @@ export default function NewRfpPage() {
     return metroCodes.map(m => ({ code: m.code, city: m.city }));
   }, [metroCodes]);
 
-  const loading = metrosLoading || !allContractorTypes;
+  const loading = isUserLoading || metrosLoading;
 
   if (loading) {
-    return <div>Loading form...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (

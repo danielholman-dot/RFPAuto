@@ -16,10 +16,9 @@ import {
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { useEffect, useState, useMemo } from 'react';
-import { useCollection, useMemoFirebase } from '@/firebase';
+import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
-import { Users, Wrench, Zap, HardHat, FileText } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, FileText, Loader2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -108,11 +107,18 @@ const getIconForType = (type: string) => {
 
 export default function ContractorsPage() {
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
   
-  const contractorsQuery = useMemoFirebase(() => collection(firestore, 'contractors'), [firestore]);
+  const contractorsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, 'contractors');
+  }, [firestore, user]);
   const { data: allContractors, isLoading: contractorsLoading } = useCollection<Contractor>(contractorsQuery);
 
-  const metroCodesQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const metroCodesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, 'metro_codes');
+  }, [firestore, user]);
   const { data: allMetroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
 
   const [contractorTypes, setContractorTypes] = useState<string[]>([]);
@@ -148,10 +154,14 @@ export default function ContractorsPage() {
     });
   }, [allContractors, typeFilter, metroCodeFilter, searchTerm]);
 
-  const loading = contractorsLoading || metrosLoading;
+  const loading = isUserLoading || contractorsLoading || metrosLoading;
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (

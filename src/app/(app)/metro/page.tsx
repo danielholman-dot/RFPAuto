@@ -14,38 +14,39 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getAllMetroCodes } from '@/lib/data';
+import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { collection, updateDoc, doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Pencil, Save, X } from 'lucide-react';
-
-type Metro = {
-  code: string;
-  city: string;
-  state: string;
-  region: string;
-  lat: number;
-  lon: number;
-};
+import { Pencil, Save, X, Loader2 } from 'lucide-react';
+import type { MetroCode } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MetroPage() {
-  const [metros, setMetros] = useState<Metro[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
+  const { toast } = useToast();
+  
+  const metroCodesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, 'metro_codes');
+  }, [firestore, user]);
+
+  const { data: metros, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
+
+  const [localMetros, setLocalMetros] = useState<MetroCode[]>([]);
   const [editingRow, setEditingRow] = useState<string | null>(null);
-  const [editedMetro, setEditedMetro] = useState<Partial<Metro> | null>(null);
+  const [editedMetro, setEditedMetro] = useState<Partial<MetroCode> | null>(null);
 
   useEffect(() => {
-    async function loadData() {
-      const data = await getAllMetroCodes();
-      setMetros(data);
-      setLoading(false);
+    if (metros) {
+      setLocalMetros(metros);
     }
-    loadData();
-  }, []);
+  }, [metros]);
 
-  const handleEdit = (metro: Metro) => {
-    setEditingRow(metro.code);
+  const handleEdit = (metro: MetroCode) => {
+    setEditingRow(metro.id);
     setEditedMetro({ lat: metro.lat, lon: metro.lon });
   };
 
@@ -54,15 +55,27 @@ export default function MetroPage() {
     setEditedMetro(null);
   };
 
-  const handleSave = (code: string) => {
-    if (!editedMetro) return;
-    setMetros(currentMetros =>
-      currentMetros.map(m =>
-        m.code === code ? { ...m, ...editedMetro } : m
-      )
-    );
-    setEditingRow(null);
-    setEditedMetro(null);
+  const handleSave = async (id: string) => {
+    if (!editedMetro || !firestore) return;
+    const docRef = doc(firestore, 'metro_codes', id);
+    try {
+      await updateDoc(docRef, {
+        lat: editedMetro.lat,
+        lon: editedMetro.lon,
+      });
+      setLocalMetros(currentMetros =>
+        currentMetros.map(m =>
+          m.id === id ? { ...m, ...editedMetro as { lat: number; lon: number } } : m
+        )
+      );
+      toast({ title: 'Success', description: 'Metro coordinates updated.' });
+    } catch (error) {
+      console.error('Failed to update metro:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update coordinates.' });
+    } finally {
+      setEditingRow(null);
+      setEditedMetro(null);
+    }
   };
 
   const handleInputChange = (field: 'lat' | 'lon', value: string) => {
@@ -71,8 +84,14 @@ export default function MetroPage() {
     }
   };
 
+  const loading = isUserLoading || metrosLoading;
+
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -97,13 +116,13 @@ export default function MetroPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {metros.map((metro) => (
-                <TableRow key={metro.code}>
+              {localMetros.map((metro) => (
+                <TableRow key={metro.id}>
                   <TableCell className="font-medium">{metro.code}</TableCell>
                   <TableCell>{metro.city}</TableCell>
                   <TableCell>{metro.state}</TableCell>
                   <TableCell>
-                    {editingRow === metro.code ? (
+                    {editingRow === metro.id ? (
                       <Input
                         type="number"
                         value={editedMetro?.lat ?? ''}
@@ -115,7 +134,7 @@ export default function MetroPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {editingRow === metro.code ? (
+                    {editingRow === metro.id ? (
                       <Input
                         type="number"
                         value={editedMetro?.lon ?? ''}
@@ -127,9 +146,9 @@ export default function MetroPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    {editingRow === metro.code ? (
+                    {editingRow === metro.id ? (
                       <div className="flex gap-2 justify-end">
-                        <Button variant="outline" size="sm" onClick={() => handleSave(metro.code)}>
+                        <Button variant="outline" size="sm" onClick={() => handleSave(metro.id)}>
                           <Save className="mr-2 h-4 w-4" /> Save
                         </Button>
                         <Button variant="ghost" size="sm" onClick={handleCancel}>

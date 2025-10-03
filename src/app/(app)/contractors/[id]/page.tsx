@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { HardHat, Users, Wrench, Zap, Star, MapPin } from 'lucide-react';
+import { HardHat, Users, Wrench, Zap, Star, MapPin, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useDoc, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
+import { useDoc, useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
 
 
@@ -32,21 +31,29 @@ export default function ContractorDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
-  const contractorRef = useMemoFirebase(() => doc(firestore, 'contractors', id), [firestore, id]);
+  const contractorRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'contractors', id);
+  }, [firestore, id, user]);
   const { data: contractor, isLoading: contractorLoading } = useDoc<Contractor>(contractorRef);
 
   const metroCodesQuery = useMemoFirebase(() => {
-    if (!contractor || !contractor.metroCodes || contractor.metroCodes.length === 0) return null;
+    if (!user || !contractor || !contractor.metroCodes || contractor.metroCodes.length === 0) return null;
     return query(collection(firestore, 'metro_codes'), where('code', 'in', contractor.metroCodes));
-  }, [firestore, contractor]);
+  }, [firestore, contractor, user]);
 
   const { data: metroDetails, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
 
-  const loading = contractorLoading || metrosLoading;
+  const loading = isUserLoading || contractorLoading || metrosLoading;
 
   if (loading) {
-    return <div>Loading contractor details...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   if (!contractor) {

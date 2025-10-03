@@ -2,6 +2,7 @@
 import {
   Trash,
   Pencil,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -33,14 +34,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { RFP } from '@/lib/types';
-import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { collection, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 
 export default function RfpRegistryPage() {
   const firestore = useFirestore();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   
   const rfpsQuery = useMemoFirebase(() => {
@@ -49,9 +49,10 @@ export default function RfpRegistryPage() {
     return query(rfpsCol, orderBy('createdAt', 'desc'));
   }, [firestore, user]);
 
-  const { data: rfps, isLoading } = useCollection<RFP>(rfpsQuery);
+  const { data: rfps, isLoading: rfpsLoading } = useCollection<RFP>(rfpsQuery);
 
   const handleDelete = async (rfpId: string) => {
+    if (!firestore) return;
     try {
         const rfpDocRef = doc(firestore, 'rfps', rfpId);
         await deleteDoc(rfpDocRef);
@@ -93,8 +94,14 @@ export default function RfpRegistryPage() {
     return new Date(date).toLocaleDateString();
   };
 
-  if (isLoading) {
-    return <div>Loading RFPs...</div>;
+  const loading = isUserLoading || rfpsLoading;
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (

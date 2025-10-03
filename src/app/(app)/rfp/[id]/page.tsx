@@ -5,18 +5,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import type { RFP, MetroCode } from '@/lib/types';
 import { useEffect, useState } from 'react';
-import { useDoc, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
+import { useDoc, useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
 export default function RfpDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
-  const rfpRef = useMemoFirebase(() => doc(firestore, 'rfps', id), [firestore, id]);
+  const rfpRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'rfps', id);
+  }, [firestore, id, user]);
   const { data: rfp, isLoading: rfpLoading } = useDoc<RFP>(rfpRef);
 
-  const metrosQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const metrosQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, 'metro_codes');
+  }, [firestore, user]);
   const { data: metroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metrosQuery);
   
   // Local state for mutations to reflect immediately
@@ -40,7 +48,8 @@ export default function RfpDetailPage() {
     return new Date(date).toLocaleDateString();
   };
 
-  const getStatusVariant = (status: RFP['status']) => {
+  const getStatusVariant = (status?: RFP['status']) => {
+    if (!status) return 'outline';
     switch (status) {
       case 'Award':
       case 'Completed':
@@ -59,10 +68,14 @@ export default function RfpDetailPage() {
     }
   };
 
-  const loading = rfpLoading || metrosLoading;
+  const loading = isUserLoading || rfpLoading || metrosLoading;
 
-  if (loading) {
-    return <div>Loading RFP...</div>
+  if (loading && !localRfp) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   // This part handles the creation of a *new* RFP, which doesn't exist in the DB yet.
