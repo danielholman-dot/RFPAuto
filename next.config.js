@@ -2,12 +2,12 @@
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' *.googleapis.com *.google.com *.gstatic.com;
-  child-src 'self' *.google.com;
+  child-src 'self' *.google.com accounts.google.com;
   style-src 'self' 'unsafe-inline' fonts.googleapis.com;
   img-src * 'self' data:;
   font-src 'self' fonts.gstatic.com;
-  connect-src *;
-  frame-src 'self' *.google.com;
+  connect-src * accounts.google.com;
+  frame-src 'self' *.google.com accounts.google.com;
 `;
 
 /** @type {import('next').NextConfig} */
