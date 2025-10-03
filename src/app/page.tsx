@@ -63,14 +63,12 @@ export default function Dashboard() {
   const [regions, setRegions] = useState<string[]>([]);
   const [metros, setMetros] = useState<MetroOption[]>([]);
   
-  const [loading, setLoading] = useState(true);
   const [regionFilter, setRegionFilter] = useState('all');
   const [metroFilter, setMetroFilter] = useState('all');
 
   useEffect(() => {
     async function loadData() {
       if (!user) return; // Don't load data if there's no user
-      setLoading(true);
 
       const [rfpsData, contractorsData, regionData, metroInfoData] = await Promise.all([
         getRfps(), 
@@ -82,7 +80,6 @@ export default function Dashboard() {
       setAllContractors(contractorsData);
       setRegions(['all', ...regionData]);
       setAllMetroInfo(metroInfoData);
-      setLoading(false);
     }
     loadData();
   }, [user]); // Re-run effect when user object changes
@@ -122,7 +119,7 @@ export default function Dashboard() {
   }, [allContractors, regionFilter, metroFilter, allMetroInfo]);
 
 
-  if (loading || isUserLoading) {
+  if (isUserLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -312,5 +309,3 @@ export default function Dashboard() {
     </>
   );
 }
-
-    
