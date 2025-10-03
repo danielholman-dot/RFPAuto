@@ -32,22 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { RFP, Contractor } from '@/lib/types';
+import type { RFP, Contractor, MetroCode as MetroInfo } from '@/lib/types';
 import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
-import { getContractors, getRfps, getAllMetroCodes, getMetroRegions, getMetrosByRegion } from '@/lib/data';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
 import { Loader2 } from 'lucide-react';
-import { useUser } from '@/firebase';
+import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 
-type MetroInfo = {
-  code: string;
-  city: string;
-  state: string;
-  region: string;
-  lat: number;
-  lon: number;
-};
 
 type MetroOption = {
   code: string;
@@ -55,51 +47,40 @@ type MetroOption = {
 };
 
 export default function Dashboard() {
-  const [allRfps, setAllRfps] = useState<RFP[]>([]);
-  const [allContractors, setAllContractors] = useState<Contractor[]>([]);
-  const [allMetroInfo, setAllMetroInfo] = useState<MetroInfo[]>([]);
-  
-  const [regions, setRegions] = useState<string[]>([]);
-  const [metros, setMetros] = useState<MetroOption[]>([]);
-  
-  const [regionFilter, setRegionFilter] = useState('all');
-  const [metroFilter, setMetroFilter] = useState('all');
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
 
-  useEffect(() => {
-    async function loadData() {
-      if (!user) return; // Wait for user
-      const [rfpsData, contractorsData, regionData, metroInfoData] = await Promise.all([
-        getRfps(), 
-        getContractors(),
-        getMetroRegions(),
-        getAllMetroCodes(),
-      ]);
-      setAllRfps(rfpsData);
-      setAllContractors(contractorsData);
-      setRegions(['all', ...regionData]);
-      setAllMetroInfo(metroInfoData);
-    }
-    loadData();
-  }, [user]); // Rerun when user is available
+  const rfpsQuery = useMemoFirebase(() => query(collection(firestore, 'rfps'), orderBy('createdAt', 'desc')), [firestore]);
+  const { data: allRfps, isLoading: rfpsLoading } = useCollection<RFP>(rfpsQuery);
 
-  useEffect(() => {
-    async function loadMetros() {
-      let metroData: MetroOption[] = [];
-      if (regionFilter === 'all') {
-        metroData = allMetroInfo.map(m => ({ code: m.code, city: m.city }));
-      } else {
-        metroData = await getMetrosByRegion(regionFilter);
-      }
-      setMetros(metroData.sort((a,b) => a.code.localeCompare(b.code)));
-      setMetroFilter('all');
+  const contractorsQuery = useMemoFirebase(() => collection(firestore, 'contractors'), [firestore]);
+  const { data: allContractors, isLoading: contractorsLoading } = useCollection<Contractor>(contractorsQuery);
+
+  const metroInfoQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const { data: allMetroInfo, isLoading: metrosLoading } = useCollection<MetroInfo>(metroInfoQuery);
+
+  const [regionFilter, setRegionFilter] = useState('all');
+  const [metroFilter, setMetroFilter] = useState('all');
+
+  const regions = useMemo(() => {
+    if (!allMetroInfo) return [];
+    const uniqueRegions = [...new Set(allMetroInfo.map(m => m.region))];
+    return ['all', ...uniqueRegions.sort()];
+  }, [allMetroInfo]);
+
+  const metros = useMemo(() => {
+    if (!allMetroInfo) return [];
+    let metroData: MetroOption[] = [];
+    if (regionFilter === 'all') {
+      metroData = allMetroInfo.map(m => ({ code: m.code, city: m.city }));
+    } else {
+      metroData = allMetroInfo.filter(m => m.region === regionFilter).map(m => ({ code: m.code, city: m.city }));
     }
-    if (allMetroInfo.length > 0) {
-      loadMetros();
-    }
+    return metroData.sort((a,b) => a.code.localeCompare(b.code));
   }, [regionFilter, allMetroInfo]);
-
+  
   const filteredRfps = useMemo(() => {
+    if (!allRfps || !allMetroInfo) return [];
     return allRfps.filter(rfp => {
       const regionInfo = allMetroInfo.find(m => m.code === rfp.metroCode);
       const regionMatch = regionFilter === 'all' || (regionInfo && regionInfo.region === regionFilter);
@@ -109,6 +90,7 @@ export default function Dashboard() {
   }, [allRfps, regionFilter, metroFilter, allMetroInfo]);
 
   const filteredContractors = useMemo(() => {
+    if (!allContractors || !allMetroInfo) return [];
     return allContractors.filter(c => {
       const contractorMetrosInRegion = allMetroInfo.filter(m => c.metroCodes.includes(m.code) && (regionFilter === 'all' || m.region === regionFilter));
       
@@ -120,7 +102,7 @@ export default function Dashboard() {
   }, [allContractors, regionFilter, metroFilter, allMetroInfo]);
 
 
-  if (isUserLoading || (user && allRfps.length === 0 && allContractors.length === 0)) {
+  if (isUserLoading || rfpsLoading || contractorsLoading || metrosLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -147,12 +129,22 @@ export default function Dashboard() {
     }
   };
 
+  const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    // Firebase Timestamps have a toDate() method
+    if (date.toDate) {
+      return date.toDate().toLocaleDateString();
+    }
+    // Handle cases where it might already be a Date object
+    return new Date(date).toLocaleDateString();
+  };
+
   return (
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h1 className="text-2xl font-semibold">Dashboard</h1>
           <div className="flex gap-4">
-               <Select value={regionFilter} onValueChange={setRegionFilter}>
+               <Select value={regionFilter} onValueChange={(value) => { setRegionFilter(value); setMetroFilter('all'); }}>
                   <SelectTrigger className="w-full md:w-[180px]">
                       <SelectValue placeholder="Filter by Region" />
                   </SelectTrigger>
@@ -242,7 +234,7 @@ export default function Dashboard() {
               </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
-                  <RfpGanttChart rfps={filteredRfps} />
+                  <RfpGanttChart rfps={filteredRfps || []} />
               </CardContent>
           </Card>
            <Card>
@@ -253,7 +245,7 @@ export default function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <BudgetVsWonChart rfps={filteredRfps}/>
+              <BudgetVsWonChart rfps={filteredRfps || []}/>
             </CardContent>
           </Card>
         </div>
