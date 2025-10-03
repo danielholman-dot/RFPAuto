@@ -181,14 +181,14 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedCon
                 requestResourceData: dataToSave,
             });
             errorEmitter.emit('permission-error', permissionError);
-            throw serverError;
+            throw permissionError; // Rethrow to notify the caller of failure
         });
 
     return docRef.id;
 }
 
 
-export function updateRfp(rfpId: string, updates: Partial<RFP>) {
+export async function updateRfp(rfpId: string, updates: Partial<RFP>) {
     const db = getDb();
     const rfpDocRef = doc(db, 'rfps', rfpId);
     
@@ -199,26 +199,28 @@ export function updateRfp(rfpId: string, updates: Partial<RFP>) {
       }
     }
   
-    updateDoc(rfpDocRef, firestoreUpdates).catch(async (serverError) => {
+    await updateDoc(rfpDocRef, firestoreUpdates).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: rfpDocRef.path,
             operation: 'update',
             requestResourceData: firestoreUpdates,
         });
         errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
     });
 }
   
-export function deleteRfp(rfpId: string) {
+export async function deleteRfp(rfpId: string) {
     const db = getDb();
     const rfpDocRef = doc(db, 'rfps', rfpId);
     
-    deleteDoc(rfpDocRef).catch(async (serverError) => {
+    await deleteDoc(rfpDocRef).catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
             path: rfpDocRef.path,
             operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
     });
 }
 
@@ -238,7 +240,7 @@ export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'i
                 requestResourceData: dataToSave,
             });
             errorEmitter.emit('permission-error', permissionError);
-            throw serverError;
+            throw permissionError;
         });
         
     return docRef.id;
@@ -276,19 +278,20 @@ export async function getInvitedContractors(ids: string[]): Promise<Contractor[]
     return Promise.resolve(contractors as Contractor[]);
 }
 
-export function addInvitedContractorToRfp(rfpId: string, contractorId: string) {
+export async function addInvitedContractorToRfp(rfpId: string, contractorId: string) {
   const db = getDb();
   const rfpDocRef = doc(db, 'rfps', rfpId);
   const updateData = {
       invitedContractors: arrayUnion(contractorId)
   };
 
-  updateDoc(rfpDocRef, updateData).catch(async (serverError) => {
+  await updateDoc(rfpDocRef, updateData).catch(async (serverError) => {
     const permissionError = new FirestorePermissionError({
         path: rfpDocRef.path,
         operation: 'update',
         requestResourceData: updateData
     });
     errorEmitter.emit('permission-error', permissionError);
+    throw permissionError;
   });
 }
