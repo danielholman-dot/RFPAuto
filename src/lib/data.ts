@@ -181,8 +181,6 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedCon
                 requestResourceData: dataToSave,
             });
             errorEmitter.emit('permission-error', permissionError);
-            // Re-throw the original error if you need to propagate it further,
-            // or return a specific value to indicate failure.
             throw serverError;
         });
 
@@ -190,7 +188,7 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedCon
 }
 
 
-export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<void> {
+export function updateRfp(rfpId: string, updates: Partial<RFP>) {
     const db = getDb();
     const rfpDocRef = doc(db, 'rfps', rfpId);
     
@@ -211,7 +209,7 @@ export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<v
     });
 }
   
-export async function deleteRfp(rfpId: string): Promise<void> {
+export function deleteRfp(rfpId: string) {
     const db = getDb();
     const rfpDocRef = doc(db, 'rfps', rfpId);
     
@@ -278,7 +276,7 @@ export async function getInvitedContractors(ids: string[]): Promise<Contractor[]
     return Promise.resolve(contractors as Contractor[]);
 }
 
-export async function addInvitedContractorToRfp(rfpId: string, contractorId: string): Promise<void> {
+export function addInvitedContractorToRfp(rfpId: string, contractorId: string) {
   const db = getDb();
   const rfpDocRef = doc(db, 'rfps', rfpId);
   const updateData = {
