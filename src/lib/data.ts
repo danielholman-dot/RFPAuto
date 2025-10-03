@@ -117,42 +117,61 @@ export async function getContractorById(id: string): Promise<Contractor | null> 
 
 
 export async function getRfps(): Promise<RFP[]> {
-  const db = getDb();
-  const rfpsCol = collection(db, 'rfps');
-  const rfpSnapshot = await getDocs(query(rfpsCol, orderBy('createdAt', 'desc')));
-  const rfpList = rfpSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return { 
-          id: doc.id, 
-          ...data,
-          // Convert Firestore Timestamps to JS Dates
-          rfpStartDate: data.rfpStartDate?.toDate(),
-          rfpEndDate: data.rfpEndDate?.toDate(),
-          projectStartDate: data.projectStartDate?.toDate(),
-          projectEndDate: data.projectEndDate?.toDate(),
-          createdAt: data.createdAt?.toDate(),
-      } as RFP
-  });
-  return rfpList;
+    const db = getDb();
+    const rfpsCol = collection(db, 'rfps');
+    const rfpQuery = query(rfpsCol, orderBy('createdAt', 'desc'));
+    
+    try {
+        const rfpSnapshot = await getDocs(rfpQuery);
+        const rfpList = rfpSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return { 
+                id: doc.id, 
+                ...data,
+                rfpStartDate: data.rfpStartDate?.toDate(),
+                rfpEndDate: data.rfpEndDate?.toDate(),
+                projectStartDate: data.projectStartDate?.toDate(),
+                projectEndDate: data.projectEndDate?.toDate(),
+                createdAt: data.createdAt?.toDate(),
+            } as RFP
+        });
+        return rfpList;
+    } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+            path: rfpsCol.path,
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
+    }
 }
 
 export async function getRfpById(id: string): Promise<RFP | null> {
-  const db = getDb();
-  const rfpDocRef = doc(db, 'rfps', id);
-  const rfpSnap = await getDoc(rfpDocRef);
-  if (rfpSnap.exists()) {
-    const data = rfpSnap.data();
-    return { 
-        id: rfpSnap.id,
-        ...data,
-        rfpStartDate: data.rfpStartDate?.toDate(),
-        rfpEndDate: data.rfpEndDate?.toDate(),
-        projectStartDate: data.projectStartDate?.toDate(),
-        projectEndDate: data.projectEndDate?.toDate(),
-        createdAt: data.createdAt?.toDate(),
-    } as RFP;
-  }
-  return null;
+    const db = getDb();
+    const rfpDocRef = doc(db, 'rfps', id);
+    try {
+        const rfpSnap = await getDoc(rfpDocRef);
+        if (rfpSnap.exists()) {
+            const data = rfpSnap.data();
+            return { 
+                id: rfpSnap.id,
+                ...data,
+                rfpStartDate: data.rfpStartDate?.toDate(),
+                rfpEndDate: data.rfpEndDate?.toDate(),
+                projectStartDate: data.projectStartDate?.toDate(),
+                projectEndDate: data.projectEndDate?.toDate(),
+                createdAt: data.createdAt?.toDate(),
+            } as RFP;
+        }
+        return null;
+    } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+            path: rfpDocRef.path,
+            operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
+    }
 }
 
 export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedContractors'>): Promise<string> {
@@ -247,18 +266,27 @@ export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'i
 }
 
 export async function getProposalsForRfp(rfpId: string): Promise<Proposal[]> {
-  const db = getDb();
-  const proposalsCol = collection(db, 'rfps', rfpId, 'proposals');
-  const proposalSnapshot = await getDocs(proposalsCol);
-  const proposalList = proposalSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return { 
-          id: doc.id,
-          ...data,
-          submittedDate: data.submittedDate.toDate(),
-      } as Proposal;
-  });
-  return proposalList;
+    const db = getDb();
+    const proposalsCol = collection(db, 'rfps', rfpId, 'proposals');
+    try {
+        const proposalSnapshot = await getDocs(proposalsCol);
+        const proposalList = proposalSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return { 
+                id: doc.id,
+                ...data,
+                submittedDate: data.submittedDate.toDate(),
+            } as Proposal;
+        });
+        return proposalList;
+    } catch (serverError) {
+        const permissionError = new FirestorePermissionError({
+            path: proposalsCol.path,
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
+    }
 }
 
 export async function getSuggestedContractors(metroCode: string, contractorType: string): Promise<Contractor[]> {
