@@ -31,7 +31,7 @@ export default function MetroPage() {
   
   const metroCodesQuery = useMemoFirebase(() => {
     if (!user) return null;
-    return collection(firestore, 'locations', 'metros', 'metro_codes');
+    return collection(firestore, 'metro_codes');
   }, [firestore, user]);
 
   const { data: metros, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
@@ -58,7 +58,7 @@ export default function MetroPage() {
 
   const handleSave = async (id: string) => {
     if (!editedMetro || !firestore) return;
-    const docRef = doc(firestore, 'locations', 'metros', 'metro_codes', id);
+    const docRef = doc(firestore, 'metro_codes', id);
     try {
       await updateDoc(docRef, {
         lat: editedMetro.lat,
