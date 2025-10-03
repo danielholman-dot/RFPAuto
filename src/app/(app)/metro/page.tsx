@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -30,7 +31,7 @@ export default function MetroPage() {
   
   const metroCodesQuery = useMemoFirebase(() => {
     if (!user) return null;
-    return collection(firestore, 'metro_codes');
+    return collection(firestore, 'locations', 'metros', 'metro_codes');
   }, [firestore, user]);
 
   const { data: metros, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
@@ -57,7 +58,7 @@ export default function MetroPage() {
 
   const handleSave = async (id: string) => {
     if (!editedMetro || !firestore) return;
-    const docRef = doc(firestore, 'metro_codes', id);
+    const docRef = doc(firestore, 'locations', 'metros', 'metro_codes', id);
     try {
       await updateDoc(docRef, {
         lat: editedMetro.lat,
@@ -92,6 +93,22 @@ export default function MetroPage() {
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
+  }
+  
+  if (!localMetros || localMetros.length === 0) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Metro Codes</CardTitle>
+                 <CardDescription>
+                    List of active metro codes for projects.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-center text-muted-foreground py-8">No metro codes found.</p>
+            </CardContent>
+        </Card>
+    )
   }
 
   return (
