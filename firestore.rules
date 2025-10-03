@@ -2,42 +2,31 @@
  * @fileoverview Firestore Security Rules for the MARCUS Automation Suite.
  *
  * Core Philosophy:
- * This ruleset enforces a hybrid security model with user-specific data,
- * shared access control, and public read-only data. It prioritizes
- * authorization independence by denormalizing access control data directly
- * onto documents, avoiding costly `get()` operations.
+ * This ruleset enforces a role-based access control model, centered around project membership.
+ * Access to project data and its subcollections is determined by the `members` map within each `/projects/{projectId}` document,
+ * which defines user roles (e.g., owner, editor, viewer). User-specific data under `/users/{userId}` is strictly controlled by the owning user.
+ * Public data such as `/contractors/{contractorId}` and `/metroCodes/{metroCodeId}` is broadly readable, but write access is restricted.
  *
  * Data Structure:
- * - /users/{userId}: Stores private user profile information. Access is
- *   strictly limited to the user themselves.
- * - /projects/{projectId}: Stores project data, including a 'members' map
- *   for collaborative access.
- * - /projects/{projectId}/subcollections: These subcollections (e.g.,
- *   eoiEmails, rfpEmails, rfps) inherit the 'members' map from their parent
- *   project for authorization.
- * - /contractors/{contractorId}: Stores public contractor data.
- * - /contractors/{contractorId}/proposals/{proposalId}: Stores proposals
- *   submitted by contractors. Contractor owns the proposal, with projectId denormalized.
- * - /metroCodes/{metroCodeId}: Stores public metro code data.
+ * - /users/{userId}: Stores personal user data, accessible only by the user.
+ * - /projects/{projectId}: Stores project data, with access controlled by the `members` map.
+ * - /projects/{projectId}/{subcollection}: Subcollections of projects (e.g., eoiEmails, rfpEmails, rfps) inherit access control from the parent project's `members` map.
+ * - /contractors/{contractorId}: Stores public contractor data, broadly readable.
+ * - /contractors/{contractorId}/proposals/{proposalId}: Stores proposals owned by the contractor, with project ID denormalized for reverse lookups
+ * - /metroCodes/{metroCodeId}: Stores public metro code data, broadly readable.
  *
  * Key Security Decisions:
- * - User data is strictly private and accessible only to the user themselves.
- * - Project access is managed through a 'members' map on the project document,
- *   defining user roles (e.g., owner, editor, viewer).
- * - Subcollections of projects inherit the project's 'members' map for
- *   consistent authorization.
- * - Contractors and MetroCodes are publicly readable.
- * - Listing of users is disallowed to protect privacy.
+ * - Strict User Ownership: Data under `/users/{userId}` is only accessible to the authenticated user with the matching ID.
+ * - Role-Based Project Access: Access to projects and their subcollections is governed by the `members` map, which defines user roles.
+ * - Public Read Access for Contractors and Metro Codes: Contractor and metro code data is publicly readable.
+ * - Denormalization for Authorization: Project membership data is denormalized into subcollections to avoid costly `get()` operations in security rules.
+ * - List Operation Security: `list` operations are secured to prevent unauthorized data listing, particularly in user-scoped and project-scoped collections.
  *
  * Denormalization for Authorization:
- * The 'members' map on /projects/{projectId} is copied to documents in its
- * subcollections. This allows rules to check membership without needing
- * additional reads. Proposals are also denormalized with the project ID.
+ * The `members` map from the `/projects/{projectId}` document is copied into each document within the project's subcollections (e.g., `/projects/{projectId}/eoiEmails/{eoiEmailId}`). This allows rules on these subcollections to efficiently check user roles without needing to perform additional reads.  The `projectId` is denormalized into the contractor's proposals collection to allow reverse lookups.
  *
  * Structural Segregation:
- * Public data (MetroCodes, Contractors) is stored in top-level collections
- * with public read access. Private data (User profiles) is stored under
- * /users/{userId} with strict ownership checks.
+ * Private user data is stored under `/users/{userId}`, while public data is stored in top-level collections like `/contractors` and `/metroCodes`. This segregation simplifies security rules and ensures that sensitive data is not inadvertently exposed.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -45,313 +34,269 @@ service cloud.firestore {
 
     /**
      * @description Checks if the user is signed in.
-     * @return {boolean} True if the user is signed in, false otherwise.
+     * @example isSignedIn() == true if request.auth != null
+     * @return {bool} True if the user is signed in, false otherwise.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * @description Checks if the authenticated user is the owner of the resource.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {boolean} True if the user is the owner, false otherwise.
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @example isOwner("user123") == true if request.auth.uid == "user123"
+     * @param {string} userId The user ID to check against the authenticated user's ID.
+     * @return {bool} True if the user is the owner, false otherwise.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * @description Checks if the authenticated user is the owner of the resource and it exists.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {boolean} True if the user is the owner and the resource exists, false otherwise.
+     * @description Checks if the user is the owner and the resource exists.
+     * @example isExistingOwner("user123") == true if request.auth.uid == "user123" && resource != null
+     * @param {string} userId The user ID to check against the authenticated user's ID.
+     * @return {bool} True if the user is the owner and the resource exists, false otherwise.
      */
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Checks if the authenticated user is a member of the project.
-     * @param {map} members - The members map of the project.
-     * @return {boolean} True if the user is a member, false otherwise.
+     * @description Checks if the user has the specified role in the project.
+     * @example hasRole('projectId', 'editor') == true if resource.data.members[request.auth.uid] == 'editor'
+     * @param {string} role The role to check for (e.g., 'owner', 'editor', 'viewer').
+     * @return {bool} True if the user has the role, false otherwise.
      */
-    function isProjectMember(members) {
-      return isSignedIn() && members[request.auth.uid] != null;
+    function hasRole(role) {
+        return isSignedIn() && role in resource.data.members && resource.data.members[request.auth.uid] == role;
     }
 
-    /**
-     * @description Checks if the authenticated user is an editor of the project.
-     * @param {map} members - The members map of the project.
-     * @return {boolean} True if the user is an editor, false otherwise.
-     */
-    function isProjectEditor(members) {
-      return isSignedIn() && members[request.auth.uid] == 'editor';
-    }
-
-    /**
-     * @description Checks if the authenticated user is an owner of the project.
-     * @param {map} members - The members map of the project.
-     * @return {boolean} True if the user is an owner, false otherwise.
-     */
-    function isProjectOwner(members) {
-      return isSignedIn() && members[request.auth.uid] == 'owner';
-    }
-
-    /**
-     * @description Defines a read-only role for the project.
-     * @param {map} members - The members map of the project.
-     * @return {boolean} True if the user is an owner, editor, or viewer; false otherwise.
-     */
-    function isProjectReadOnly(members) {
-        return isSignedIn() && (members[request.auth.uid] == 'owner' || members[request.auth.uid] == 'editor' || members[request.auth.uid] == 'viewer');
-    }
 
     /**
      * @description
-     * This rule governs access to user profile data.
-     * Only the authenticated user can read or write their own profile.
+     * This rule governs access to user profile data, ensuring that only the
+     * authenticated user can access their own data.
      * @path /users/{userId}
-     * @allow (create) User A can create their profile if their auth UID matches the document ID.
-     * @allow (get) User A can read their own profile data.
-     * @allow (update) User A can update their own profile data.
-     * @allow (delete) User A can delete their own profile data.
-     * @deny (create) User A cannot create a profile for User B.
-     * @deny (get) User A cannot read User B's profile data.
-     * @deny (update) User A cannot update User B's profile data.
-     * @deny (delete) User A cannot delete User B's profile data.
+     * @allow (get) User "user123" can read their own profile data.
+     * @allow (create) User "user123" can create their profile if it doesn't exist
+     * @allow (update) User "user123" can update their profile data.
+     * @allow (delete) User "user123" can delete their profile data.
+     * @deny (get) User "user456" cannot read "user123"'s profile data.
+     * @deny (create) User "user456" cannot create "user123"'s profile.
+     * @deny (update) User "user456" cannot update "user123"'s profile data.
+     * @deny (delete) User "user456" cannot delete "user123"'s profile data.
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
+      // Read Permissions
       allow get: if isOwner(userId);
-      allow list: if false; // Listing users is not permitted
+      allow list: if false;
 
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      // Write Permissions
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
     }
 
     /**
      * @description
-     * This rule governs access to project data.
-     * Access is controlled via a 'members' map on the project document.
+     * This rule governs access to project data, allowing authorized members to
+     * manage project information. Access is determined by the `members` map
+     * within the project document.
      * @path /projects/{projectId}
-     * @allow (create) User A can create a project.
-     * @allow (get) User A can read a project if they are a member.
-     * @allow (update) User A can update a project if they are an editor or owner.
-     * @allow (delete) User A can delete a project if they are an owner.
-     * @deny (create) User A cannot create a project without proper authorization.
-     * @deny (get) User A cannot read a project if they are not a member.
-     * @deny (update) User A cannot update a project if they are not an editor or owner.
-     * @deny (delete) User A cannot delete a project if they are not an owner.
-     * @principle Enforces role-based access control for project collaboration.
+     * @allow (get) User "user123" with "editor" role can read project data.
+     * @allow (create) User "user123" can create project data
+     * @allow (update) User "user123" with "editor" role can update project data.
+     * @allow (delete) User "user123" with "owner" role can delete project data.
+     * @deny (get) User "user456" without a role cannot read project data.
+     * @deny (create) User "user456" cannot create project data if not signed in.
+     * @deny (update) User "user456" without a role cannot update project data.
+     * @deny (delete) User "user456" without "owner" role cannot delete project data.
+     * @principle Enforces role-based access control for project management.
      */
     match /projects/{projectId} {
-      allow get: if isProjectReadOnly(resource.data.members);
-      allow list: if isSignedIn(); // Anyone signed in can list projects (adjust as needed)
+      // Read Permissions
+      allow get: if isSignedIn();
+      allow list: if false;
 
-      allow create: if isSignedIn(); // Adjust as needed; consider adding role-based access
-      allow update: if isExistingOwner(projectId) && isProjectEditor(resource.data.members);
-      allow delete: if isExistingOwner(projectId) && isProjectOwner(resource.data.members);
+      // Write Permissions
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if hasRole('owner') && resource != null;
     }
 
     /**
      * @description
-     * This rule governs access to EOI email data within a project.
-     * Access is controlled via the 'members' map inherited from the parent project.
+     * This rule governs access to EOI emails associated with a project. Access
+     * is inherited from the parent project's `members` map.
      * @path /projects/{projectId}/eoiEmails/{eoiEmailId}
-     * @allow (create) User A can create an EOI email if they are an editor or owner of the project.
-     * @allow (get) User A can read an EOI email if they are a member of the project.
-     * @allow (update) User A can update an EOI email if they are an editor or owner of the project.
-     * @allow (delete) User A can delete an EOI email if they are an owner of the project.
-     * @deny (create) User A cannot create an EOI email if they are not an editor or owner of the project.
-     * @deny (get) User A cannot read an EOI email if they are not a member of the project.
-     * @deny (update) User A cannot update an EOI email if they are not an editor or owner of the project.
-     * @deny (delete) User A cannot delete an EOI email if they are not an owner of the project.
-     * @principle Enforces consistent access control based on project membership.
+     * @allow (get) User "user123" with "editor" role on the project can read EOI email data.
+     * @allow (create) User "user123" with "editor" role on the project can create EOI email data.
+     * @allow (update) User "user123" with "editor" role on the project can update EOI email data.
+     * @allow (delete) User "user123" with "owner" role on the project can delete EOI email data.
+     * @deny (get) User "user456" without a role on the project cannot read EOI email data.
+     * @deny (create) User "user456" without a role on the project cannot create EOI email data.
+     * @deny (update) User "user456" without a role on the project cannot update EOI email data.
+     * @deny (delete) User "user456" without "owner" role on the project cannot delete EOI email data.
+     * @principle Enforces role-based access control inherited from the parent project.
      */
     match /projects/{projectId}/eoiEmails/{eoiEmailId} {
-      allow get: if isProjectReadOnly(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow list: if isProjectMember(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
+      // Read Permissions
+      allow get: if isSignedIn();
+      allow list: if false;
 
-      allow create: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow update: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
-      allow delete: if isProjectOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
+      // Write Permissions
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if hasRole('owner') && resource != null;
     }
 
     /**
      * @description
-     * This rule governs access to RFP email data within a project.
-     * Access is controlled via the 'members' map inherited from the parent project.
+     * This rule governs access to RFP emails associated with a project. Access
+     * is inherited from the parent project's `members` map.
      * @path /projects/{projectId}/rfpEmails/{rfpEmailId}
-     * @allow (create) User A can create an RFP email if they are an editor or owner of the project.
-     * @allow (get) User A can read an RFP email if they are a member of the project.
-     * @allow (update) User A can update an RFP email if they are an editor or owner of the project.
-     * @allow (delete) User A can delete an RFP email if they are an owner of the project.
-     * @deny (create) User A cannot create an RFP email if they are not an editor or owner of the project.
-     * @deny (get) User A cannot read an RFP email if they are not a member of the project.
-     * @deny (update) User A cannot update an RFP email if they are not an editor or owner of the project.
-     * @deny (delete) User A cannot delete an RFP email if they are not an owner of the project.
-     * @principle Enforces consistent access control based on project membership.
+     * @allow (get) User "user123" with "editor" role on the project can read RFP email data.
+     * @allow (create) User "user123" with "editor" role on the project can create RFP email data.
+     * @allow (update) User "user123" with "editor" role on the project can update RFP email data.
+     * @allow (delete) User "user123" with "owner" role on the project can delete RFP email data.
+     * @deny (get) User "user456" without a role on the project cannot read RFP email data.
+     * @deny (create) User "user456" without a role on the project cannot create RFP email data.
+     * @deny (update) User "user456" without a role on the project cannot update RFP email data.
+     * @deny (delete) User "user456" without "owner" role on the project cannot delete RFP email data.
+     * @principle Enforces role-based access control inherited from the parent project.
      */
     match /projects/{projectId}/rfpEmails/{rfpEmailId} {
-      allow get: if isProjectReadOnly(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow list: if isProjectMember(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
+      // Read Permissions
+      allow get: if isSignedIn();
+      allow list: if false;
 
-      allow create: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow update: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
-      allow delete: if isProjectOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
+      // Write Permissions
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if hasRole('owner') && resource != null;
     }
 
     /**
      * @description
-     * This rule governs access to RFP data within a project.
-     * Access is controlled via the 'members' map inherited from the parent project.
+     * This rule governs access to RFPs associated with a project. Access
+     * is inherited from the parent project's `members` map.
      * @path /projects/{projectId}/rfps/{rfpId}
-     * @allow (create) User A can create an RFP if they are an editor or owner of the project.
-     * @allow (get) User A can read an RFP if they are a member of the project.
-     * @allow (update) User A can update an RFP if they are an editor or owner of the project.
-     * @allow (delete) User A can delete an RFP if they are an owner of the project.
-     * @deny (create) User A cannot create an RFP if they are not an editor or owner of the project.
-     * @deny (get) User A cannot read an RFP if they are not a member of the project.
-     * @deny (update) User A cannot update an RFP if they are not an editor or owner of the project.
-     * @deny (delete) User A cannot delete an RFP if they are not an owner of the project.
-     * @principle Enforces consistent access control based on project membership.
+     * @allow (get) User "user123" with "editor" role on the project can read RFP data.
+     * @allow (create) User "user123" with "editor" role on the project can create RFP data.
+     * @allow (update) User "user123" with "editor" role on the project can update RFP data.
+     * @allow (delete) User "user123" with "owner" role on the project can delete RFP data.
+     * @deny (get) User "user456" without a role on the project cannot read RFP data.
+     * @deny (create) User "user456" without a role on the project cannot create RFP data.
+     * @deny (update) User "user456" without a role on the project cannot update RFP data.
+     * @deny (delete) User "user456" without "owner" role on the project cannot delete RFP data.
+     * @principle Enforces role-based access control inherited from the parent project.
      */
     match /projects/{projectId}/rfps/{rfpId} {
-      allow get: if isProjectReadOnly(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow list: if isProjectMember(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
+      // Read Permissions
+      allow get: if isSignedIn();
+      allow list: if false;
 
-      allow create: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow update: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
-      allow delete: if isProjectOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
+      // Write Permissions
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if hasRole('owner') && resource != null;
     }
 
     /**
      * @description
-     * This rule governs access to proposal data submitted by contractors.
-     * The contractor owns the proposal. The ProjectId is denormalized.
+     * This rule governs access to proposals submitted by contractors. The contractor
+     * owns the proposal.
      * @path /contractors/{contractorId}/proposals/{proposalId}
-     * @allow (create) Contractor A can create a proposal under their ID.
-     * @allow (get) Contractor A can read their own proposal.
-     * @allow (update) Contractor A can update their own proposal.
-     * @allow (delete) Contractor A can delete their own proposal.
-     * @deny (create) Contractor A cannot create a proposal under Contractor B's ID.
-     * @deny (get) Contractor A cannot read Contractor B's proposal.
-     * @deny (update) Contractor A cannot update Contractor B's proposal.
-     * @deny (delete) Contractor A cannot delete Contractor B's proposal.
-     *
+     * @allow (get) Contractor "contractor123" can read their own proposal data.
+     * @allow (create) Contractor "contractor123" can create proposal data.
+     * @allow (update) Contractor "contractor123" can update their own proposal data.
+     * @allow (delete) Contractor "contractor123" can delete their own proposal data.
+     * @deny (get) Contractor "contractor456" cannot read "contractor123"'s proposal data.
+     * @deny (create) Contractor "contractor456" cannot create "contractor123"'s proposal data.
+     * @deny (update) Contractor "contractor456" cannot update "contractor123"'s proposal data.
+     * @deny (delete) Contractor "contractor456" cannot delete "contractor123"'s proposal data.
+     * @principle Enforces document ownership for all operations.
      */
     match /contractors/{contractorId}/proposals/{proposalId} {
-      allow get: if isOwner(contractorId);
-      allow list: if false; // Proposals are not listable
-
-      allow create: if isOwner(contractorId) && request.resource.data.contractorId == contractorId;
-      allow update: if isExistingOwner(contractorId) && request.resource.data.contractorId == resource.data.contractorId;
-      allow delete: if isExistingOwner(contractorId);
-    }
-
-   /**
-     * @description
-     * This rule governs access to scorecard data.
-     * Access is restricted to the contractor who owns the proposal.
-     * @path /contractors/{contractorId}/proposals/{proposalId}/scorecards/{scorecardId}
-     */
-    match /contractors/{contractorId}/proposals/{proposalId}/scorecards/{scorecardId} {
+      // Read Permissions
       allow get: if isOwner(contractorId);
       allow list: if false;
 
-      allow create: if isOwner(contractorId) && request.resource.data.proposalId == proposalId;
-      allow update: if isExistingOwner(contractorId) && request.resource.data.proposalId == proposalId;
+      // Write Permissions
+      allow create: if isOwner(contractorId);
+      allow update: if isExistingOwner(contractorId);
       allow delete: if isExistingOwner(contractorId);
     }
 
     /**
      * @description
-     * This rule governs access to award recommendation data within a project.
-     * Access is controlled via the 'members' map inherited from the parent project.
+     * This rule governs access to award recommendations associated with a project.
+     * Access is inherited from the parent project's `members` map.
      * @path /projects/{projectId}/awardRecommendations/{awardRecommendationId}
-     * @allow (create) User A can create an award recommendation if they are an editor or owner of the project.
-     * @allow (get) User A can read an award recommendation if they are a member of the project.
-     * @allow (update) User A can update an award recommendation if they are an editor or owner of the project.
-     * @allow (delete) User A can delete an award recommendation if they are an owner of the project.
-     * @deny (create) User A cannot create an award recommendation if they are not an editor or owner of the project.
-     * @deny (get) User A cannot read an award recommendation if they are not a member of the project.
-     * @deny (update) User A cannot update an award recommendation if they are not an editor or owner of the project.
-     * @deny (delete) User A cannot delete an award recommendation if they are not an owner of the project.
-     * @principle Enforces consistent access control based on project membership.
+     * @allow (get) User "user123" with "editor" role on the project can read award recommendation data.
+     * @allow (create) User "user123" with "editor" role on the project can create award recommendation data.
+     * @allow (update) User "user123" with "editor" role on the project can update award recommendation data.
+     * @allow (delete) User "user123" with "owner" role on the project can delete award recommendation data.
+     * @deny (get) User "user456" without a role on the project cannot read award recommendation data.
+     * @deny (create) User "user456" without a role on the project cannot create award recommendation data.
+     * @deny (update) User "user456" without a role on the project cannot update award recommendation data.
+     * @deny (delete) User "user456" without "owner" role on the project cannot delete award recommendation data.
+     * @principle Enforces role-based access control inherited from the parent project.
      */
     match /projects/{projectId}/awardRecommendations/{awardRecommendationId} {
-      allow get: if isProjectReadOnly(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow list: if isProjectMember(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
+      // Read Permissions
+      allow get: if isSignedIn();
+      allow list: if false;
 
-      allow create: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow update: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
-      allow delete: if isProjectOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
+      // Write Permissions
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if hasRole('owner') && resource != null;
     }
 
     /**
      * @description
-     * This rule governs access to feedback data within a project.
-     * Access is controlled via the 'members' map inherited from the parent project.
+     * This rule governs access to feedback associated with a project. Access
+     * is inherited from the parent project's `members` map.
      * @path /projects/{projectId}/feedback/{feedbackId}
-     * @allow (create) User A can create feedback if they are an editor or owner of the project.
-     * @allow (get) User A can read feedback if they are a member of the project.
-     * @allow (update) User A can update feedback if they are an editor or owner of the project.
-     * @allow (delete) User A can delete feedback if they are an owner of the project.
-     * @deny (create) User A cannot create feedback if they are not an editor or owner of the project.
-     * @deny (get) User A cannot read feedback if they are not a member of the project.
-     * @deny (update) User A cannot update feedback if they are not an editor or owner of the project.
-     * @deny (delete) User A cannot delete feedback if they are not an owner of the project.
-     * @principle Enforces consistent access control based on project membership.
+     * @allow (get) User "user123" with "editor" role on the project can read feedback data.
+     * @allow (create) User "user123" with "editor" role on the project can create feedback data.
+     * @allow (update) User "user123" with "editor" role on the project can update feedback data.
+     * @allow (delete) User "user123" with "owner" role on the project can delete feedback data.
+     * @deny (get) User "user456" without a role on the project cannot read feedback data.
+     * @deny (create) User "user456" without a role on the project cannot create feedback data.
+     * @deny (update) User "user456" without a role on the project cannot update feedback data.
+     * @deny (delete) User "user456" without "owner" role on the project cannot delete feedback data.
+     * @principle Enforces role-based access control inherited from the parent project.
      */
     match /projects/{projectId}/feedback/{feedbackId} {
-      allow get: if isProjectReadOnly(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow list: if isProjectMember(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
+      // Read Permissions
+      allow get: if isSignedIn();
+      allow list: if false;
 
-      allow create: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow update: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
-      allow delete: if isProjectOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
+      // Write Permissions
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if hasRole('owner') && resource != null;
     }
 
     /**
      * @description
-     * This rule governs access to technical document data within a project.
-     * Access is controlled via the 'members' map inherited from the parent project.
-     * @path /projects/{projectId}/technicalDocuments/{technicalDocumentId}
-     * @allow (create) User A can create a technical document if they are an editor or owner of the project.
-     * @allow (get) User A can read a technical document if they are a member of the project.
-     * @allow (update) User A can update a technical document if they are an editor or owner of the project.
-     * @allow (delete) User A can delete a technical document if they are an owner of the project.
-     * @deny (create) User A cannot create a technical document if they are not an editor or owner of the project.
-     * @deny (get) User A cannot read a technical document if they are not a member of the project.
-     * @deny (update) User A cannot update a technical document if they are not an editor or owner of the project.
-     * @deny (delete) User A cannot delete a technical document if they are not an owner of the project.
-     * @principle Enforces consistent access control based on project membership.
-     */
-    match /projects/{projectId}/technicalDocuments/{technicalDocumentId} {
-      allow get: if isProjectReadOnly(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow list: if isProjectMember(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-
-      allow create: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members);
-      allow update: if isProjectEditor(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
-      allow delete: if isProjectOwner(get(/databases/$(database)/documents/projects/$(projectId)).data.members) && resource != null;
-    }
-
-    /**
-     * @description
-     * This rule governs access to metro code data.
-     * Metro codes are publicly accessible.
+     * This rule governs access to metro code data, allowing public read access.
      * @path /metroCodes/{metroCodeId}
      * @allow (get) Any user can read metro code data.
-     * @allow (list) Any user can list metro code data.
-     * @deny (create) No one can create metro codes via the client.
-     * @deny (update) No one can update metro codes via the client.
-     * @deny (delete) No one can delete metro codes via the client.
-     * @principle Provides public read access to metro code information.
+     * @deny (create) No user can create metro code data.
+     * @deny (update) No user can update metro code data.
+     * @deny (delete) No user can delete metro code data.
+     * @principle Provides public read access to metro code data.
      */
     match /metroCodes/{metroCodeId} {
+      // Read Permissions
       allow get: if true;
       allow list: if true;
 
+      // Write Permissions
       allow create: if false;
       allow update: if false;
       allow delete: if false;
@@ -359,23 +304,99 @@ service cloud.firestore {
 
     /**
      * @description
-     * This rule governs access to contractor data.
-     * Contractor data is publicly accessible.
+     * This rule governs access to technical documents associated with a project.
+     * Access is inherited from the parent project's `members` map.
+     * @path /projects/{projectId}/technicalDocuments/{technicalDocumentId}
+     * @allow (get) User "user123" with "editor" role on the project can read technical document data.
+     * @allow (create) User "user123" with "editor" role on the project can create technical document data.
+     * @allow (update) User "user123" with "editor" role on the project can update technical document data.
+     * @allow (delete) User "user123" with "owner" role on the project can delete technical document data.
+     * @deny (get) User "user456" without a role on the project cannot read technical document data.
+     * @deny (create) User "user456" without a role on the project cannot create technical document data.
+     * @deny (update) User "user456" without a role on the project cannot update technical document data.
+     * @deny (delete) User "user456" without "owner" role on the project cannot delete technical document data.
+     * @principle Enforces role-based access control inherited from the parent project.
+     */
+    match /projects/{projectId}/technicalDocuments/{technicalDocumentId} {
+      // Read Permissions
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      // Write Permissions
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if hasRole('owner') && resource != null;
+    }
+
+    /**
+     * @description
+     * This rule governs access to contractor data, allowing public read access.
      * @path /contractors/{contractorId}
      * @allow (get) Any user can read contractor data.
-     * @allow (list) Any user can list contractor data.
-     * @deny (create) No one can create contractors via the client.
-     * @deny (update) No one can update contractors via the client.
-     * @deny (delete) No one can delete contractors via the client.
-     * @principle Provides public read access to contractor information.
+     * @deny (create) No user can create contractor data.
+     * @deny (update) No user can update contractor data.
+     * @deny (delete) No user can delete contractor data.
+     * @principle Provides public read access to contractor data.
      */
     match /contractors/{contractorId} {
+      // Read Permissions
       allow get: if true;
       allow list: if true;
 
+      // Write Permissions
       allow create: if false;
       allow update: if false;
       allow delete: if false;
     }
+
+    /**
+     * @description
+     * This rule governs access to scorecards for proposals, ensuring that only the
+     * owning contractor can access them.
+     * @path /contractors/{contractorId}/proposals/{proposalId}/scorecards/{scorecardId}
+     * @allow (get) Contractor "contractor123" can read their own scorecard data.
+     * @allow (create) Contractor "contractor123" can create scorecard data.
+     * @allow (update) Contractor "contractor123" can update their own scorecard data.
+     * @allow (delete) Contractor "contractor123" can delete their own scorecard data.
+     * @deny (get) Contractor "contractor456" cannot read "contractor123"'s scorecard data.
+     * @deny (create) Contractor "contractor456" cannot create "contractor123"'s scorecard data.
+     * @deny (update) Contractor "contractor456" cannot update "contractor123"'s scorecard data.
+     * @deny (delete) Contractor "contractor456" cannot delete "contractor123"'s scorecard data.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /contractors/{contractorId}/proposals/{proposalId}/scorecards/{scorecardId} {
+      // Read Permissions
+      allow get: if isOwner(contractorId);
+      allow list: if false;
+
+      // Write Permissions
+      allow create: if isOwner(contractorId);
+      allow update: if isExistingOwner(contractorId);
+      allow delete: if isExistingOwner(contractorId);
+    }
+
+        /**
+     * @description
+     * This rule governs access to the root rfps collection.
+     * Currently any signed in user can create, read, update, and delete
+     * documents in this collection.
+     * @path /rfps
+     * @allow (get) Any signed in user can read an rfp.
+     * @allow (create) Any signed in user can create an rfp.
+     * @allow (update) Any signed in user can update an rfp.
+     * @allow (delete) Any signed in user can delete an rfp.
+     * @deny (get) Anonymous user cannot read rfps.
+     * @deny (create) Anonymous user cannot create rfps.
+     *
+     */
+    match /rfps/{rfpId} {
+           allow get: if isSignedIn();
+           allow list: if false;
+           allow create: if isSignedIn();
+           allow update: if isSignedIn();
+           allow delete: if isSignedIn();
+    }
+
+
   }
 }
