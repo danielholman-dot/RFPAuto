@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,13 +20,17 @@ export default function LoginPage() {
     }
   }, [user, loading, router]);
 
+  useEffect(() => {
+    // This effect handles the result of the redirect
+    getRedirectResult(auth).catch((error) => {
+        console.error('Error getting redirect result', error);
+    });
+  }, [auth]);
+
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error('Error signing in with Google', error);
-    }
+    // Use signInWithRedirect for a more robust flow
+    await signInWithRedirect(auth, provider);
   };
   
   if (loading || user) {
