@@ -15,6 +15,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // This effect now only handles redirecting an already-logged-in user away from the login page.
     if (!loading && user) {
       router.push('/');
     }
@@ -22,15 +23,26 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    // Use signInWithRedirect for a more robust flow
     await signInWithRedirect(auth, provider);
   };
   
-  if (loading || user) {
+  // Display a loader only if we are in the initial loading phase and don't know the user's status yet.
+  // Do not show a loader if a user object already exists, as the useEffect will handle the redirect.
+  if (loading) {
     return (
         <div className="flex justify-center items-center h-screen">
             <Loader2 className="w-8 h-8 animate-spin" />
         </div>
+    );
+  }
+
+  // If a user is already present, the useEffect will redirect.
+  // To prevent a brief flash of the login form, we can return null or a loader.
+  if (user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+          <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
     );
   }
 
