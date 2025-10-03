@@ -38,6 +38,7 @@ import { getContractors, getRfps, getAllMetroCodes, getMetroRegions, getMetrosBy
 import { useEffect, useState, useMemo } from 'react';
 import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
 import { Loader2 } from 'lucide-react';
+import { useUser } from '@/firebase';
 
 type MetroInfo = {
   code: string;
@@ -63,11 +64,11 @@ export default function Dashboard() {
   
   const [regionFilter, setRegionFilter] = useState('all');
   const [metroFilter, setMetroFilter] = useState('all');
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isUserLoading } = useUser();
 
   useEffect(() => {
     async function loadData() {
-      setIsLoading(true);
+      if (!user) return; // Wait for user
       const [rfpsData, contractorsData, regionData, metroInfoData] = await Promise.all([
         getRfps(), 
         getContractors(),
@@ -78,10 +79,9 @@ export default function Dashboard() {
       setAllContractors(contractorsData);
       setRegions(['all', ...regionData]);
       setAllMetroInfo(metroInfoData);
-      setIsLoading(false);
     }
     loadData();
-  }, []);
+  }, [user]); // Rerun when user is available
 
   useEffect(() => {
     async function loadMetros() {
@@ -94,7 +94,9 @@ export default function Dashboard() {
       setMetros(metroData.sort((a,b) => a.code.localeCompare(b.code)));
       setMetroFilter('all');
     }
-    loadMetros();
+    if (allMetroInfo.length > 0) {
+      loadMetros();
+    }
   }, [regionFilter, allMetroInfo]);
 
   const filteredRfps = useMemo(() => {
@@ -118,7 +120,7 @@ export default function Dashboard() {
   }, [allContractors, regionFilter, metroFilter, allMetroInfo]);
 
 
-  if (isLoading) {
+  if (isUserLoading || (user && allRfps.length === 0 && allContractors.length === 0)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
