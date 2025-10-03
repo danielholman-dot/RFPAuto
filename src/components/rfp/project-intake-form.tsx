@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -18,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input"
 import Textarea from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { addRfp } from "@/lib/data"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -26,6 +24,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+import { useFirestore } from "@/firebase"
+import { collection, addDoc, Timestamp } from 'firebase/firestore'
+import type { RFP } from "@/lib/types"
 
 const formSchema = z.object({
   projectName: z.string().min(1, "Project name is required."),
@@ -52,6 +53,7 @@ type ProjectIntakeFormProps = {
 export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntakeFormProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedBudget, setFormattedBudget] = useState("");
 
@@ -73,31 +75,34 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     setIsSubmitting(true);
     
     try {
-      const newRfp = {
+      const rfpsCol = collection(firestore, 'rfps');
+      
+      const newRfpData = {
         projectName: values.projectName || "Untitled RFP",
         scopeOfWork: values.scopeOfWork || "",
         metroCode: values.metroCode || "",
         contractorType: values.contractorType || "",
         estimatedBudget: values.estimatedBudget || 0,
-        rfpStartDate: values.rfpStartDate,
-        rfpEndDate: values.rfpEndDate,
-        projectStartDate: values.projectStartDate,
-        projectEndDate: values.projectEndDate,
+        rfpStartDate: values.rfpStartDate ? Timestamp.fromDate(values.rfpStartDate) : undefined,
+        rfpEndDate: values.rfpEndDate ? Timestamp.fromDate(values.rfpEndDate) : undefined,
+        projectStartDate: values.projectStartDate ? Timestamp.fromDate(values.projectStartDate) : undefined,
+        projectEndDate: values.projectEndDate ? Timestamp.fromDate(values.projectEndDate) : undefined,
         primaryStakeholderName: values.primaryStakeholderName,
         primaryStakeholderEmail: values.primaryStakeholderEmail,
         additionalStakeholderEmails: values.additionalStakeholderEmails,
         status: "Draft" as const,
-        createdAt: new Date(),
+        createdAt: Timestamp.now(),
         technicalDocumentsLinks: values.technicalDocumentsLinks,
+        invitedContractors: [],
       };
       
-      const docId = await addRfp(newRfp);
+      const docRef = await addDoc(rfpsCol, newRfpData);
 
       toast({
         title: "RFP Draft Created",
         description: `Project "${values.projectName || "Untitled RFP"}" has been saved as a draft.`,
       });
-      router.push(`/rfp/${docId}`);
+      router.push(`/rfp/${docRef.id}`);
 
     } catch (error) {
       console.error("Error creating RFP: ", error);

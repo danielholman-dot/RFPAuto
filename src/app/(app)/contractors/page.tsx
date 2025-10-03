@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Table,
@@ -15,9 +14,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getContractors, getContractorTypes, getAllMetroCodes } from '@/lib/data';
-import type { Contractor } from '@/lib/types';
+import type { Contractor, MetroCode } from '@/lib/types';
 import { useEffect, useState, useMemo } from 'react';
+import { useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 import { Users, Wrench, Zap, HardHat, FileText } from 'lucide-react';
 import {
   Select,
@@ -31,6 +32,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { contractorTypes as allContractorTypes } from '@/lib/seed';
+
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -102,42 +105,32 @@ const getIconForType = (type: string) => {
   }
 };
 
-type MetroCodeInfo = {
-  code: string;
-  city: string;
-  state: string;
-  region: string;
-};
 
 export default function ContractorsPage() {
-  const [allContractors, setAllContractors] = useState<Contractor[]>([]);
+  const firestore = useFirestore();
+  
+  const contractorsQuery = useMemoFirebase(() => collection(firestore, 'contractors'), [firestore]);
+  const { data: allContractors, isLoading: contractorsLoading } = useCollection<Contractor>(contractorsQuery);
+
+  const metroCodesQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const { data: allMetroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
+
   const [contractorTypes, setContractorTypes] = useState<string[]>([]);
-  const [metroCodes, setMetroCodes] = useState<MetroCodeInfo[]>([]);
-  const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
   const [metroCodeFilter, setMetroCodeFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const [data, types, metros] = await Promise.all([
-        getContractors(),
-        getContractorTypes(),
-        getAllMetroCodes(),
-      ]);
-      setAllContractors(data);
-      setContractorTypes(['all', ...types]);
-      
-      const uniqueMetroCodes = metros.sort((a, b) => a.code.localeCompare(b.code));
-      setMetroCodes(uniqueMetroCodes);
-
-      setLoading(false);
-    }
-    loadData();
+    setContractorTypes(['all', ...allContractorTypes]);
   }, []);
 
+  const sortedMetroCodes = useMemo(() => {
+    if (!allMetroCodes) return [];
+    return [...allMetroCodes].sort((a,b) => a.code.localeCompare(b.code));
+  }, [allMetroCodes]);
+
   const summaryStats = useMemo(() => {
+    if (!allContractors) return [];
     const stats: { [key: string]: number } = {};
     allContractors.forEach(c => {
       stats[c.type] = (stats[c.type] || 0) + 1;
@@ -146,6 +139,7 @@ export default function ContractorsPage() {
   }, [allContractors]);
 
   const filteredContractors = useMemo(() => {
+    if (!allContractors) return [];
     return allContractors.filter(contractor => {
       const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
       const metroCodeMatch = metroCodeFilter === 'all' || (contractor.metroCodes && contractor.metroCodes.includes(metroCodeFilter));
@@ -153,6 +147,8 @@ export default function ContractorsPage() {
       return typeMatch && metroCodeMatch && searchMatch;
     });
   }, [allContractors, typeFilter, metroCodeFilter, searchTerm]);
+
+  const loading = contractorsLoading || metrosLoading;
 
   if (loading) {
     return <div>Loading...</div>;
@@ -169,7 +165,7 @@ export default function ContractorsPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{allContractors.length}</div>
+              <div className="text-2xl font-bold">{allContractors?.length || 0}</div>
               <p className="text-xs text-muted-foreground">
                 In the preferred list
               </p>
@@ -219,7 +215,7 @@ export default function ContractorsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Metros</SelectItem>
-                    {metroCodes.map(metro => (
+                    {sortedMetroCodes.map(metro => (
                         <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
                     ))}
                 </SelectContent>

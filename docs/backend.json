@@ -99,7 +99,6 @@
         "projectEndDate",
         "primaryStakeholderName",
         "primaryStakeholderEmail",
-        "additionalStakeholderEmails",
         "status",
         "createdAt"
       ]
@@ -185,34 +184,6 @@
           "type": "string",
           "description": "Link to the submitted proposal document.",
           "format": "uri"
-        },
-        "safetyScore": {
-          "type": "number",
-          "description": "Safety score assigned to the proposal."
-        },
-        "experienceScore": {
-          "type": "number",
-          "description": "Experience score assigned to the proposal."
-        },
-        "programmaticApproachScore": {
-          "type": "number",
-          "description": "Programmatic approach score assigned to the proposal."
-        },
-        "commercialExcellenceScore": {
-          "type": "number",
-          "description": "Commercial excellence score assigned to the proposal."
-        },
-        "innovativeSolutionsScore": {
-          "type": "number",
-          "description": "Innovative solutions score assigned to the proposal."
-        },
-        "missionCriticalExperienceScore": {
-          "type": "number",
-          "description": "Mission critical experience score assigned to the proposal."
-        },
-        "overallScore": {
-          "type": "number",
-          "description": "Overall score for the proposal."
         }
       },
       "required": [
@@ -221,88 +192,6 @@
         "contractorId",
         "submissionDate",
         "proposalDocumentLink"
-      ]
-    },
-    "Feedback": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Feedback",
-      "type": "object",
-      "description": "Represents feedback collected from stakeholders and contractors.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the feedback entry."
-        },
-        "projectId": {
-          "type": "string",
-          "description": "Reference to Project. (Relationship: Project 1:N Feedback)"
-        },
-        "feedbackProviderType": {
-          "type": "string",
-          "description": "Type of feedback provider (Stakeholder or Contractor)."
-        },
-        "feedbackProviderId": {
-          "type": "string",
-          "description": "Identifier of the feedback provider (either stakeholder or contractor ID)."
-        },
-        "feedbackText": {
-          "type": "string",
-          "description": "Text of the feedback provided."
-        },
-        "rating": {
-          "type": "number",
-          "description": "Rating given in the feedback (e.g., on a scale of 1 to 5)."
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "Date when the feedback was submitted, represented as ISO-8601 string",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "projectId",
-        "feedbackProviderType",
-        "feedbackProviderId",
-        "feedbackText",
-        "rating",
-        "submissionDate"
-      ]
-    },
-    "RFPRegistry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "RFPRegistry",
-      "type": "object",
-      "description": "Maintains a register of all RFPs.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the RFP registry entry."
-        },
-        "projectId": {
-          "type": "string",
-          "description": "Reference to Project. (Relationship: RFPRegistry 1:1 Project)"
-        },
-        "rfpName": {
-          "type": "string",
-          "description": "Name of the RFP."
-        },
-        "dateCreated": {
-          "type": "string",
-          "description": "Date when the RFP was created, represented as ISO-8601 string",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "Current status of the RFP (e.g., Open, Closed, Awarded)."
-        }
-      },
-      "required": [
-        "id",
-        "projectId",
-        "rfpName",
-        "dateCreated",
-        "status"
       ]
     },
     "MetroCode": {
@@ -333,129 +222,33 @@
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "user",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Collection of user profiles.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
-          ]
-        }
+    "/rfps/{rfpId}": {
+      "schema": {
+        "$ref": "#/entities/Project"
       },
-      {
-        "path": "/users/{userId}/rfps/{rfpId}",
-        "definition": {
-          "entityName": "Project",
-          "schema": {
-            "$ref": "#/backend/entities/Project"
-          },
-          "description": "Collection of RFPs created by a specific user. Authorization is based on the user ID in the path. Includes denormalized data for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who created the RFP."
-            },
-            {
-              "name": "rfpId",
-              "description": "The unique identifier for the RFP."
-            }
-          ]
-        }
+      "description": "Collection of all RFPs (Projects)."
+    },
+    "/rfps/{rfpId}/proposals/{proposalId}": {
+      "schema": {
+        "$ref": "#/entities/Proposal"
       },
-      {
-        "path": "/users/{userId}/rfps/{rfpId}/proposals/{proposalId}",
-        "definition": {
-          "entityName": "Proposal",
-          "schema": {
-            "$ref": "#/backend/entities/Proposal"
-          },
-          "description": "Collection of proposals submitted for a specific RFP. Authorization is based on the user ID (RFP owner) and the proposal's contractorId.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who owns the RFP."
-            },
-            {
-              "name": "rfpId",
-              "description": "The unique identifier for the RFP."
-            },
-            {
-              "name": "proposalId",
-              "description": "The unique identifier for the proposal."
-            }
-          ]
-        }
+      "description": "Sub-collection of proposals for a specific RFP."
+    },
+    "/contractors/{contractorId}": {
+      "schema": {
+        "$ref": "#/entities/Contractor"
       },
-      {
-        "path": "/users/{userId}/rfps/{rfpId}/feedback/{feedbackId}",
-        "definition": {
-          "entityName": "Feedback",
-          "schema": {
-            "$ref": "#/backend/entities/Feedback"
-          },
-          "description": "Collection of feedback for a specific RFP. Authorization is based on the user ID (RFP owner) and the feedback provider (stakeholder or contractor).",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who owns the RFP."
-            },
-            {
-              "name": "rfpId",
-              "description": "The unique identifier for the RFP."
-            },
-            {
-              "name": "feedbackId",
-              "description": "The unique identifier for the feedback."
-            }
-          ]
-        }
+      "description": "Collection of all Contractors."
+    },
+    "/metro_codes/{metroCodeId}": {
+      "schema": {
+        "$ref": "#/entities/MetroCode"
       },
-      {
-        "path": "/contractors/{contractorId}",
-        "definition": {
-          "entityName": "Contractor",
-          "schema": {
-            "$ref": "#/backend/entities/Contractor"
-          },
-          "description": "Collection of contractor profiles. Publicly readable, but restricted write access.",
-          "params": [
-            {
-              "name": "contractorId",
-              "description": "The unique identifier for the contractor."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/metro_codes/{metroCodeId}",
-        "definition": {
-          "entityName": "MetroCode",
-          "schema": {
-            "$ref": "#/backend/entities/MetroCode"
-          },
-          "description": "Collection of metro codes and their descriptions. Publicly readable.",
-          "params": [
-            {
-              "name": "metroCodeId",
-              "description": "The unique identifier for the metro code."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore structure is designed to address the 'Missing or insufficient permissions' error by enforcing clear ownership and access control. The structure prioritizes authorization independence by denormalizing access control data where necessary and segregating data based on access requirements. This approach simplifies security rules, enhances debuggability, and supports scalable access management.  The root cause of the error is the attempt to create an `rfp` document in the `rfps` collection with `auth: null`. This indicates that the client is not authenticated, and therefore is being denied access to the `rfps` collection.  The suggested structure creates an `rfps` collection under each user to fix this issue. This strategy is designed to address Authorization Independence via Denormalization, Structural Segregation (Homogeneous Security Posture) and Access Modeling.\n\n**Authorization Independence & QAPs:**\nThe structure ensures authorization independence by using path-based ownership for `rfps`, proposals, and feedback.  This eliminates the need for `get()` calls in security rules to check parent document attributes. `list` operations are secured by ensuring that a user can only access `rfps` under their user ID, fulfilling QAPs by preventing unauthorized data listing.\n\nSpecifically:\n\n*   **Private Data:** The structure uses Path-Based ownership (`/users/{userId}/rfps/{rfpId}`) for private rfp data.\n*   **Membership Map:** N/A - Not directly used, but the principle of storing explicit role/permission data is applied.\n*   **Global Roles:**  While not explicitly using global roles, the structure supports the potential addition of admin roles via a separate collection if needed (future enhancement)."
+      "description": "Collection of all Metro Codes."
+    }
   }
 }

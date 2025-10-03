@@ -1,11 +1,5 @@
-
 'use client';
 import {
-  Activity,
-  ArrowUpRight,
-  CircleDollarSign,
-  FileText,
-  Users,
   Trash,
   Pencil,
 } from 'lucide-react';
@@ -39,28 +33,28 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { RFP } from '@/lib/types';
-import { getRfps, deleteRfp } from '@/lib/data';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { collection, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 
 export default function RfpRegistryPage() {
-  const [rfps, setRfps] = useState<RFP[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
+  
+  const rfpsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    const rfpsCol = collection(firestore, 'rfps');
+    return query(rfpsCol, orderBy('createdAt', 'desc'));
+  }, [firestore, user]);
 
-  useEffect(() => {
-    async function loadData() {
-      const rfpsData = await getRfps();
-      setRfps(rfpsData);
-      setLoading(false);
-    }
-    loadData();
-  }, []);
+  const { data: rfps, isLoading } = useCollection<RFP>(rfpsQuery);
 
   const handleDelete = async (rfpId: string) => {
     try {
-        await deleteRfp(rfpId);
-        setRfps(prevRfps => prevRfps.filter(rfp => rfp.id !== rfpId));
+        const rfpDocRef = doc(firestore, 'rfps', rfpId);
+        await deleteDoc(rfpDocRef);
         toast({
             title: "RFP Deleted",
             description: "The RFP has been successfully deleted.",
@@ -99,7 +93,7 @@ export default function RfpRegistryPage() {
     return new Date(date).toLocaleDateString();
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div>Loading RFPs...</div>;
   }
 
@@ -129,7 +123,7 @@ export default function RfpRegistryPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rfps.map((rfp) => (
+            {rfps && rfps.map((rfp) => (
               <TableRow key={rfp.id}>
                 <TableCell className="font-medium">{rfp.projectName}</TableCell>
                 <TableCell>{rfp.metroCode}</TableCell>

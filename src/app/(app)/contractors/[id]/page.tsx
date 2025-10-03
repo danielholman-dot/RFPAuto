@@ -1,21 +1,16 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
-import { getContractorById, getMetroByCode } from '@/lib/data';
-import type { Contractor } from '@/lib/types';
+import type { Contractor, MetroCode } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { HardHat, Users, Wrench, Zap, Star, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useDoc, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
+import { doc, collection, query, where } from 'firebase/firestore';
 
-type MetroInfo = {
-    code: string;
-    city: string;
-    state: string;
-};
 
 const getIconForType = (type: string) => {
     switch (type) {
@@ -36,25 +31,19 @@ const getIconForType = (type: string) => {
 export default function ContractorDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const firestore = useFirestore();
 
-  const [contractor, setContractor] = useState<Contractor | null>(null);
-  const [metroDetails, setMetroDetails] = useState<MetroInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const contractorRef = useMemoFirebase(() => doc(firestore, 'contractors', id), [firestore, id]);
+  const { data: contractor, isLoading: contractorLoading } = useDoc<Contractor>(contractorRef);
 
-  useEffect(() => {
-    if (id) {
-      getContractorById(id).then(async (data) => {
-        if (data) {
-            setContractor(data);
-            const details = await Promise.all(
-                data.metroCodes.map(code => getMetroByCode(code))
-            );
-            setMetroDetails(details.filter((d): d is MetroInfo => d !== null));
-        }
-        setLoading(false);
-      });
-    }
-  }, [id]);
+  const metroCodesQuery = useMemoFirebase(() => {
+    if (!contractor || !contractor.metroCodes || contractor.metroCodes.length === 0) return null;
+    return query(collection(firestore, 'metro_codes'), where('code', 'in', contractor.metroCodes));
+  }, [firestore, contractor]);
+
+  const { data: metroDetails, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
+
+  const loading = contractorLoading || metrosLoading;
 
   if (loading) {
     return <div>Loading contractor details...</div>;
@@ -120,7 +109,7 @@ export default function ContractorDetailPage() {
                     Operating Locations
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
-                    {metroDetails.map(metro => (
+                    {metroDetails && metroDetails.map(metro => (
                         <Badge key={metro.code} variant="outline">{metro.code} - {metro.city}, {metro.state}</Badge>
                     ))}
                 </div>

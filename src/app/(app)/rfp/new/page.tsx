@@ -1,28 +1,24 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProjectIntakeForm } from "@/components/rfp/project-intake-form";
-import { getContractorTypes, getMetroCodes } from "@/lib/data";
-import { useEffect, useState } from "react";
+import { useCollection, useMemoFirebase, useFirestore } from "@/firebase";
+import { collection } from 'firebase/firestore';
+import type { MetroCode } from "@/lib/types";
+import { contractorTypes as allContractorTypes } from '@/lib/seed';
 
 export default function NewRfpPage() {
-  const [metroCodes, setMetroCodes] = useState<{code: string, city: string}[]>([]);
-  const [contractorTypes, setContractorTypes] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
 
-  useEffect(() => {
-    async function loadData() {
-      const [metros, types] = await Promise.all([
-        getMetroCodes(),
-        getContractorTypes(),
-      ]);
-      setMetroCodes(metros.map(m => ({code: m.code, city: m.city})));
-      setContractorTypes(types);
-      setLoading(false);
-    }
-    loadData();
-  }, []);
+  const metroCodesQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const { data: metroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
+
+  const metroOptions = useMemoFirebase(() => {
+    if (!metroCodes) return [];
+    return metroCodes.map(m => ({ code: m.code, city: m.city }));
+  }, [metroCodes]);
+
+  const loading = metrosLoading;
 
   if (loading) {
     return <div>Loading form...</div>;
@@ -38,7 +34,7 @@ export default function NewRfpPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectIntakeForm metroCodes={metroCodes} contractorTypes={contractorTypes} />
+          <ProjectIntakeForm metroCodes={metroOptions || []} contractorTypes={allContractorTypes} />
         </CardContent>
       </Card>
     </div>

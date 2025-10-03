@@ -1,38 +1,42 @@
-
 'use client';
 import { notFound, useParams } from 'next/navigation';
 import { RfpTabs } from '@/components/rfp/rfp-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { RFP } from '@/lib/types';
-import { getRfpById, metroCodes } from '@/lib/data';
-import { useEffect, useState }from 'react';
+import type { RFP, MetroCode } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import { useDoc, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
+import { doc, collection } from 'firebase/firestore';
 
 export default function RfpDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const firestore = useFirestore();
 
-  const [rfp, setRfp] = useState<RFP | null>(null);
-  const [loading, setLoading] = useState(true);
+  const rfpRef = useMemoFirebase(() => doc(firestore, 'rfps', id), [firestore, id]);
+  const { data: rfp, isLoading: rfpLoading } = useDoc<RFP>(rfpRef);
+
+  const metrosQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const { data: metroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metrosQuery);
+  
+  // Local state for mutations to reflect immediately
+  const [localRfp, setLocalRfp] = useState<RFP | null>(null);
 
   useEffect(() => {
-    async function loadData() {
-      const data = await getRfpById(id);
-      setRfp(data);
-      setLoading(false);
+    if (rfp) {
+        setLocalRfp(rfp);
     }
-    if (id) {
-      loadData();
-    }
-  }, [id]);
+  }, [rfp]);
 
-  const metroInfo = metroCodes.find(m => m.code === rfp?.metroCode);
+  const metroInfo = metroCodes?.find(m => m.code === localRfp?.metroCode);
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
-    if (date.toDate) { // Firebase Timestamp
+    // Firebase Timestamps have a toDate() method
+    if (date.toDate) {
       return date.toDate().toLocaleDateString();
     }
+    // Handle cases where it might already be a Date object
     return new Date(date).toLocaleDateString();
   };
 
@@ -49,19 +53,20 @@ export default function RfpDetailPage() {
       case 'Selection':
       case 'Invitation':
       case 'Proposals':
-        return 'secondary'; // Yellow / warning for active states like Selection, Invitation, etc.
+        return 'secondary'; // Yellow / warning for active states
       default:
         return 'secondary';
     }
   };
 
+  const loading = rfpLoading || metrosLoading;
+
   if (loading) {
     return <div>Loading RFP...</div>
   }
 
-  if (!rfp) {
-    // This part handles the creation of a *new* RFP, which doesn't exist in the DB yet.
-    // We check for a specific prefix to know it's a new draft.
+  // This part handles the creation of a *new* RFP, which doesn't exist in the DB yet.
+  if (!localRfp) {
     if (id.startsWith('draft-')) {
         const newRfp: RFP = {
             id: id,
@@ -70,7 +75,6 @@ export default function RfpDetailPage() {
             metroCode: 'N/A',
             contractorType: 'N/A',
             estimatedBudget: 0,
-            projectStartDate: new Date(),
             status: 'Draft',
             proposals: [],
             invitedContractors: [],
@@ -88,7 +92,7 @@ export default function RfpDetailPage() {
                         </div>
                     </CardHeader>
                 </Card>
-                 <RfpTabs rfp={newRfp} setRfp={setRfp} isDraft={true} />
+                 <RfpTabs rfp={newRfp} setRfp={setLocalRfp} isDraft={true} />
             </div>
         )
     }
@@ -101,28 +105,28 @@ export default function RfpDetailPage() {
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-2xl font-bold">{rfp.projectName}</CardTitle>
-              <CardDescription>ID: {rfp.id}</CardDescription>
+              <CardTitle className="text-2xl font-bold">{localRfp.projectName}</CardTitle>
+              <CardDescription>ID: {localRfp.id}</CardDescription>
             </div>
-            <Badge variant={getStatusVariant(rfp.status)} className="text-lg">{rfp.status}</Badge>
+            <Badge variant={getStatusVariant(localRfp.status)} className="text-lg">{localRfp.status}</Badge>
           </div>
         </CardHeader>
         <CardContent className="grid md:grid-cols-3 gap-4 text-sm">
-            <div><strong>Metro:</strong> {metroInfo ? `${metroInfo.code} - ${metroInfo.city}, ${metroInfo.state}`: rfp.metroCode}</div>
-            <div><strong>Contractor Type:</strong> {rfp.contractorType}</div>
-            <div className="md:col-span-3"><strong>Budget:</strong> ${rfp.estimatedBudget.toLocaleString('de-DE')}</div>
+            <div><strong>Metro:</strong> {metroInfo ? `${metroInfo.code} - ${metroInfo.city}, ${metroInfo.state}`: localRfp.metroCode}</div>
+            <div><strong>Contractor Type:</strong> {localRfp.contractorType}</div>
+            <div className="md:col-span-3"><strong>Budget:</strong> ${localRfp.estimatedBudget.toLocaleString('de-DE')}</div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:col-span-3">
-              <div><strong>RFP Start:</strong> {formatDate(rfp.rfpStartDate)}</div>
-              <div><strong>RFP End:</strong> {formatDate(rfp.rfpEndDate)}</div>
-              <div><strong>Project Start:</strong> {formatDate(rfp.projectStartDate)}</div>
-              <div><strong>Project End:</strong> {formatDate(rfp.projectEndDate)}</div>
+              <div><strong>RFP Start:</strong> {formatDate(localRfp.rfpStartDate)}</div>
+              <div><strong>RFP End:</strong> {formatDate(localRfp.rfpEndDate)}</div>
+              <div><strong>Project Start:</strong> {formatDate(localRfp.projectStartDate)}</div>
+              <div><strong>Project End:</strong> {formatDate(localRfp.projectEndDate)}</div>
             </div>
             <div className="md:col-span-3">
-                <p><strong>Scope:</strong> {rfp.scopeOfWork}</p>
+                <p><strong>Scope:</strong> {localRfp.scopeOfWork}</p>
             </div>
         </CardContent>
       </Card>
-      <RfpTabs rfp={rfp} setRfp={setRfp} />
+      <RfpTabs rfp={localRfp} setRfp={setLocalRfp} />
     </div>
   );
 }
