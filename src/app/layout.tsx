@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isPublicPage = pathname.startsWith('/proposal/submit') || pathname === '/login';
+  const isPublicPage = pathname.startsWith('/proposal/submit');
 
   return (
     <html lang="en" suppressHydrationWarning>

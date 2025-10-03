@@ -37,7 +37,6 @@ import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
 import { getContractors, getRfps, getAllMetroCodes, getMetroRegions, getMetrosByRegion } from '@/lib/data';
 import { useEffect, useState, useMemo } from 'react';
 import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
-import { useUser } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 
 type MetroInfo = {
@@ -55,7 +54,6 @@ type MetroOption = {
 };
 
 export default function Dashboard() {
-  const { user, isUserLoading } = useUser();
   const [allRfps, setAllRfps] = useState<RFP[]>([]);
   const [allContractors, setAllContractors] = useState<Contractor[]>([]);
   const [allMetroInfo, setAllMetroInfo] = useState<MetroInfo[]>([]);
@@ -65,11 +63,11 @@ export default function Dashboard() {
   
   const [regionFilter, setRegionFilter] = useState('all');
   const [metroFilter, setMetroFilter] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
-      if (!user) return; // Don't load data if there's no user
-
+      setIsLoading(true);
       const [rfpsData, contractorsData, regionData, metroInfoData] = await Promise.all([
         getRfps(), 
         getContractors(),
@@ -80,9 +78,10 @@ export default function Dashboard() {
       setAllContractors(contractorsData);
       setRegions(['all', ...regionData]);
       setAllMetroInfo(metroInfoData);
+      setIsLoading(false);
     }
     loadData();
-  }, [user]); // Re-run effect when user object changes
+  }, []);
 
   useEffect(() => {
     async function loadMetros() {
@@ -119,7 +118,7 @@ export default function Dashboard() {
   }, [allContractors, regionFilter, metroFilter, allMetroInfo]);
 
 
-  if (isUserLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
