@@ -444,9 +444,7 @@
     }
   },
   "auth": {
-    "providers": [
-      "google.com"
-    ]
+    "providers": []
   },
   "firestore": {
     "structure": [
@@ -457,7 +455,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profile information. Access is restricted to the user and administrators.",
+          "description": "Stores user profile information. Access is public.",
           "params": [
             {
               "name": "userId",
@@ -473,7 +471,7 @@
           "schema": {
             "$ref": "#/backend/entities/Project"
           },
-          "description": "Stores project data. Includes denormalized 'members' map for authorization independence.",
+          "description": "Stores project data. Access is public.",
           "params": [
             {
               "name": "projectId",
@@ -489,7 +487,7 @@
           "schema": {
             "$ref": "#/backend/entities/EOIEmail"
           },
-          "description": "Stores EOI emails associated with a project. Includes denormalized 'members' map from the parent project for authorization independence.",
+          "description": "Stores EOI emails associated with a project. Access is public.",
           "params": [
             {
               "name": "projectId",
@@ -509,7 +507,7 @@
           "schema": {
             "$ref": "#/backend/entities/RFPEmail"
           },
-          "description": "Stores RFP emails associated with a project. Includes denormalized 'members' map from the parent project for authorization independence.",
+          "description": "Stores RFP emails associated with a project. Access is public.",
           "params": [
             {
               "name": "projectId",
@@ -529,7 +527,7 @@
           "schema": {
             "$ref": "#/backend/entities/RFP"
           },
-          "description": "Stores RFPs associated with a project. Includes denormalized 'members' map from the parent project for authorization independence.",
+          "description": "Stores RFPs associated with a project. Access is public.",
           "params": [
             {
               "name": "projectId",
@@ -549,7 +547,7 @@
           "schema": {
             "$ref": "#/backend/entities/Proposal"
           },
-          "description": "Stores proposals submitted by contractors. Contractor owns the proposal. ProjectId denormalized.",
+          "description": "Stores proposals submitted by contractors. Access is public.",
           "params": [
             {
               "name": "contractorId",
@@ -569,7 +567,7 @@
           "schema": {
             "$ref": "#/backend/entities/AwardRecommendation"
           },
-          "description": "Stores award recommendations associated with a project. Includes denormalized 'members' map from the parent project for authorization independence.",
+          "description": "Stores award recommendations associated with a project. Access is public.",
           "params": [
             {
               "name": "projectId",
@@ -589,7 +587,7 @@
           "schema": {
             "$ref": "#/backend/entities/Feedback"
           },
-          "description": "Stores feedback associated with a project. Includes denormalized 'members' map from the parent project for authorization independence.",
+          "description": "Stores feedback associated with a project. Access is public.",
           "params": [
             {
               "name": "projectId",
@@ -625,7 +623,7 @@
           "schema": {
             "$ref": "#/backend/entities/TechnicalDocument"
           },
-          "description": "Stores technical documents associated with a project. Includes denormalized 'members' map from the parent project for authorization independence.",
+          "description": "Stores technical documents associated with a project. Access is public.",
           "params": [
             {
               "name": "projectId",
@@ -661,7 +659,7 @@
           "schema": {
             "$ref": "#/backend/entities/Scorecard"
           },
-          "description": "Stores scorecards for proposals, nested under proposals for easy retrieval.",
+          "description": "Stores scorecards for proposals, nested under proposals for easy retrieval. Access is public.",
           "params": [
             {
               "name": "contractorId",
