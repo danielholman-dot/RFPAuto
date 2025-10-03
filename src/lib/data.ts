@@ -19,7 +19,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
-import { initializeFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { initializeFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { Contractor, RFP, Proposal } from './types';
 import { ContractorsData } from './seed';
 
@@ -159,7 +159,6 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedCon
     const db = getDb();
     const rfpsCol = collection(db, 'rfps');
     
-    // Convert Date objects to Timestamps before sending to Firestore
     const firestoreRfpData: { [key: string]: any } = { ...rfpData };
     for (const key in firestoreRfpData) {
         if (firestoreRfpData[key] instanceof Date) {
@@ -167,12 +166,26 @@ export async function addRfp(rfpData: Omit<RFP, 'id' | 'proposals' | 'invitedCon
         }
     }
 
-    const docRef = await addDoc(rfpsCol, {
+    const dataToSave = {
         ...firestoreRfpData,
         createdAt: Timestamp.now(),
-        invitedContractors: [], // Initialize as empty array
+        invitedContractors: [],
         status: 'Draft'
-    });
+    };
+
+    const docRef = await addDoc(rfpsCol, dataToSave)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: rfpsCol.path,
+                operation: 'create',
+                requestResourceData: dataToSave,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            // Re-throw the original error if you need to propagate it further,
+            // or return a specific value to indicate failure.
+            throw serverError;
+        });
+
     return docRef.id;
 }
 
@@ -188,25 +201,48 @@ export async function updateRfp(rfpId: string, updates: Partial<RFP>): Promise<v
       }
     }
   
-    // We use the non-blocking update function to avoid UI freezes.
-    updateDocumentNonBlocking(rfpDocRef, firestoreUpdates);
+    updateDoc(rfpDocRef, firestoreUpdates).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: rfpDocRef.path,
+            operation: 'update',
+            requestResourceData: firestoreUpdates,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    });
 }
   
 export async function deleteRfp(rfpId: string): Promise<void> {
     const db = getDb();
     const rfpDocRef = doc(db, 'rfps', rfpId);
-    // In a real app, you might want to delete subcollections like proposals recursively.
-    // For this prototype, we'll just delete the main RFP document.
-    await deleteDoc(rfpDocRef);
+    
+    deleteDoc(rfpDocRef).catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+            path: rfpDocRef.path,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    });
 }
 
 export async function addProposal(rfpId: string, proposalData: Omit<Proposal, 'id'>): Promise<string> {
     const db = getDb();
     const proposalsCol = collection(db, 'rfps', rfpId, 'proposals');
-    const docRef = await addDocumentNonBlocking(proposalsCol, {
+    const dataToSave = {
         ...proposalData,
         submittedDate: Timestamp.now()
-    });
+    };
+    
+    const docRef = await addDoc(proposalsCol, dataToSave)
+        .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: proposalsCol.path,
+                operation: 'create',
+                requestResourceData: dataToSave,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw serverError;
+        });
+        
     return docRef.id;
 }
 
@@ -245,7 +281,16 @@ export async function getInvitedContractors(ids: string[]): Promise<Contractor[]
 export async function addInvitedContractorToRfp(rfpId: string, contractorId: string): Promise<void> {
   const db = getDb();
   const rfpDocRef = doc(db, 'rfps', rfpId);
-  updateDocumentNonBlocking(rfpDocRef, {
+  const updateData = {
       invitedContractors: arrayUnion(contractorId)
+  };
+
+  updateDoc(rfpDocRef, updateData).catch(async (serverError) => {
+    const permissionError = new FirestorePermissionError({
+        path: rfpDocRef.path,
+        operation: 'update',
+        requestResourceData: updateData
+    });
+    errorEmitter.emit('permission-error', permissionError);
   });
 }
