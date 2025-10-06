@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Table,
@@ -16,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat, Loader2, Star } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, Loader2, Star, Pencil } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -63,6 +64,7 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableHead>Contractor Type</TableHead>
           <TableHead>Preferred</TableHead>
           <TableHead>Operating Metros</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -82,6 +84,14 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
                 </Badge>
             </TableCell>
             <TableCell>{contractor.metroCodes?.join(', ')}</TableCell>
+            <TableCell className="text-right">
+                <Button asChild variant="outline" size="sm">
+                    <Link href={`/contractors/${contractor.id}/edit`}>
+                        <Pencil className="mr-2 h-4 w-4"/>
+                        Edit
+                    </Link>
+                </Button>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -210,8 +220,8 @@ export default function ContractorsPage() {
                         <SelectValue placeholder="Filter by Type" />
                     </SelectTrigger>
                     <SelectContent>
-                        {contractorTypes.map(type => (
-                            <SelectItem key={type} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
+                        {contractorTypes.map((type, index) => (
+                            <SelectItem key={type + index} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -238,3 +248,5 @@ export default function ContractorsPage() {
     </div>
   );
 }
+
+    
