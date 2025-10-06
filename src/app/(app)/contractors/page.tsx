@@ -16,8 +16,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
-import { useEffect, useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat, FileText, Loader2, Star } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Users, Wrench, Zap, HardHat, Loader2, Star } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -28,7 +28,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ContractorsData, MetroCodesData, contractorTypes as allContractorTypes } from '@/lib/data';
+import Link from 'next/link';
+import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
@@ -59,7 +61,11 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
       <TableBody>
         {contractors.map((contractor) => (
           <TableRow key={contractor.id}>
-            <TableCell className="font-medium">{contractor.name}</TableCell>
+            <TableCell className="font-medium">
+              <Link href={`/contractors/${contractor.id}`} className="hover:underline">
+                {contractor.name}
+              </Link>
+            </TableCell>
             <TableCell>{renderMultiLine(contractor.contactName)}</TableCell>
             <TableCell>{renderMultiLine(contractor.contactEmail)}</TableCell>
             <TableCell>{contractor.type}</TableCell>
@@ -98,25 +104,24 @@ const getIconForType = (type: string) => {
 
 
 export default function ContractorsPage() {
-  const [allContractors, setAllContractors] = useState<Contractor[]>([]);
-  const [allMetroCodes, setAllMetroCodes] = useState<MetroCode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
+  const { isUserLoading } = useUser();
 
-  const [contractorTypes, setContractorTypes] = useState<string[]>([]);
+  const contractorsQuery = useMemoFirebase(() => query(collection(firestore, 'contractors')), [firestore]);
+  const { data: allContractors, isLoading: contractorsLoading } = useCollection<Contractor>(contractorsQuery);
+
+  const metroCodesQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const { data: allMetroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
+
+
   const [typeFilter, setTypeFilter] = useState('all');
   const [metroCodeFilter, setMetroCodeFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    // Simulate loading data from the imported file
-    setAllContractors(ContractorsData.map((c, i) => ({ ...c, id: `contractor-${i}` })));
-    setAllMetroCodes(MetroCodesData);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    setContractorTypes(['all', ...allContractorTypes]);
-  }, []);
+  const contractorTypes = useMemo(() => {
+    if (!allContractors) return [];
+    return ['all', ...Array.from(new Set(allContractors.map(c => c.type))).sort()];
+  }, [allContractors]);
 
   const sortedMetroCodes = useMemo(() => {
     if (!allMetroCodes) return [];
@@ -141,6 +146,8 @@ export default function ContractorsPage() {
       return typeMatch && metroCodeMatch && searchMatch;
     });
   }, [allContractors, typeFilter, metroCodeFilter, searchTerm]);
+
+  const loading = isUserLoading || contractorsLoading || metrosLoading;
 
   if (loading) {
     return (
@@ -219,7 +226,7 @@ export default function ContractorsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <ContractorsList contractors={filteredContractors} />
+          <ContractorsList contractors={filteredContractors || []} />
         </CardContent>
       </Card>
     </div>
