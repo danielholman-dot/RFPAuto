@@ -62,7 +62,17 @@ export default function EditContractorPage() {
 
   useEffect(() => {
     if (contractor) {
-      form.reset(contractor);
+      form.reset({
+        name: contractor.name,
+        contactName: contractor.contactName,
+        contactEmail: contractor.contactEmail,
+        type: contractor.type,
+        preferredStatus: contractor.preferredStatus,
+        region: contractor.region,
+        metroSite: contractor.metroSite,
+        performance: contractor.performance,
+        metroCodes: contractor.metroCodes || [],
+      });
     }
   }, [contractor, form]);
 
@@ -243,9 +253,9 @@ export default function EditContractorPage() {
                                                             checked={field.value?.includes(metro.code)}
                                                             onCheckedChange={(checked) => {
                                                                 return checked
-                                                                    ? field.onChange([...field.value, metro.code])
+                                                                    ? field.onChange([...(field.value || []), metro.code])
                                                                     : field.onChange(
-                                                                        field.value?.filter(
+                                                                        (field.value || [])?.filter(
                                                                             (value) => value !== metro.code
                                                                         )
                                                                     )
