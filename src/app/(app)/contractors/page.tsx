@@ -18,7 +18,7 @@ import type { Contractor, MetroCode } from '@/lib/types';
 import { useEffect, useState, useMemo } from 'react';
 import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { Users, Wrench, Zap, HardHat, FileText, Loader2 } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, FileText, Loader2, Star } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -28,9 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import { contractorTypes as allContractorTypes } from '@/lib/seed';
 
 
@@ -43,43 +41,32 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Logo</TableHead>
           <TableHead>Contractor Name</TableHead>
           <TableHead>POC Name</TableHead>
+          <TableHead>POC Email</TableHead>
           <TableHead>Contractor Type</TableHead>
-          <TableHead>Metro/Site</TableHead>
+          <TableHead>Preferred Status</TableHead>
           <TableHead>Region</TableHead>
-          <TableHead className="text-right">Details</TableHead>
+          <TableHead>Metro/Site</TableHead>
+          <TableHead>Performance</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {contractors.map((contractor) => (
           <TableRow key={contractor.id}>
-            <TableCell>
-              <Avatar>
-                <AvatarFallback><HardHat className="h-5 w-5 text-muted-foreground" /></AvatarFallback>
-              </Avatar>
-            </TableCell>
             <TableCell className="font-medium">{contractor.name}</TableCell>
             <TableCell>{contractor.contactName.split(';')[0]}</TableCell>
+            <TableCell>{contractor.contactEmail.split(';')[0]}</TableCell>
             <TableCell>{contractor.type}</TableCell>
-            <TableCell>{contractor.metroSite}</TableCell>
+            <TableCell>
+                <Badge variant={contractor.preferredStatus === 'Most Preferred' ? 'default' : 'secondary'}>
+                    {contractor.preferredStatus}
+                </Badge>
+            </TableCell>
             <TableCell>{contractor.region}</TableCell>
-            <TableCell className="text-right">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button asChild variant="ghost" size="icon">
-                      <Link href={`/contractors/${contractor.id}`}>
-                        <FileText className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>View Details</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            <TableCell>{contractor.metroSite}</TableCell>
+            <TableCell className="flex items-center">
+                {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
             </TableCell>
           </TableRow>
         ))}
