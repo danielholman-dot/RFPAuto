@@ -3,39 +3,57 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore';
+
+// Store the initialized services in a module-level variable to act as a singleton.
+let firebaseServices: {
+  firebaseApp: FirebaseApp,
+  auth: ReturnType<typeof getAuth>,
+  firestore: ReturnType<typeof getFirestore>
+} | null = null;
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
+  // If the services have already been initialized, return the existing instances.
+  if (firebaseServices) {
+    return firebaseServices;
+  }
+
+  let app;
   if (!getApps().length) {
-    // Important! initializeApp() is called without any arguments because Firebase App Hosting
-    // integrates with the initializeApp() function to provide the environment variables needed to
-    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
-    // without arguments.
-    let firebaseApp;
+    // If no app is initialized, create one.
     try {
       // Attempt to initialize via Firebase App Hosting environment variables
-      firebaseApp = initializeApp();
+      app = initializeApp();
     } catch (e) {
-      // Only warn in production because it's normal to use the firebaseConfig to initialize
-      // during development
       if (process.env.NODE_ENV === "production") {
         console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
       }
-      firebaseApp = initializeApp(firebaseConfig);
+      app = initializeApp(firebaseConfig);
     }
-    
-    // Sign in anonymously
-    const auth = getAuth(firebaseApp);
+  } else {
+    // If apps are already initialized, get the default app.
+    app = getApp();
+  }
+
+  const auth = getAuth(app);
+  const firestore = getFirestore(app);
+
+  // Sign in anonymously if not already signed in.
+  if (!auth.currentUser) {
     signInAnonymously(auth).catch((error) => {
       console.error("Anonymous sign-in failed:", error);
     });
-
-    return getSdks(firebaseApp);
   }
 
-  // If already initialized, return the SDKs with the already initialized App
-  return getSdks(getApp());
+  // Store the initialized services in the singleton variable.
+  firebaseServices = {
+    firebaseApp: app,
+    auth,
+    firestore,
+  };
+
+  return firebaseServices;
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
