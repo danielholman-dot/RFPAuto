@@ -395,7 +395,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                 </TabsTrigger>
             ))}
         </TabsList>
-
         <TabsContent value="Selection" className="mt-4">
             <Card>
                 <CardHeader>
@@ -447,7 +446,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
             <RfpDrafting rfp={rfp} />
             <StageCompletion stage="Drafting" completedStages={completedStages} onStageToggle={handleStageToggle} />
         </TabsContent>
-
         <TabsContent value="Invitation" className="mt-4">
             <Card>
                 <CardHeader>
@@ -604,8 +602,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
             </CardContent>
         </Card>
     </TabsContent>
-
-        
         <TabsContent value="Analysis" className="mt-4">
             <div className="space-y-6">
                 <Card>
@@ -712,7 +708,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                  <StageCompletion stage="Analysis" completedStages={completedStages} onStageToggle={handleStageToggle} />
             </div>
         </TabsContent>
-
         <TabsContent value="Award" className="mt-4">
             <Card>
                 <CardHeader>
@@ -776,7 +771,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                 </CardContent>
             </Card>
         </TabsContent>
-
         <TabsContent value="Feedback" className="mt-4">
             <Card>
                 <CardHeader>
