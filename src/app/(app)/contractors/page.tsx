@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat, Loader2, Star, Pencil } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, Loader2, Star } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -30,7 +30,6 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
-import { Button } from '@/components/ui/button';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -47,15 +46,12 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Contractor Name</TableHead>
+          <TableHead>Company Name</TableHead>
           <TableHead>POC Name</TableHead>
           <TableHead>POC Email</TableHead>
           <TableHead>Contractor Type</TableHead>
-          <TableHead>Preferred Status</TableHead>
-          <TableHead>Region</TableHead>
-          <TableHead>Metro/Site</TableHead>
-          <TableHead>Performance</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead>Preferred</TableHead>
+          <TableHead>Operating Metros</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -63,30 +59,18 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableRow key={contractor.id}>
             <TableCell className="font-medium">
               <Link href={`/contractors/${contractor.id}`} className="hover:underline">
-                {contractor.name}
+                {contractor.companyName}
               </Link>
             </TableCell>
             <TableCell>{renderMultiLine(contractor.contactName)}</TableCell>
             <TableCell>{renderMultiLine(contractor.contactEmail)}</TableCell>
-            <TableCell>{contractor.type}</TableCell>
+            <TableCell>{contractor.contractorType}</TableCell>
             <TableCell>
-                <Badge variant={contractor.preferredStatus === 'Most Preferred' ? 'default' : 'secondary'}>
-                    {contractor.preferredStatus}
+                <Badge variant={contractor.preferred ? 'default' : 'secondary'}>
+                    {contractor.preferred ? 'Yes' : 'No'}
                 </Badge>
             </TableCell>
-            <TableCell>{contractor.region}</TableCell>
-            <TableCell>{contractor.metroSite}</TableCell>
-            <TableCell className="flex items-center">
-                {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
-            </TableCell>
-            <TableCell className="text-right">
-              <Button asChild variant="ghost" size="icon">
-                <Link href={`/contractors/${contractor.id}/edit`}>
-                  <Pencil className="h-4 w-4" />
-                  <span className="sr-only">Edit Contractor</span>
-                </Link>
-              </Button>
-            </TableCell>
+            <TableCell>{contractor.metroCodes?.join(', ')}</TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -128,7 +112,7 @@ export default function ContractorsPage() {
 
   const contractorTypes = useMemo(() => {
     if (!allContractors) return [];
-    return ['all', ...Array.from(new Set(allContractors.map(c => c.type))).sort()];
+    return ['all', ...Array.from(new Set(allContractors.map(c => c.contractorType))).sort()];
   }, [allContractors]);
 
   const sortedMetroCodes = useMemo(() => {
@@ -140,7 +124,7 @@ export default function ContractorsPage() {
     if (!allContractors) return [];
     const stats: { [key: string]: number } = {};
     allContractors.forEach(c => {
-      stats[c.type] = (stats[c.type] || 0) + 1;
+      stats[c.contractorType] = (stats[c.contractorType] || 0) + 1;
     });
     return Object.entries(stats).sort((a,b) => b[1] - a[1]);
   }, [allContractors]);
@@ -148,9 +132,9 @@ export default function ContractorsPage() {
   const filteredContractors = useMemo(() => {
     if (!allContractors) return [];
     return allContractors.filter(contractor => {
-      const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
+      const typeMatch = typeFilter === 'all' || contractor.contractorType === typeFilter;
       const metroCodeMatch = metroCodeFilter === 'all' || (contractor.metroCodes && contractor.metroCodes.includes(metroCodeFilter));
-      const searchMatch = searchTerm === '' || contractor.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const searchMatch = searchTerm === '' || contractor.companyName.toLowerCase().includes(searchTerm.toLowerCase());
       return typeMatch && metroCodeMatch && searchMatch;
     });
   }, [allContractors, typeFilter, metroCodeFilter, searchTerm]);

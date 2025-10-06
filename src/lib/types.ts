@@ -1,3 +1,4 @@
+
 import type { Timestamp } from "firebase/firestore";
 
 export type RFP = {
@@ -24,16 +25,13 @@ export type RFP = {
 
 export type Contractor = {
   id: string;
-  name: string;
+  companyName: string;
   contactName: string;
   contactEmail: string;
-  type: string;
-  preferredStatus: string;
-  region: string;
-  metroSite: string;
-  performance: number;
+  contactPhone: string;
+  contractorType: string;
   metroCodes: string[];
-  preference?: number;
+  preferred: boolean;
 };
 
 export type Proposal = {
