@@ -20,14 +20,13 @@ export default function NewRfpPage() {
   }, [firestore, user]);
   const { data: metroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
 
-  const metroOptions = useMemo(() => {
+  const sortedMetroCodes = useMemo(() => {
     if (!metroCodes) return [];
-    return metroCodes.map(m => ({ code: m.code, city: m.city }));
+    return [...metroCodes].sort((a, b) => a.code.localeCompare(b.code));
   }, [metroCodes]);
 
   const contractorTypes = useMemo(() => allContractorTypes || [], []);
 
-  // Only wait for user and metro codes to load. Contractor types are static.
   const loading = isUserLoading || metrosLoading;
 
   if (loading) {
@@ -49,7 +48,7 @@ export default function NewRfpPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectIntakeForm metroCodes={metroOptions} contractorTypes={contractorTypes} />
+          <ProjectIntakeForm metroCodes={sortedMetroCodes} contractorTypes={contractorTypes} />
         </CardContent>
       </Card>
     </div>

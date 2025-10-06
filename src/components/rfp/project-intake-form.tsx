@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -26,7 +27,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useFirestore } from "@/firebase"
 import { collection, addDoc, Timestamp } from 'firebase/firestore'
-import type { RFP } from "@/lib/types"
+import type { RFP, MetroCode } from "@/lib/types"
 
 const formSchema = z.object({
   projectName: z.string().min(1, "Project name is required."),
@@ -46,7 +47,7 @@ const formSchema = z.object({
 })
 
 type ProjectIntakeFormProps = {
-    metroCodes: {code: string, city: string}[];
+    metroCodes: MetroCode[];
     contractorTypes: string[];
 }
 
@@ -223,7 +224,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {metroCodes.map(metro => (
+                    {metroCodes && metroCodes.map(metro => (
                       <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
                     ))}
                   </SelectContent>
@@ -245,7 +246,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {contractorTypes.map(type => (
+                    {contractorTypes && contractorTypes.map(type => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
                   </SelectContent>
