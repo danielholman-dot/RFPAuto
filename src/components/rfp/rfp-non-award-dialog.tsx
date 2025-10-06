@@ -87,6 +87,10 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
     updateEmailBody();
   }, [yourName, yourPosition, yourCompany, improvementAreas, updateEmailBody]);
 
+  const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmailContent(prev => prev ? { ...prev, subject: e.target.value } : null);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
@@ -106,11 +110,11 @@ export function RfpNonAwardDialog({ isOpen, onOpenChange, rfp, contractor }: Rfp
             <div className="md:col-span-2 space-y-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="to" className="text-right">To</Label>
-                    <Input id="to" value={emailContent.to} className="col-span-3" readOnly />
+                    <Input id="to" defaultValue={emailContent.to} className="col-span-3" readOnly />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="subject" className="text-right">Subject</Label>
-                    <Input id="subject" value={emailContent.subject} className="col-span-3" />
+                    <Input id="subject" value={emailContent.subject} onChange={handleSubjectChange} className="col-span-3" />
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                     <Label htmlFor="body" className="text-right mt-2">Body</Label>
