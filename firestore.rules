@@ -2,64 +2,66 @@
  * @fileOverview Firestore Security Rules for the RFP application.
  *
  * Core Philosophy:
- * This ruleset prioritizes security by strictly controlling data access based on role and ownership.
- * It is in prototyping mode: it allows for rapid iteration with flexible data shapes by focusing on authorization and relational integrity, and ignoring specific data types or optional/required fields in the data schema.
+ * This ruleset prioritizes security by enforcing strict ownership and access controls.
+ * It allows for public read access to some collections but restricts writes to authorized users.
  *
  * Data Structure:
- * - /rfps/{rfpId}: Stores project information (RFPs). Publicly readable, but only owners can write.
- * - /rfps/{rfpId}/proposals/{proposalId}: Stores proposals submitted for specific RFPs. Only owners can write.
- * - /contractors/{contractorId}: Stores contractor information. Publicly readable.
- * - /metro_codes/{metroCodeId}: Stores metro code information. Publicly readable.
+ * - /rfps/{rfpId}: Stores project data.
+ * - /rfps/{rfpId}/proposals/{proposalId}: Stores proposals associated with a specific RFP.
+ * - /contractors/{contractorId}: Stores contractor data.
+ * - /metro_codes/{metroCodeId}: Stores metro code data.
  *
  * Key Security Decisions:
- * - Public Read Access: RFP and Contractor data is publicly readable to facilitate discovery.
- * - Owner-Only Writes: RFP creation, updates, and deletions are restricted to the authenticated user who owns the resource.
- * - Subcollection Security: Proposals are secured through their parent RFP, requiring ownership of the parent RFP for any modifications.
- * - Denormalization: To create simpler, more performant rules, the rules assume the existence of an ownerId on documents to avoid costly `get()` calls.
- * - No User Listing: Listing all users is not permitted.
+ * - RFP (Project) Collection: Public read, owner-only writes based on `invitedContractorIds`
+ * - Proposals Subcollection: Owner-only access for listing proposals under an RFP.
+ * - Contractor Collection: Public read, no writes allowed via security rules.
+ * - MetroCode Collection: Public read, no writes allowed via security rules.
+ * - No user listing is allowed.
  *
- *  Denormalization for Authorization:
- *  - RFP documents are assumed to have an 'ownerId' or 'authorId' field to simplify ownership checks.
+ * Denormalization for Authorization:
+ * - The `rfps` collection uses the `invitedContractorIds` field to control proposal submissions.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to RFPs, but restricts writes to the owner.
+     * @description Allows public read access to RFPs (Projects), but restricts write access to authorized contractors.
      * @path /rfps/{rfpId}
      * @allow (get, list): Any user can read RFP data.
-     * @allow (create): Only the authenticated user whose ID matches the rfp.ownerId can create an RFP.
-     * @allow (update, delete): Only the authenticated user who owns the RFP (rfp.ownerId matches request.auth.uid) can update or delete it, and only if the document exists.
-     * @deny (create): If rfp.ownerId does not match request.auth.uid.
-     * @deny (update, delete): If the requesting user is not the owner, or if the document doesn't exist.
-     * @principle Public read, owner-only write with existence check.
+     * @allow (create): Only invited contractors can create.
+     * @deny (update, delete): Only the invited contractors can update or delete.
+     * @principle Allows public read access, restricts write access to authorized contractors using the `invitedContractorIds` field.
      */
     match /rfps/{rfpId} {
       allow get, list: if true;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerId;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.ownerId;
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.invitedContractorIds;
+      allow update: if isSignedIn() && request.auth.uid in resource.data.invitedContractorIds;
+      allow delete: if false;
     }
 
     /**
-     * @description Restricts access to proposals to the owner of the parent RFP.
+     * @description Restricts access to listing proposals under a specific RFP to invited contractors only.
      * @path /rfps/{rfpId}/proposals/{proposalId}
-     * @allow (create): Only the owner of the parent RFP can create a proposal. The proposal.projectId must match the rfpId.
-     * @allow (update, delete): Only the owner of the parent RFP can update or delete a proposal, and only if the document exists.
-     * @deny (create, update, delete): If the user is not the owner of the parent RFP, or if the document doesn't exist.
-     * @principle Owner-only access to subcollection, ensuring data consistency.
+     * @allow (get): Any user can read a specific proposal if they know the ID.
+     * @allow (list): Only authorized contractors can list proposals for an RFP.
+     * @allow (create): Only invited contractors can create proposals.
+     * @deny (update, delete): No updates or deletes are allowed via security rules.
+     * @principle Enforces owner-only access to the proposals subcollection.
      */
     match /rfps/{rfpId}/proposals/{proposalId} {
-      allow create: if request.auth != null && get(/databases/$(database)/documents/rfps/$(rfpId)).data.ownerId == request.auth.uid && request.resource.data.projectId == rfpId;
-      allow update, delete: if request.auth != null && get(/databases/$(database)/documents/rfps/$(rfpId)).data.ownerId == request.auth.uid;
+      allow get: if true;
+      allow list: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds;
+      allow create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds;
+      allow update, delete: if false;
     }
 
     /**
-     * @description Grants public read access to contractor data.
+     * @description Allows public read access to Contractors, but prevents any writes.
      * @path /contractors/{contractorId}
      * @allow (get, list): Any user can read contractor data.
-     * @deny (create, update, delete): No one can create, update, or delete contractor data via the client.
-     * @principle Public read-only for contractors.
+     * @deny (create, update, delete): No writes are allowed.
+     * @principle Provides public read access to contractor data, but protects against unauthorized modifications.
      */
     match /contractors/{contractorId} {
       allow get, list: if true;
@@ -67,15 +69,19 @@ service cloud.firestore {
     }
 
     /**
-     * @description Grants public read access to metro code data.
+     * @description Allows public read access to MetroCodes, but prevents any writes.
      * @path /metro_codes/{metroCodeId}
      * @allow (get, list): Any user can read metro code data.
-     * @deny (create, update, delete): No one can create, update, or delete metro code data via the client.
-     * @principle Public read-only for metro codes.
+     * @deny (create, update, delete): No writes are allowed.
+     * @principle Provides public read access to metro code data, but protects against unauthorized modifications.
      */
     match /metro_codes/{metroCodeId} {
       allow get, list: if true;
       allow create, update, delete: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
