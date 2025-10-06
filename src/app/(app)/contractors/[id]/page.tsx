@@ -63,6 +63,17 @@ export default function ContractorDetailPage() {
 
   const contactNames = contractor.contactName.split(';').map(name => name.trim());
   const contactEmails = contractor.contactEmail.split(';').map(email => email.trim());
+  
+  const getPreferredVariant = (status: string) => {
+    switch (status) {
+        case 'Most Preferred':
+            return 'default';
+        case 'Preferred':
+            return 'secondary';
+        default:
+            return 'outline';
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -78,7 +89,7 @@ export default function ContractorDetailPage() {
                     <CardTitle className="text-3xl">{contractor.name}</CardTitle>
                     <CardDescription className="text-md">{contractor.type}</CardDescription>
                     <div className="flex items-center gap-2 mt-2">
-                        {contractor.preferred && <Badge>Preferred</Badge>}
+                        <Badge variant={getPreferredVariant(contractor.preferredStatus)}>{contractor.preferredStatus}</Badge>
                     </div>
                 </div>
             </div>

@@ -36,6 +36,17 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
     return <p className="text-center text-muted-foreground py-8">No contractors match the current filters.</p>;
   }
 
+  const getPreferredVariant = (status: string) => {
+    switch (status) {
+        case 'Most Preferred':
+            return 'default';
+        case 'Preferred':
+            return 'secondary';
+        default:
+            return 'outline';
+    }
+  };
+
   const renderMultiLine = (text: string) => {
     return text.split(';').map((item, index) => (
       <div key={index}>{item.trim()}</div>
@@ -66,8 +77,8 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
             <TableCell>{renderMultiLine(contractor.contactEmail)}</TableCell>
             <TableCell>{contractor.type}</TableCell>
             <TableCell>
-                <Badge variant={contractor.preferred ? 'default' : 'secondary'}>
-                    {contractor.preferred ? 'Yes' : 'No'}
+                <Badge variant={getPreferredVariant(contractor.preferredStatus)}>
+                    {contractor.preferredStatus}
                 </Badge>
             </TableCell>
             <TableCell>{contractor.metroCodes?.join(', ')}</TableCell>

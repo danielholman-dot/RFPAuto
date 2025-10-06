@@ -39,6 +39,13 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
                 dataToSet[key] = Timestamp.fromDate(dataToSet[key]);
             }
         });
+        
+        // Ensure preferredStatus is a string
+        if (typeof dataToSet.preferred === 'boolean') {
+            dataToSet.preferredStatus = dataToSet.preferred ? 'Preferred' : 'Not Evaluated';
+            delete dataToSet.preferred;
+        }
+
 
         batch.set(docRef, dataToSet);
         count++;

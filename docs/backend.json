@@ -142,9 +142,9 @@
           "type": "string",
           "description": "Type of contractor (e.g., General Contractor)."
         },
-        "preferred": {
-          "type": "boolean",
-          "description": "Indicates if the contractor is on the preferred list."
+        "preferredStatus": {
+          "type": "string",
+          "description": "Indicates if the contractor is on the preferred list (e.g., Most Preferred, Preferred, Not Evaluated)."
         }
       },
       "required": [
@@ -155,7 +155,7 @@
         "contactPhone",
         "metroCodes",
         "type",
-        "preferred"
+        "preferredStatus"
       ]
     },
     "Proposal": {

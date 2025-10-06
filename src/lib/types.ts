@@ -31,7 +31,7 @@ export type Contractor = {
   contactPhone: string;
   type: string;
   metroCodes: string[];
-  preferred: boolean;
+  preferredStatus: string;
   performance: number;
   region: string;
 };
