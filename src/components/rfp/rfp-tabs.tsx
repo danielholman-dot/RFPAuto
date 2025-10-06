@@ -23,7 +23,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Badge } from "../ui/badge";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { generateComparativeAnalysis, GenerateComparativeAnalysisOutput } from "@/ai/flows/generate-comparative-analysis";
-import { getProposalsForRfp, getSuggestedContractors, getInvitedContractors, getContractors, addInvitedContractorToRfp, updateRfp, addProposal } from "@/lib/data";
 import { RfpInvitationDialog } from "./rfp-invitation-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
@@ -36,6 +35,8 @@ import { RfpNonAwardDialog } from "./rfp-non-award-dialog"
 import { RfpDrafting } from "./rfp-drafting"
 import { Input } from "../ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
 
 
 type RfpTabsProps = {
@@ -68,9 +69,9 @@ const StageCompletion = ({ stage, completedStages, onStageToggle }: { stage: Rfp
 
 
 export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
+  const firestore = useFirestore();
   const [activeTab, setActiveTab] = useState(rfp.status === 'Draft' ? 'Selection' : rfp.status);
   
-  // Initialize completed stages based on current RFP status
   const getInitialCompletedStages = (status: RfpStage) => {
     const currentIndex = STAGES.indexOf(status);
     return STAGES.slice(0, currentIndex);
@@ -78,18 +79,8 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
   const [completedStages, setCompletedStages] = useState<RfpStage[]>(getInitialCompletedStages(rfp.status as RfpStage));
   const { toast } = useToast();
 
-  const [suggestedContractors, setSuggestedContractors] = useState<Contractor[]>([]);
-  const [suggestedLoading, setSuggestedLoading] = useState(!isDraft);
-
-  const [allContractors, setAllContractors] = useState<Contractor[]>([]);
   const [selectedContractorToAdd, setSelectedContractorToAdd] = useState<string>('');
-
-  const [invitedContractors, setInvitedContractors] = useState<Contractor[]>([]);
-  const [invitedLoading, setInvitedLoading] = useState(!isDraft);
-
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [proposalsLoading, setProposalsLoading] = useState(!isDraft);
-
+  
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
   const [isChecklistDialogOpen, setIsChecklistDialogOpen] = useState(false);
   const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
@@ -105,8 +96,37 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
   const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
   const [sentEoiContractors, setSentEoiContractors] = useState<string[]>([]);
 
-  // State for proposal link inputs
   const [proposalLinks, setProposalLinks] = useState<Record<string, string[]>>({});
+
+  // Data fetching using hooks
+  const allContractorsQuery = useMemoFirebase(() => collection(firestore, 'contractors'), [firestore]);
+  const { data: allContractors, isLoading: allContractorsLoading } = useCollection<Contractor>(allContractorsQuery);
+
+  const suggestedContractorsQuery = useMemoFirebase(() => {
+    if (isDraft || !rfp.metroCode || !rfp.contractorType) return null;
+    return query(
+        collection(firestore, 'contractors'), 
+        where('metroCodes', 'array-contains', rfp.metroCode),
+        where('type', '==', rfp.contractorType)
+    );
+  }, [firestore, isDraft, rfp.metroCode, rfp.contractorType]);
+  const { data: suggestedContractors, isLoading: suggestedLoading } = useCollection<Contractor>(suggestedContractorsQuery);
+
+  const invitedContractorsQuery = useMemoFirebase(() => {
+    if (isDraft || !rfp.invitedContractors || rfp.invitedContractors.length === 0) return null;
+    return query(collection(firestore, 'contractors'), where('id', 'in', rfp.invitedContractors));
+  }, [firestore, isDraft, rfp.invitedContractors]);
+  const { data: invitedContractors, isLoading: invitedLoading } = useCollection<Contractor>(invitedContractorsQuery);
+
+  const proposalsQuery = useMemoFirebase(() => {
+    if (isDraft) return null;
+    return collection(firestore, 'rfps', rfp.id, 'proposals');
+  }, [firestore, isDraft, rfp.id]);
+  const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
+  
+  const proposalsWithBids = useMemo(() => {
+    return proposals?.map(p => ({...p, bidAmount: p.bidAmount || Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8 })) || [];
+  }, [proposals, rfp.estimatedBudget]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, contractorId: string) => {
     const file = e.target.files?.[0];
@@ -117,14 +137,13 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
         description: `Uploading file "${file.name}" for ${getContractorById(contractorId)?.name}.`
     });
 
-    // Simulate file upload and text extraction
     const proposalDocumentUrl = `proposals/${rfp.id}/${file.name}`;
     const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
 
     const newProposalData: Omit<Proposal, 'id'> = {
         contractorId,
         rfpId: rfp.id,
-        submittedDate: new Date(),
+        submittedDate: serverTimestamp() as any,
         status: 'Submitted',
         proposalDocumentUrl,
         proposalText,
@@ -132,12 +151,8 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
     };
 
     try {
-        const newProposalId = await addProposal(rfp.id, newProposalData);
-        const newProposal: Proposal = {
-            ...newProposalData,
-            id: newProposalId,
-        };
-        setProposals(prev => [...prev, newProposal]);
+        const proposalsCol = collection(firestore, 'rfps', rfp.id, 'proposals');
+        await addDoc(proposalsCol, newProposalData);
         toast({
             title: "Proposal Uploaded",
             description: "File has been successfully submitted.",
@@ -152,7 +167,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
     }
 };
 
-  const handleStageToggle = (stage: RfpStage) => {
+  const handleStageToggle = async (stage: RfpStage) => {
     const isCompleting = !completedStages.includes(stage);
     let newCompletedStages = [...completedStages];
     let newStatus: RfpStage | 'Completed';
@@ -170,7 +185,9 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
 
     const updatedRfp = { ...rfp, status: newStatus as RFP['status'], completedStages: newCompletedStages };
     setRfp(updatedRfp);
-    updateRfp(rfp.id, { status: newStatus as RFP['status'], completedStages: newCompletedStages });
+
+    const rfpDocRef = doc(firestore, 'rfps', rfp.id);
+    await updateDoc(rfpDocRef, { status: newStatus as RFP['status'], completedStages: newCompletedStages });
 
     toast({
         title: "Status Updated",
@@ -178,48 +195,9 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
     });
 };
 
-  const loadInvited = useCallback(async () => {
-    if (isDraft) return;
-    setInvitedLoading(true);
-    const contractors = await getInvitedContractors(rfp.invitedContractors || []);
-    setInvitedContractors(contractors);
-    setInvitedLoading(false);
-  }, [isDraft, rfp.invitedContractors]);
-
   useEffect(() => {
-    if (isDraft) return;
-
-    async function loadSuggestions() {
-      setSuggestedLoading(true);
-      const contractors = await getSuggestedContractors(rfp.metroCode, rfp.contractorType);
-      setSuggestedContractors(contractors);
-      setSuggestedLoading(false);
-    }
-    
-    async function loadProposals() {
-      setProposalsLoading(true);
-      const props = await getProposalsForRfp(rfp.id);
-      const propsWithBids = props.map(p => ({...p, bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8 }));
-      setProposals(propsWithBids);
-      setProposalsLoading(false);
-    }
-    
-    async function loadAllContractors() {
-        const contractors = await getContractors();
-        setAllContractors(contractors);
-    }
-
-    loadSuggestions();
-    loadInvited();
-    loadProposals();
-    loadAllContractors();
-
-  }, [rfp.id, rfp.metroCode, rfp.contractorType, rfp.estimatedBudget, isDraft, loadInvited]);
-
-  useEffect(() => {
-    // Initialize proposalLinks state
     const initialLinks: Record<string, string[]> = {};
-    invitedContractors.forEach(c => {
+    (invitedContractors || []).forEach(c => {
         initialLinks[c.id] = [''];
     });
     setProposalLinks(initialLinks);
@@ -228,23 +206,27 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
 
   const handleAddContractorToRfp = async () => {
     if (!selectedContractorToAdd) return;
-    await addInvitedContractorToRfp(rfp.id, selectedContractorToAdd);
-    const contractor = allContractors.find(c => c.id === selectedContractorToAdd);
-    if (contractor && !invitedContractors.find(c => c.id === contractor.id)) {
-        setInvitedContractors(prev => [...prev, contractor]);
-        setRfp(prev => prev ? ({ ...prev, invitedContractors: [...(prev.invitedContractors || []), contractor.id]}) : null);
+    
+    const newInvitedContractors = [...(rfp.invitedContractors || []), selectedContractorToAdd];
+    const rfpDocRef = doc(firestore, 'rfps', rfp.id);
+    await updateDoc(rfpDocRef, { invitedContractors: newInvitedContractors });
+    setRfp(prev => prev ? ({ ...prev, invitedContractors: newInvitedContractors}) : null);
+
+    const contractor = allContractors?.find(c => c.id === selectedContractorToAdd);
+    if (contractor) {
+        toast({ title: "Contractor Added", description: `${contractor.name} added to the invitation list.`});
     }
     setSelectedContractorToAdd('');
   };
 
   const proposalsByContractor = useMemo(() => {
     const statusMap = new Map<string, Proposal[]>();
-    invitedContractors.forEach(c => {
-      const contractorProposals = proposals.filter(p => p.contractorId === c.id);
+    (invitedContractors || []).forEach(c => {
+      const contractorProposals = (proposalsWithBids || []).filter(p => p.contractorId === c.id);
       statusMap.set(c.id, contractorProposals);
     });
     return statusMap;
-  }, [invitedContractors, proposals]);
+  }, [invitedContractors, proposalsWithBids]);
   
   const handleInviteClick = (contractor: Contractor) => {
     setSelectedContractor(contractor);
@@ -271,7 +253,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
         const newLinks = { ...prev };
         newLinks[contractorId][index] = value;
         
-        // If the last input for a contractor is filled, add a new empty one
         if (index === newLinks[contractorId].length - 1 && value !== '') {
             newLinks[contractorId].push('');
         }
@@ -288,26 +269,19 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
           description: `Submitting link for ${getContractorById(contractorId)?.name}.`,
       });
 
-      const newProposalData: Omit<Proposal, 'id'> = {
+      const newProposalData = {
           contractorId: contractorId,
           rfpId: rfp.id,
-          submittedDate: new Date(),
+          submittedDate: serverTimestamp(),
           status: 'Submitted',
           proposalDocumentUrl: linkUrl,
           proposalText: `Proposal submitted via Google Sheet link: ${linkUrl}`,
           bidAmount: Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8,
       };
 
-      const newProposalId = await addProposal(rfp.id, newProposalData);
+      const proposalsCol = collection(firestore, 'rfps', rfp.id, 'proposals');
+      await addDoc(proposalsCol, newProposalData);
 
-      const newProposal: Proposal = {
-          ...newProposalData,
-          id: newProposalId,
-      };
-
-      setProposals(prev => [...prev, newProposal]);
-
-      // Remove the submitted link from the input array and if it becomes empty, add a fresh input
       setProposalLinks(prev => {
         const newLinks = { ...prev };
         newLinks[contractorId] = newLinks[contractorId].filter((_, i) => i !== index);
@@ -325,7 +299,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
 
 
   const handleAnalyze = async () => {
-    const proposalsToAnalyze = proposals.filter(p => selectedProposals.includes(p.id));
+    const proposalsToAnalyze = (proposalsWithBids || []).filter(p => selectedProposals.includes(p.id));
     if (proposalsToAnalyze.length === 0) {
       toast({ variant: "destructive", title: "Selection required", description: "Please select at least one proposal to analyze."});
       return;
@@ -381,33 +355,33 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
   };
 
   const getContractorById = useCallback((id: string) => {
-    return invitedContractors?.find(c => c.id === id) || suggestedContractors?.find(c => c.id === id) || allContractors?.find(c => c.id === id);
-  }, [invitedContractors, suggestedContractors, allContractors]);
+    return allContractors?.find(c => c.id === id);
+  }, [allContractors]);
 
   const uninvitedSuggestedContractors = useMemo(() => {
     const invitedIds = new Set(rfp.invitedContractors || []);
-    return suggestedContractors.filter(c => !invitedIds.has(c.id));
+    return (suggestedContractors || []).filter(c => !invitedIds.has(c.id));
   }, [suggestedContractors, rfp.invitedContractors]);
 
   const analysisChartData = useMemo(() => {
-    return proposals
+    return (proposalsWithBids || [])
       .filter(p => selectedProposals.includes(p.id))
       .map(p => ({
         name: getContractorById(p.contractorId)?.name || 'Unknown',
         value: p.bidAmount,
       }));
-  }, [proposals, selectedProposals, getContractorById]);
+  }, [proposalsWithBids, selectedProposals, getContractorById]);
 
   const analysisSelectionProposals = useMemo(() => {
     const grouped: { [key: string]: Proposal[] } = {};
-    proposals.forEach(p => {
+    (proposalsWithBids || []).forEach(p => {
         if (!grouped[p.contractorId]) {
             grouped[p.contractorId] = [];
         }
         grouped[p.contractorId].push(p);
     });
     return Object.entries(grouped);
-}, [proposals]);
+}, [proposalsWithBids]);
 
 
   return (
@@ -505,7 +479,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                         </Button>
                     </div>
                 {invitedLoading && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>}
-                {!invitedLoading && !invitedContractors?.length && <p className="text-muted-foreground text-center py-8">No contractors have been invited yet.</p>}
+                {!invitedLoading && (!invitedContractors || invitedContractors.length === 0) && <p className="text-muted-foreground text-center py-8">No contractors have been invited yet.</p>}
                 {invitedContractors && invitedContractors.map(c => (
                     <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
@@ -539,7 +513,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
             <CardContent>
                 {proposalsLoading ? (
                     <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
-                ) : invitedContractors.length === 0 && !invitedLoading ? (
+                ) : (invitedContractors || []).length === 0 && !invitedLoading ? (
                     <p className="text-muted-foreground text-center py-8">No contractors have been invited to submit proposals yet.</p>
                 ) : (
                     <Table>
@@ -552,7 +526,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {invitedContractors.map(contractor => {
+                            {(invitedContractors || []).map(contractor => {
                                 const contractorProposals = proposalsByContractor.get(contractor.id) || [];
                                 const hasSubmitted = contractorProposals.length > 0;
                                 const contractorLinks = proposalLinks[contractor.id] || [''];
@@ -583,9 +557,8 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                                         </TableCell>
                                         <TableCell className="text-right">
                                              <div className="flex flex-col items-end gap-4">
-                                                {/* Link submission */}
                                                 <div className="flex flex-col items-end gap-2 w-full">
-                                                    {contractorLinks.map((link, index) => (
+                                                    {(contractorLinks || []).map((link, index) => (
                                                         <div key={index} className="flex w-full gap-2 items-center justify-end">
                                                              <Input
                                                                 id={`proposal-link-${contractor.id}-${index}`}
@@ -606,7 +579,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                                                         </div>
                                                     ))}
                                                 </div>
-                                                {/* File upload */}
                                                 <div className="relative">
                                                     <Input
                                                         id={`file-upload-${contractor.id}`}
@@ -647,7 +619,6 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                                 {analysisSelectionProposals.map(([contractorId, contractorProposals]) => {
                                     const contractor = getContractorById(contractorId);
                                     const allSelected = contractorProposals.every(p => selectedProposals.includes(p.id));
-                                    const someSelected = contractorProposals.some(p => selectedProposals.includes(p.id));
 
                                     return (
                                         <div key={contractorId} className="border p-4 rounded-lg">
@@ -751,7 +722,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
                 <CardContent>
                     {invitedLoading ? (
                     <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>
-                    ) : invitedContractors.length > 0 ? (
+                    ) : (invitedContractors && invitedContractors.length > 0) ? (
                     <RadioGroup value={winningContractorId || ''} onValueChange={setWinningContractorId}>
                         <Table>
                         <TableHeader>
