@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Users, Wrench, Zap, HardHat, Loader2, Star, Pencil, Upload } from 'lucide-react';
 import {
   Select,
@@ -124,6 +124,7 @@ const getIconForType = (type: string) => {
 export default function ContractorsPage() {
   const firestore = useFirestore();
   const { isUserLoading } = useUser();
+  const importFileRef = useRef<HTMLInputElement>(null);
 
   const contractorsQuery = useMemoFirebase(() => query(collection(firestore, 'contractors')), [firestore]);
   const { data: allContractors, isLoading: contractorsLoading } = useCollection<Contractor>(contractorsQuery);
@@ -164,6 +165,65 @@ export default function ContractorsPage() {
       return typeMatch && metroCodeMatch && searchMatch;
     });
   }, [allContractors, typeFilter, metroCodeFilter, searchTerm]);
+  
+  const convertToCSV = (data: any[], headers: string[]) => {
+    const headerRow = headers.join(',');
+    const rows = data.map(row => {
+      return headers.map(header => {
+        let cell = row[header] === null || row[header] === undefined ? '' : row[header];
+        if (Array.isArray(cell)) {
+          cell = cell.join(';');
+        }
+        cell = String(cell).replace(/"/g, '""');
+        if (cell.includes(',')) {
+          cell = `"${cell}"`;
+        }
+        return cell;
+      }).join(',');
+    });
+    return [headerRow, ...rows].join('\n');
+  };
+
+  const downloadCSV = (csvString: string, filename: string) => {
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+  const handleExportTemplate = () => {
+    const headers = ['name', 'contactName', 'contactEmail', 'contactPhone', 'type', 'preferredStatus', 'region', 'metroCodes'];
+    const csvString = headers.join(',');
+    downloadCSV(csvString, 'contractor_template.csv');
+  };
+
+  const handleExportInformation = () => {
+    if (!filteredContractors || filteredContractors.length === 0) {
+      alert('No contractor information to export.');
+      return;
+    }
+    const headers = ['name', 'contactName', 'contactEmail', 'contactPhone', 'type', 'preferredStatus', 'region', 'metroCodes'];
+    const csvString = convertToCSV(filteredContractors, headers);
+    downloadCSV(csvString, 'contractor_information.csv');
+  };
+
+  const handleImportClick = () => {
+    importFileRef.current?.click();
+  };
+
+  const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      alert(`File "${file.name}" selected for import. Processing logic to be implemented.`);
+      // Here you would add logic to parse the CSV and update Firestore
+    }
+  };
+
 
   const loading = isUserLoading || contractorsLoading || metrosLoading;
 
@@ -249,14 +309,21 @@ export default function ContractorsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Export Template</DropdownMenuItem>
-                    <DropdownMenuItem>Export Information</DropdownMenuItem>
-                    <DropdownMenuItem>Import Information</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleExportTemplate}>Export Template</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleExportInformation}>Export Information</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleImportClick}>Import Information</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                  <Button asChild className="w-full sm:w-auto">
                     <Link href="/contractors/new">Add new Contractor</Link>
                 </Button>
+                <input
+                    type="file"
+                    ref={importFileRef}
+                    className="hidden"
+                    accept=".csv"
+                    onChange={handleImportFile}
+                />
             </div>
         </CardHeader>
         <CardContent>
