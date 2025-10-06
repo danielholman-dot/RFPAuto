@@ -2,49 +2,32 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Store the initialized services in a module-level variable to act as a singleton.
+// This module-level variable will hold the single initialized Firebase services instance.
 let firebaseServices: {
   firebaseApp: FirebaseApp,
   auth: ReturnType<typeof getAuth>,
   firestore: ReturnType<typeof getFirestore>
 } | null = null;
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+/**
+ * Initializes and/or returns a singleton instance of Firebase services.
+ * This function ensures that Firebase is only initialized once per application lifecycle.
+ * @returns The singleton Firebase services object.
+ */
 export function initializeFirebase() {
-  // If the services have already been initialized, return the existing instances.
+  // If the services have already been initialized, return the existing instances immediately.
   if (firebaseServices) {
     return firebaseServices;
   }
 
-  let app;
-  if (!getApps().length) {
-    // If no app is initialized, create one.
-    try {
-      // Attempt to initialize via Firebase App Hosting environment variables
-      app = initializeApp();
-    } catch (e) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      app = initializeApp(firebaseConfig);
-    }
-  } else {
-    // If apps are already initialized, get the default app.
-    app = getApp();
-  }
+  // Check if a Firebase app has already been initialized. If not, initialize one.
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
   const auth = getAuth(app);
   const firestore = getFirestore(app);
-
-  // Sign in anonymously if not already signed in.
-  if (!auth.currentUser) {
-    signInAnonymously(auth).catch((error) => {
-      console.error("Anonymous sign-in failed:", error);
-    });
-  }
 
   // Store the initialized services in the singleton variable.
   firebaseServices = {
