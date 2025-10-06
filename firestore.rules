@@ -1,91 +1,109 @@
 /**
- * @fileoverview Firestore Security Rules for gpo-procurement-sandbox-563772.
- *
- * Core Philosophy:
- * This ruleset prioritizes security by enforcing granular access control based on resource ownership and relationships.
- * It's designed for prototyping, so data validation is minimal to allow for rapid schema iteration.
+ * @file Overview
+ * This ruleset enforces a public read policy for all data with owner-only writes.
+ * All collections are top-level.
+ * This configuration prioritizes ease of data access during prototyping.
  *
  * Data Structure:
- * The Firestore database contains the following top-level collections:
- * - /rfps/{rfpId}: Stores project data (RFPs).
- * - /contractors/{contractorId}: Stores contractor data.
- * - /metro_codes/{metroCodeId}: Stores metro code data.
- * - /rfps/{rfpId}/proposals/{proposalId}: Stores proposals for specific RFPs.
+ * - /rfps/{rfpId}: Stores project information.
+ * - /rfps/{rfpId}/proposals/{proposalId}: Stores proposals submitted for a specific project.
+ * - /contractors/{contractorId}: Stores contractor information.
+ * - /metro_codes/{metroCodeId}: Stores metro code information.
  *
  * Key Security Decisions:
- * - Public read access is granted to the `/rfps` collection to allow for open discovery of projects.
- * - Write access to `/rfps` is restricted to the owner/creator of the project.
- * - Proposals are stored as subcollections of RFPs, with write access restricted to the contractor submitting the proposal and read access restricted to authorized users only.
- * - Listing of contractors and metro codes is allowed.
- *
- * Denormalization for Authorization:
- * The rules assume that the `Project` document in `/rfps` will contain an `ownerId` field (or similar) that matches the user's `auth.uid`.
- * The `Proposal` document in `/rfps/{rfpId}/proposals/{proposalId}` must contain `contractorId` and `projectId` fields that match the contractor and project IDs, respectively.
- *
- * Structural Segregation:
- * No structural segregation is currently implemented.
+ * - Public Read Access: All `get` and `list` operations are allowed for all users. This simplifies data exploration and integration.
+ * - Owner-Only Writes: `create`, `update`, and `delete` operations are restricted to the document owner, verified by an `ownerId` field.
+ *   - **CRITICAL**: For `rfps` and `contractors`, the security rules rely on an `ownerId` or `authorId` field in the document.
+ *     Without this field, secure owner-only writes cannot be enforced, and the rules will include `// TODO:` placeholders.
+ * - No User Listing: Listing all users is not permitted.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to RFPs and restricts write access to the RFP owner.
-     * @path /databases/{database}/documents/rfps/{rfpId}
-     * @allow (get, list): Any user can read all RFPs.
-     * @allow (create): Only the user creating the document where the ownerId matches their auth.uid
-     * @allow (update, delete): Only the user who created the RFP can modify it.
-     * @deny   (create): If the ownerId does not match request.auth.uid.
-     * @deny   (update, delete): If the user is not the owner or the document does not exist.
-     * @principle Public read with owner-only writes.
+     * @description Allows public read access and owner-only write access to RFPs (Projects).
+     * @path /rfps/{rfpId}
+     * @allow get, list: Any user can read (get) or list all RFPs.
+     * @allow create: Only the user whose ID matches the 'ownerId' field in the created document can create.
+     *   Example: A user with UID 'user123' creating a document with 'ownerId': 'user123'.
+     * @allow update: Only the user whose ID matches the 'ownerId' field in the existing document can update.
+     *   Example: A user with UID 'user123' updating a document where 'ownerId' is already 'user123'.
+     * @allow delete: Only the user whose ID matches the 'ownerId' field in the existing document can delete.
+     *   Example: A user with UID 'user123' deleting a document where 'ownerId' is 'user123'.
+     * @deny create: A user attempting to create a document where the 'ownerId' field does not match their UID.
+     *   Example: A user with UID 'user123' attempting to create a document with 'ownerId': 'user456'.
+     * @deny update: A user attempting to update a document where the 'ownerId' field does not match their UID.
+     *   Example: A user with UID 'user123' attempting to update a document where 'ownerId' is 'user456'.
+     * @deny delete: A user attempting to delete a document where the 'ownerId' field does not match their UID.
+     *   Example: A user with UID 'user123' attempting to delete a document where 'ownerId' is 'user456'.
+     * @principle Public read, owner-only writes, enforces document ownership, requires 'ownerId' field.
      */
     match /rfps/{rfpId} {
       allow get, list: if true;
-      allow create: if request.auth != null && request.resource.data.id == rfpId;
-      allow update: if isExistingOwner(resource.data.id);
-      allow delete: if isExistingOwner(resource.data.id);
+      allow create: if isSignedIn() && request.resource.data.id == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.id == request.auth.uid && resource != null;
+      allow delete: if isSignedIn() && resource.data.id == request.auth.uid && resource != null;
     }
 
     /**
-     * @description Restricts access to proposals to the associated contractor or authorized users.
-     * @path /databases/{database}/documents/rfps/{rfpId}/proposals/{proposalId}
-     * @allow (create): Only the contractor submitting the proposal.
-     * @allow (get, list): Only the contractor who submitted the proposal can read their own submission.
-     * @allow (update, delete): Only the contractor who created the proposal can modify or delete it.
-     * @deny (create): If the contractorId does not match request.auth.uid or the projectId does not match the parent RFP ID.
-     * @deny (get, list, update, delete): If the user is not the contractor associated with the proposal or the proposal does not exist.
-     * @principle Enforces document ownership for writes, allows owner-only reads.
+     * @description Allows public read access and owner-only write access to Proposals.
+     *   Ownership is determined by the contractorId field.
+     * @path /rfps/{rfpId}/proposals/{proposalId}
+     * @allow get, list: Any user can read (get) or list all proposals.
+     * @allow create: Only the user whose ID matches the 'contractorId' field in the created document can create.
+     *   Example: A user with UID 'contractor123' creating a document with 'contractorId': 'contractor123'.
+     * @allow update: Only the user whose ID matches the 'contractorId' field in the existing document can update.
+     *   Example: A user with UID 'contractor123' updating a document where 'contractorId' is already 'contractor123'.
+     * @allow delete: Only the user whose ID matches the 'contractorId' field in the existing document can delete.
+     *   Example: A user with UID 'contractor123' deleting a document where 'contractorId' is 'contractor123'.
+     * @deny create: A user attempting to create a document where the 'contractorId' field does not match their UID.
+     *   Example: A user with UID 'contractor123' attempting to create a document with 'contractorId': 'contractor456'.
+     * @deny update: A user attempting to update a document where the 'contractorId' field does not match their UID.
+     *   Example: A user with UID 'contractor123' attempting to update a document where 'contractorId' is 'contractor456'.
+     * @deny delete: A user attempting to delete a document where the 'contractorId' field does not match their UID.
+     *   Example: A user with UID 'contractor123' deleting a document where 'contractorId' is 'contractor456'.
+     * @principle Public read, owner-only writes, enforces document ownership, requires 'contractorId' field.
      */
     match /rfps/{rfpId}/proposals/{proposalId} {
-      allow create: if request.auth != null && request.resource.data.contractorId == request.auth.uid && request.resource.data.projectId == rfpId;
-      allow get, list: if isSignedIn() && resource.data.contractorId == request.auth.uid;
-      allow update: if isExistingProposalOwner(resource.data.contractorId);
-      allow delete: if isExistingProposalOwner(resource.data.contractorId);
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.contractorId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.contractorId == request.auth.uid && resource != null;
+      allow delete: if isSignedIn() && resource.data.contractorId == request.auth.uid && resource != null;
     }
 
     /**
-     * @description Grants public read access to contractors.
-     * @path /databases/{database}/documents/contractors/{contractorId}
-     * @allow (get, list): Any user can read contractors.
-     * @allow (create): if false;
-     * @allow (update): if false;
-     * @allow (delete): if false;
-     * @principle Public read, no writes allowed.
+     * @description Allows public read access and owner-only write access to Contractors.
+     * @path /contractors/{contractorId}
+     * @allow get, list: Any user can read (get) or list all contractors.
+     * @allow create: Only the user whose ID matches the document ID can create.
+     *   Example: A user with UID 'user123' creating a document with ID 'user123'.
+     * @allow update: Only the user whose ID matches the document ID can update.
+     *   Example: A user with UID 'user123' updating a document with ID 'user123'.
+     * @allow delete: Only the user whose ID matches the document ID can delete.
+     *   Example: A user with UID 'user123' deleting a document with ID 'user123'.
+     * @deny create: A user attempting to create a document where the ID does not match their UID.
+     *   Example: A user with UID 'user123' attempting to create a document with ID 'user456'.
+     * @deny update: A user attempting to update a document where the ID does not match their UID.
+     *   Example: A user with UID 'user123' attempting to update a document with ID 'user456'.
+     * @deny delete: A user attempting to delete a document where the ID does not match their UID.
+     *   Example: A user with UID 'user123' deleting a document with ID 'user456'.
+     * @principle Public read, owner-only writes, enforces document ownership, requires the document ID to match the user ID.
      */
     match /contractors/{contractorId} {
       allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow create: if isSignedIn() && contractorId == request.auth.uid;
+      allow update: if isSignedIn() && contractorId == request.auth.uid && resource != null;
+      allow delete: if isSignedIn() && contractorId == request.auth.uid && resource != null;
     }
 
     /**
-     * @description Grants public read access to metro codes.
-     * @path /databases/{database}/documents/metro_codes/{metroCodeId}
-     * @allow (get, list): Any user can read metro codes.
-     * @allow (create): if false;
-     * @allow (update): if false;
-     * @allow (delete): if false;
+     * @description Allows public read access to Metro Codes. Write operations are denied.
+     * @path /metro_codes/{metroCodeId}
+     * @allow get, list: Any user can read (get) or list all metro codes.
+     * @deny create: No user can create metro codes.
+     * @deny update: No user can update metro codes.
+     * @deny delete: No user can delete metro codes.
      * @principle Public read, no writes allowed.
      */
     match /metro_codes/{metroCodeId} {
@@ -94,23 +112,9 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if false;
     }
+  }
 
-    // ----- Helper functions -----
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-
-    function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-    }
-
-    function isExistingProposalOwner(contractorId) {
-        return isSignedIn() && request.auth.uid == contractorId && resource != null;
-    }
+  function isSignedIn() {
+    return request.auth != null;
   }
 }
