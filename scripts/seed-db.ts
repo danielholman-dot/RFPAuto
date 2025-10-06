@@ -1,6 +1,6 @@
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, writeBatch } from 'firebase/firestore';
+import { getFirestore, collection, writeBatch, doc } from 'firebase/firestore';
 import { ContractorsData } from '@/lib/seed';
 import { MetroCodesData } from '@/lib/metro-seed';
 import { firebaseConfig } from '@/firebase/config';
@@ -15,11 +15,9 @@ async function seedDatabase() {
 
     // Seed Contractors
     const contractorsBatch = writeBatch(db);
-    const contractorsCollection = collection(db, 'contractors');
     let contractorCount = 0;
     ContractorsData.forEach(contractor => {
-      // Use a consistent ID generation if possible, or let Firestore auto-generate
-      const docRef = collection(db, 'contractors').doc();
+      const docRef = doc(collection(db, 'contractors'));
       contractorsBatch.set(docRef, { ...contractor, id: docRef.id });
       contractorCount++;
     });
@@ -28,10 +26,9 @@ async function seedDatabase() {
 
     // Seed Metro Codes
     const metrosBatch = writeBatch(db);
-    const metrosCollection = collection(db, 'metro_codes');
     let metroCount = 0;
     MetroCodesData.forEach(metro => {
-        const docRef = collection(db, 'metro_codes').doc();
+        const docRef = doc(collection(db, 'metro_codes'));
         metrosBatch.set(docRef, { ...metro, id: docRef.id });
         metroCount++;
     });
@@ -43,9 +40,10 @@ async function seedDatabase() {
   } catch (error) {
     console.error('Error seeding database:', error);
   } finally {
-    // Firebase does not need to be explicitly disconnected for client-side SDK
-    // In a Node.js script, you might want to process.exit() if it hangs
-    // For this simple script, we'll just let it finish.
+    // In a Node.js script that doesn't exit automatically, you might need to force exit.
+    // However, for this script, we'll let it finish and Node should exit.
+    // If it hangs, uncomment the next line:
+    // process.exit(0);
   }
 }
 
