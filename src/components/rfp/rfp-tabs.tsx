@@ -76,7 +76,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
     const currentIndex = STAGES.indexOf(status);
     return STAGES.slice(0, currentIndex);
   };
-  const [completedStages, setCompletedStages] = useState<RfpStage[]>(getInitialCompletedStages(rfp.status as RfpStage));
+  const [completedStages, setCompletedStages] = useState<RfpStage[]>(rfp.completedStages as RfpStage[] || getInitialCompletedStages(rfp.status as RfpStage));
   const { toast } = useToast();
 
   const [selectedContractorToAdd, setSelectedContractorToAdd] = useState<string>('');
@@ -87,7 +87,7 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
 
   const [selectedProposals, setSelectedProposals] = useState<string[]>([]);
   const [comparativeAnalysisResult, setComparativeAnalysisResult] = useState<GenerateComparativeAnalysisOutput | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(isDraft);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const [winningContractorId, setWinningContractorId] = useState<string | null>(null);
   

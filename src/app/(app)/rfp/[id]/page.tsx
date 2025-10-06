@@ -91,6 +91,7 @@ export default function RfpDetailPage() {
             status: 'Draft',
             proposals: [],
             invitedContractors: [],
+            completedStages: [],
         }
         return (
             <div className="space-y-6">
