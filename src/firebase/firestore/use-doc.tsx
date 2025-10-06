@@ -1,6 +1,6 @@
 'use client';
     
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -28,7 +28,7 @@ export interface UseDocResult<T> {
  * React hook to subscribe to a single Firestore document in real-time.
  * Handles nullable references.
  * 
- * IMPORTANT! YOU MUST MEMOIZE the inputted memoizedTargetRefOrQuery or BAD THINGS WILL HAPPEN
+ * IMPORTANT! YOU MUST MEMOIZE the inputted memoizedDocRef or BAD THINGS WILL HAPPEN
  * use useMemo to memoize it per React guidence.  Also make sure that it's dependencies are stable
  * references
  *
@@ -44,20 +44,28 @@ export function useDoc<T = any>(
   type StateDataType = WithId<T> | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
+  // Use a ref to track the path of the current docRef to detect changes
+  const pathRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!memoizedDocRef) {
+    const newPath = memoizedDocRef ? memoizedDocRef.path : null;
+
+    // Only reset and show loading if the actual document path has changed.
+    if (newPath !== pathRef.current) {
       setData(null);
-      setIsLoading(false);
       setError(null);
-      return;
+      setIsLoading(true);
+      pathRef.current = newPath;
     }
 
-    setIsLoading(true);
-    setError(null);
-    // Optional: setData(null); // Clear previous data instantly
+    if (!memoizedDocRef) {
+      // If the ref is null/undefined, we are not loading.
+      setIsLoading(false);
+      return;
+    }
 
     const unsubscribe = onSnapshot(
       memoizedDocRef,
