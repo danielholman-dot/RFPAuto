@@ -40,14 +40,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Contractor name is required."),
+  companyName: z.string().min(1, "Contractor name is required."),
   contactName: z.string().min(1, "Contact name is required."),
   contactEmail: z.string().min(1, "Contact email is required."),
-  type: z.string().min(1, "Contractor type is required."),
-  preferredStatus: z.string().min(1, "Preferred status is required."),
-  region: z.string().min(1, "Region is required."),
-  metroSite: z.string().min(1, "Metro/Site is required."),
-  performance: z.coerce.number().min(0).max(100),
+  contractorType: z.string().min(1, "Contractor type is required."),
+  preferred: z.boolean().default(false),
   metroCodes: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one metro code.",
   }),
@@ -79,22 +76,24 @@ export default function EditContractorPage() {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            metroCodes: [],
-        }
+        defaultValues: useMemo(() => ({
+            companyName: contractor?.companyName ?? "",
+            contactName: contractor?.contactName ?? "",
+            contactEmail: contractor?.contactEmail ?? "",
+            contractorType: contractor?.contractorType ?? "",
+            preferred: contractor?.preferred ?? false,
+            metroCodes: contractor?.metroCodes ?? [],
+        }), [contractor]),
     });
 
     useEffect(() => {
         if (contractor) {
             form.reset({
-                name: contractor.name,
+                companyName: contractor.companyName,
                 contactName: contractor.contactName,
                 contactEmail: contractor.contactEmail,
-                type: contractor.type,
-                preferredStatus: contractor.preferredStatus,
-                region: contractor.region,
-                metroSite: contractor.metroSite,
-                performance: contractor.performance,
+                contractorType: contractor.contractorType,
+                preferred: contractor.preferred,
                 metroCodes: contractor.metroCodes || [],
             });
         }
@@ -102,11 +101,12 @@ export default function EditContractorPage() {
     
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
+        if (!contractorRef) return;
         try {
-            await updateDoc(contractorRef!, values as any);
+            await updateDoc(contractorRef, values as any);
             toast({
                 title: "Contractor Updated",
-                description: `${values.name} has been successfully updated.`,
+                description: `${values.companyName} has been successfully updated.`,
             });
             router.push(`/contractors/${id}`);
         } catch (error) {
@@ -122,12 +122,13 @@ export default function EditContractorPage() {
     }
 
     const handleDelete = async () => {
+        if (!contractorRef) return;
         if (window.confirm("Are you sure you want to delete this contractor? This action cannot be undone.")) {
             try {
-                await deleteDoc(contractorRef!);
+                await deleteDoc(contractorRef);
                 toast({
                     title: "Contractor Deleted",
-                    description: `${contractor?.name} has been deleted.`,
+                    description: `${contractor?.companyName} has been deleted.`,
                 });
                 router.push("/contractors");
             } catch (error) {
@@ -141,11 +142,13 @@ export default function EditContractorPage() {
         }
     }
 
-    if (isUserLoading || contractorLoading || metrosLoading) {
+    const loading = isUserLoading || contractorLoading || metrosLoading;
+
+    if (loading || !contractor) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
 
-    if (!contractor) {
+    if (!contractor && !contractorLoading) {
         return notFound();
     }
     
@@ -155,7 +158,7 @@ export default function EditContractorPage() {
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Edit Contractor</CardTitle>
-                    <CardDescription>Update the details for {contractor.name}.</CardDescription>
+                    <CardDescription>Update the details for {contractor.companyName}.</CardDescription>
                 </div>
                 <Button variant="destructive" onClick={handleDelete}>
                     <Trash className="mr-2 h-4 w-4" />
@@ -167,7 +170,7 @@ export default function EditContractorPage() {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}
-                    name="name"
+                    name="companyName"
                     render={({ field }) => (
                     <FormItem>
                         <FormLabel>Contractor Name</FormLabel>
@@ -205,7 +208,7 @@ export default function EditContractorPage() {
                 <div className="grid md:grid-cols-2 gap-8">
                     <FormField
                         control={form.control}
-                        name="type"
+                        name="contractorType"
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Contractor Type</FormLabel>
@@ -221,54 +224,24 @@ export default function EditContractorPage() {
                     />
                     <FormField
                         control={form.control}
-                        name="preferredStatus"
+                        name="preferred"
                         render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Preferred Status</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                <SelectItem value="Most Preferred">Most Preferred</SelectItem>
-                                <SelectItem value="Preferred">Preferred</SelectItem>
-                                <SelectItem value="Not Evaluated">Not Evaluated</SelectItem>
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                </div>
-                 <div className="grid md:grid-cols-2 gap-8">
-                    <FormField
-                        control={form.control}
-                        name="region"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Region</FormLabel>
-                             <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                <SelectItem value="North America">North America</SelectItem>
-                                <SelectItem value="East">East</SelectItem>
-                                <SelectItem value="West">West</SelectItem>
-                                <SelectItem value="West (Central)">West (Central)</SelectItem>
-                                <SelectItem value="West Coast">West Coast</SelectItem>
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="metroSite"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Metro / Site (Legacy)</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
-                            <FormDescription>This is a text field for legacy data.</FormDescription>
-                            <FormMessage />
-                        </FormItem>
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                <FormLabel className="text-base">
+                                    Preferred Contractor
+                                </FormLabel>
+                                <FormDescription>
+                                    Mark this contractor as a preferred partner.
+                                </FormDescription>
+                                </div>
+                                <FormControl>
+                                <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                                </FormControl>
+                            </FormItem>
                         )}
                     />
                 </div>
