@@ -103,7 +103,7 @@ export default function EditContractorPage() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
         try {
-            await updateDoc(contractorRef!, values);
+            await updateDoc(contractorRef!, values as any);
             toast({
                 title: "Contractor Updated",
                 description: `${values.name} has been successfully updated.`,
@@ -209,7 +209,7 @@ export default function EditContractorPage() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Contractor Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {contractorTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
@@ -225,7 +225,7 @@ export default function EditContractorPage() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Preferred Status</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
                                 <SelectItem value="Most Preferred">Most Preferred</SelectItem>
@@ -245,7 +245,7 @@ export default function EditContractorPage() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>Region</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                             <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
                                 <SelectItem value="North America">North America</SelectItem>
@@ -300,9 +300,9 @@ export default function EditContractorPage() {
                                         checked={field.value?.includes(item.code)}
                                         onCheckedChange={(checked) => {
                                         return checked
-                                            ? field.onChange([...field.value, item.code])
+                                            ? field.onChange([...(field.value || []), item.code])
                                             : field.onChange(
-                                                field.value?.filter(
+                                                (field.value || [])?.filter(
                                                 (value) => value !== item.code
                                                 )
                                             )
