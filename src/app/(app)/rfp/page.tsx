@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Trash,
@@ -142,10 +143,9 @@ export default function RfpRegistryPage() {
                 <TableCell>${rfp.estimatedBudget.toLocaleString('de-DE')}</TableCell>
                 <TableCell>{formatDate(rfp.projectStartDate)}</TableCell>
                 <TableCell className="text-right space-x-2">
-                    <Button asChild variant="outline" size="sm">
+                    <Button asChild variant="outline" size="icon">
                         <Link href={`/rfp/${rfp.id}`}>
-                            <Pencil className="mr-2 h-4 w-4"/>
-                            Edit
+                            <Pencil className="h-4 w-4"/>
                         </Link>
                     </Button>
                     <AlertDialog>
