@@ -29,12 +29,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { contractorTypes as allContractorTypes } from '@/lib/seed';
+import { contractorTypes as allContractorTypes } from '@/lib/data';
 
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
     return <p className="text-center text-muted-foreground py-8">No contractors match the current filters.</p>;
+  }
+
+  const renderMultiLine = (text: string) => {
+    return text.split(';').map((item, index) => (
+      <div key={index}>{item.trim()}</div>
+    ));
   }
 
   return (
@@ -55,8 +61,8 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
         {contractors.map((contractor) => (
           <TableRow key={contractor.id}>
             <TableCell className="font-medium">{contractor.name}</TableCell>
-            <TableCell>{contractor.contactName.split(';')[0]}</TableCell>
-            <TableCell>{contractor.contactEmail.split(';')[0]}</TableCell>
+            <TableCell>{renderMultiLine(contractor.contactName)}</TableCell>
+            <TableCell>{renderMultiLine(contractor.contactEmail)}</TableCell>
             <TableCell>{contractor.type}</TableCell>
             <TableCell>
                 <Badge variant={contractor.preferredStatus === 'Most Preferred' ? 'default' : 'secondary'}>
