@@ -1,12 +1,12 @@
+
 'use client';
 import { notFound, useParams } from 'next/navigation';
 import { RfpTabs } from '@/components/rfp/rfp-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { RFP, MetroCode } from '@/lib/types';
-import { useEffect, useState } from 'react';
 import { useDoc, useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
-import { doc, collection, setDoc } from 'firebase/firestore';
+import { doc, collection } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 
 export default function RfpDetailPage() {
@@ -19,6 +19,7 @@ export default function RfpDetailPage() {
     if (!user) return null;
     return doc(firestore, 'rfps', id);
   }, [firestore, id, user]);
+
   const { data: rfp, isLoading: rfpLoading } = useDoc<RFP>(rfpRef);
 
   const metrosQuery = useMemoFirebase(() => {
@@ -31,11 +32,9 @@ export default function RfpDetailPage() {
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';
-    // Firebase Timestamps have a toDate() method
     if (date.toDate) {
       return date.toDate().toLocaleDateString();
     }
-    // Handle cases where it might already be a Date object
     return new Date(date).toLocaleDateString();
   };
 
@@ -44,27 +43,21 @@ export default function RfpDetailPage() {
     switch (status) {
       case 'Award':
       case 'Completed':
-        return 'default'; // Green / primary color for success
+        return 'default'; 
       case 'Analysis':
       case 'Feedback':
-          return 'secondary'; // Blue / secondary for final stages
+          return 'secondary';
       case 'Draft':
-        return 'outline'; // Grey outline for pending
+        return 'outline';
       case 'Selection':
       case 'Invitation':
       case 'Proposals':
-        return 'secondary'; // Yellow / warning for active states
+        return 'secondary';
       default:
         return 'secondary';
     }
   };
   
-  const handleRfpUpdate = (updatedRfp: RFP) => {
-    // This function can be used to persist changes if needed in the parent.
-    // For now, RfpTabs handles its own persistence.
-    console.log("RFP updated in parent:", updatedRfp);
-  }
-
   const loading = isUserLoading || rfpLoading || metrosLoading;
 
   if (loading && !rfp) {
@@ -102,7 +95,7 @@ export default function RfpDetailPage() {
                         </div>
                     </CardHeader>
                 </Card>
-                 <RfpTabs rfp={newRfp} setRfp={handleRfpUpdate} isDraft={true} />
+                 <RfpTabs rfp={newRfp} isDraft={true} />
             </div>
         )
     }
@@ -136,7 +129,7 @@ export default function RfpDetailPage() {
             </div>
         </CardContent>
       </Card>
-      <RfpTabs rfp={rfp} setRfp={handleRfpUpdate} />
+      <RfpTabs rfp={rfp} />
     </div>
   );
 }

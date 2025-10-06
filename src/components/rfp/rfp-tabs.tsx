@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -36,12 +35,11 @@ import { RfpDrafting } from "./rfp-drafting"
 import { Input } from "../ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
 
 
 type RfpTabsProps = {
   rfp: RFP;
-  setRfp: React.Dispatch<React.SetStateAction<RFP | null>>;
   isDraft?: boolean;
 }
 
@@ -68,8 +66,9 @@ const StageCompletion = ({ stage, completedStages, onStageToggle }: { stage: Rfp
 };
 
 
-export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
+export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   const firestore = useFirestore();
+  const [rfp, setRfp] = useState(rfpProp);
   const [activeTab, setActiveTab] = useState(rfp.status === 'Draft' ? 'Selection' : rfp.status);
   
   const getInitialCompletedStages = (status: RfpStage) => {
@@ -97,6 +96,12 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
   const [sentEoiContractors, setSentEoiContractors] = useState<string[]>([]);
 
   const [proposalLinks, setProposalLinks] = useState<Record<string, string[]>>({});
+
+  useEffect(() => {
+    setRfp(rfpProp);
+    setCompletedStages(rfpProp.completedStages as RfpStage[] || getInitialCompletedStages(rfpProp.status as RfpStage));
+    setActiveTab(rfpProp.status === 'Draft' ? 'Selection' : rfpProp.status);
+  }, [rfpProp]);
 
   // Data fetching using hooks
   const allContractorsQuery = useMemoFirebase(() => collection(firestore, 'contractors'), [firestore]);
@@ -182,9 +187,8 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
         newStatus = stage;
     }
     setCompletedStages(newCompletedStages);
+    setRfp(prev => ({...prev, status: newStatus as RFP['status'], completedStages: newCompletedStages}));
 
-    const updatedRfp = { ...rfp, status: newStatus as RFP['status'], completedStages: newCompletedStages };
-    setRfp(updatedRfp);
 
     const rfpDocRef = doc(firestore, 'rfps', rfp.id);
     await updateDoc(rfpDocRef, { status: newStatus as RFP['status'], completedStages: newCompletedStages });
@@ -207,10 +211,9 @@ export function RfpTabs({ rfp, setRfp, isDraft = false }: RfpTabsProps) {
   const handleAddContractorToRfp = async () => {
     if (!selectedContractorToAdd) return;
     
-    const newInvitedContractors = [...(rfp.invitedContractors || []), selectedContractorToAdd];
     const rfpDocRef = doc(firestore, 'rfps', rfp.id);
-    await updateDoc(rfpDocRef, { invitedContractors: newInvitedContractors });
-    setRfp(prev => prev ? ({ ...prev, invitedContractors: newInvitedContractors}) : null);
+    await updateDoc(rfpDocRef, { invitedContractors: arrayUnion(selectedContractorToAdd) });
+    setRfp(prev => ({ ...prev, invitedContractors: [...(prev.invitedContractors || []), selectedContractorToAdd]}));
 
     const contractor = allContractors?.find(c => c.id === selectedContractorToAdd);
     if (contractor) {
