@@ -25,7 +25,7 @@ export type RFP = {
 
 export type Contractor = {
   id: string;
-  companyName: string;
+  name: string;
   contactName: string;
   contactEmail: string;
   contactPhone: string;

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat, Loader2, Star, Pencil } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, Loader2, Star } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -30,7 +30,6 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
-import { Button } from '@/components/ui/button';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -53,7 +52,6 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableHead>Contractor Type</TableHead>
           <TableHead>Preferred</TableHead>
           <TableHead>Operating Metros</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -61,7 +59,7 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableRow key={contractor.id}>
             <TableCell className="font-medium">
               <Link href={`/contractors/${contractor.id}`} className="hover:underline">
-                {contractor.companyName}
+                {contractor.name}
               </Link>
             </TableCell>
             <TableCell>{renderMultiLine(contractor.contactName)}</TableCell>
@@ -73,13 +71,6 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
                 </Badge>
             </TableCell>
             <TableCell>{contractor.metroCodes?.join(', ')}</TableCell>
-            <TableCell className="text-right">
-              <Button asChild variant="ghost" size="icon">
-                <Link href={`/contractors/${contractor.id}/edit`}>
-                  <Pencil className="h-4 w-4" />
-                </Link>
-              </Button>
-            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -143,7 +134,7 @@ export default function ContractorsPage() {
     return allContractors.filter(contractor => {
       const typeMatch = typeFilter === 'all' || contractor.contractorType === typeFilter;
       const metroCodeMatch = metroCodeFilter === 'all' || (contractor.metroCodes && contractor.metroCodes.includes(metroCodeFilter));
-      const searchMatch = searchTerm === '' || contractor.companyName.toLowerCase().includes(searchTerm.toLowerCase());
+      const searchMatch = searchTerm === '' || contractor.name.toLowerCase().includes(searchTerm.toLowerCase());
       return typeMatch && metroCodeMatch && searchMatch;
     });
   }, [allContractors, typeFilter, metroCodeFilter, searchTerm]);

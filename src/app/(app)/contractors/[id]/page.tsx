@@ -75,7 +75,7 @@ export default function ContractorDetailPage() {
                     </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                    <CardTitle className="text-3xl">{contractor.companyName}</CardTitle>
+                    <CardTitle className="text-3xl">{contractor.name}</CardTitle>
                     <CardDescription className="text-md">{contractor.contractorType}</CardDescription>
                     <div className="flex items-center gap-2 mt-2">
                         {contractor.preferred && <Badge>Preferred</Badge>}
