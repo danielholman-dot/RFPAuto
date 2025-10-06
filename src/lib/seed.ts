@@ -1,5 +1,15 @@
 
+
 export const ContractorsData = [
+    {
+        "name": "ABB Inc",
+        "contactName": "Ted Ioannou; Edgard Rodriguez; Elina Hermunen",
+        "contactEmail": "ted.ioannou@us.abb.com; edgard.rodriguez@us.abb.com; elina.hermunen@abb.com",
+        "type": "Electrical",
+        "preferredStatus": "Not Evaluated",
+        "region": "North America",
+        "metroSite": "CLT (Charlotte), PHX (Phoenix), DFW (Dallas), CMH (Columbus)"
+    },
     {
         "name": "Allison-Smith Company LLC",
         "contactName": "Austin Morgan; Mark Gallacher; Jason Smith; Courtney Britt; Blake Harrelson; Stephen Sanchez",
@@ -55,6 +65,15 @@ export const ContractorsData = [
         "metroSite": "LAS"
     },
     {
+        "name": "Brandt Mechanical Services",
+        "contactName": "Michael Kimmell; Enoch Paris; Josh Sperling",
+        "contactEmail": "michael.kimmell@brandt.us; enoch.paris@brandt.us; josh.sperling@brandt.us",
+        "type": "Mechanical",
+        "preferredStatus": "Not Evaluated",
+        "region": "West",
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
+    },
+    {
         "name": "Bremik Construction",
         "contactName": "Brent Parry; Vijay Daniel; Trang Pham",
         "contactEmail": "bp@bremik.com; vdaniel@bremik.com; tpham@bremik.com",
@@ -73,6 +92,24 @@ export const ContractorsData = [
         "metroSite": "NOVA (Northern Virginia), CHS (Charleston)"
     },
     {
+        "name": "Cache Valley Electric Company",
+        "contactName": "Jim Laub; Michael Petric; Jammie Greer; Randi Burton",
+        "contactEmail": "jim.laub@cve.com; michael.petric@cve.com; jammie.greer@cve.com; businessdevelopment@cve.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Not Evaluated",
+        "region": "North America",
+        "metroSite": "SLC (Salt Lake City), DLS (The Dalles), PHX (Phoenix), DFW (Dallas)"
+    },
+    {
+        "name": "Caddell Construction Co., Inc.",
+        "contactName": "Zach Moore; Scott Thompson; Ricky Byrd",
+        "contactEmail": "Zach.Moore@caddell.com; Scott.Thompson@caddell.com; Ricky.Byrd@caddell.com",
+        "type": "General Contractor",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "HSV (Huntsville), PHX (Phoenix), ATL (Atlanta)"
+    },
+    {
         "name": "Century Contractors, Inc.",
         "contactName": "Howard Smith; Johnny Dotson; Jim Kick",
         "contactEmail": "hsmith@centurycontractors.com; jdotson@centurycontractors.com; jkick@centurycontractors.com",
@@ -89,6 +126,15 @@ export const ContractorsData = [
         "preferredStatus": "Most Preferred",
         "region": "East",
         "metroSite": "CHS (Charleston), LNR (Lenior), ATL (Atlanta)"
+    },
+    {
+        "name": "CPG Beyond",
+        "contactName": "Chad Towner; Keith Lambert",
+        "contactEmail": "chad.towner@cpgbeyond.com",
+        "type": "Electrical / Professional Services",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "IAD (Washington, D.C.), PHX (Phoenix)"
     },
     {
         "name": "Custom Computer Cable, Inc.",
@@ -118,6 +164,33 @@ export const ContractorsData = [
         "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.), DFW (Dallas), DLS (The Dalles)"
     },
     {
+        "name": "DPR Construction, Inc",
+        "contactName": "Luke Stocking; Damien McCants; Felix Cole; Kevin Burch; Brett Korn; Scott Hibbard; Chuck Rosenthall",
+        "contactEmail": "lukes@dpr.com; DamienM@dpr.com; felixc@dpr.com; kevinb@dpr.com; brettk@dpr.com; Scotthi@dpr.com; chuckr@dpr.com",
+        "type": "General Contractor",
+        "preferredStatus": "Not Evaluated",
+        "region": "North America",
+        "metroSite": "ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix), LAX (Los Angeles), IAD (Washington, D.C.)"
+    },
+    {
+        "name": "Dwatts Construction LLC",
+        "contactName": "Jeremiah Watts; Maricar Buot; David Doherty",
+        "contactEmail": "JWatts@dwatts.com; mbuot@dwatts.com; DDoherty@dwatts.com",
+        "type": "General Contractor",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)"
+    },
+    {
+        "name": "Dynalectric Company",
+        "contactName": "Bob Wagner; KaHee Emerson",
+        "contactEmail": "bwagner@dyna-oregon.com; kemerson@dyna-oregon.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Not Evaluated",
+        "region": "North America",
+        "metroSite": "LAX (Los Angeles), DLS (The Dalles), IAD (Washington, D.C.), RNO (Reno), PHX (Phoenix)"
+    },
+    {
         "name": "E2 Optics, LLC.",
         "contactName": "Kristi Alford-Haarberg; Shane Moore; Andrea Spisak",
         "contactEmail": "kristi@e2optics.com; shane.moore@e2optics.com; andrea.spisak@e2optics.com",
@@ -125,6 +198,15 @@ export const ContractorsData = [
         "preferredStatus": "Most Preferred",
         "region": "North America",
         "metroSite": "CMH (Columbus), CHS (Charleston), NOVA (Northern Virginia), DFW (Dallas)"
+    },
+    {
+        "name": "Environmental Air Systems, LLC",
+        "contactName": "Charles Dick; Frank Stewart; Johnny Moorefield; Bill Bullock",
+        "contactEmail": "cdick@easinc.net; fstefanick@easinc.net; jmoorefield@etrol.net; bbullock@easinc.net",
+        "type": "Mechanical",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "CLT (Charlotte), MRN (Morganton)"
     },
     {
         "name": "Faith Technologies Inc.",
@@ -289,6 +371,24 @@ export const ContractorsData = [
         "metroSite": "PHX (Phoenix), LAS (Las Vegas), RNO (Reno)"
     },
     {
+        "name": "Leapley Construction Group of Atlanta, LLC",
+        "contactName": "David Goodson; Beau Walker; Mark Cleverly; Michael Mcrae; Meredith Leapley; Alisa Henderson",
+        "contactEmail": "dgoodson@leapleyconstruction.com; bwalker@leapleyconstruction.com; mcleverly@leapleyconstruction.com; mmcrae@leapleyconstruction.com; mleapley@leapleyconstruction.com; ahenderson@leapleyconstruction.com",
+        "type": "General Contractor",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "ATL (Atlanta), HSV (Huntsville)"
+    },
+    {
+        "name": "Low Voltage Solutions, Inc.",
+        "contactName": "Gary St Cin; Nick Siwak; Tom Bleker; Steve Martin",
+        "contactEmail": "gstcin@lvsolutions.com; nsiwak@lvsolutions.com; tbleker@lvsolutions.com; smartin@lvsolutions.com",
+        "type": "NICON",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "BMI (Bloomington)"
+    },
+    {
         "name": "M. A. Mortenson Company",
         "contactName": "Brian Tobiczyk; Bob Bachmeier; Emily Sherry",
         "contactEmail": "bob.bachmeier@mortenson.com; emily.sherry@mortenson.com",
@@ -334,6 +434,15 @@ export const ContractorsData = [
         "metroSite": "ATL (Atlanta), CLT (Charlotte)"
     },
     {
+        "name": "Miller Electric Company [MECOJAX]",
+        "contactName": "Kevin Hebert; Derek Elmo; Helga Oliver; Donnie Smith; Nadene Young; Craig Langfeldt",
+        "contactEmail": "nhebert@mecojax.com; delmo@mecojax.com; holiver@mecojax.com; dsmith@mecojax.com; nyoung@mecojax.com; craigl@millerelect.com; byarber@mecojax.com",
+        "type": "Electrical",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)"
+    },
+    {
         "name": "Miller Electric Company [Omaha]",
         "contactName": "Craig Langfeldt; Tim Tanner; Roger Ferris",
         "contactEmail": "craigl@millerelect.com; tim.tanner@millerelect.com; roger.ferris@millerelect.com",
@@ -359,6 +468,15 @@ export const ContractorsData = [
         "preferredStatus": "Most Preferred",
         "region": "West",
         "metroSite": "DLS (The Dalles)"
+    },
+    {
+        "name": "Oklahoma Electrical Supply Company",
+        "contactName": "Bill Cooper; Rick Brasher; Robert Cook; William Hill; Roger Calvert; Steve Maloney [Tulsa]; Becky Barney [Oklahoma]",
+        "contactEmail": "bcooper@oesco.com; ebrashear@oesco.com; rcook@oesco.com; bhill@oesco.com; calvert@oesco.com; smaloney@oesco.com; RBarney@oesco.com",
+        "type": "Electrical / NICON",
+        "preferredStatus": "Not Evaluated",
+        "region": "West",
+        "metroSite": "TUL (Tulsa), SWO (Stillwater), LNK (Lincoln)"
     },
     {
         "name": "P & C Construction, Inc.",
@@ -397,15 +515,6 @@ export const ContractorsData = [
         "metroSite": "ATL (Atlanta), PHX (Phoenix), CKV (Clarksville), DFW (Dallas), RIC (Richmond)"
     },
     {
-        "name": "The Poole and Kent Corporation",
-        "contactName": "Donald Lynott; Jake Medina; Brian Touchard; Daniel Bock; Adam Snavely",
-        "contactEmail": "dlynott@emcor.net / dlynott@pkcorp.com; jmedina@emcor.net / jmedina@pkcorp.com; btouchard@emcor.net / btouchard@pkcorp.com; dbock@pkcorp.com; asnavely@emcor.net",
-        "type": "Mechanical",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "CMH (Columbus), IAD (Washington, D.C.), RIC (Richmond)"
-    },
-    {
         "name": "R. Lafferty & Son Industrial And Commercial Contractors, LLC",
         "contactName": "Hunter Schmitton; William B Bryant",
         "contactEmail": "hunter@laffertyandson.com; bbryant@laffertyandson.com; laffertygc@laffertyandson.com",
@@ -421,7 +530,16 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
-        "metroSite": "DFW (Dallas), MEM (Memphis"
+        "metroSite": "DFW (Dallas), MEM (Memphis)"
+    },
+    {
+        "name": "Suffolk Construction Company, Inc",
+        "contactName": "Darin S Hart; Michael Mallon",
+        "contactEmail": "Dhart@suffolk.com; MMallon@suffolk.com",
+        "type": "General Contractor",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "DLS (The Dalles), DFW (Dallas), LAX (Los Angeles), IAD (Washington, D.C.)"
     },
     {
         "name": "Superior Fiber & Data Services, Inc.",
@@ -442,6 +560,15 @@ export const ContractorsData = [
         "metroSite": "ATL (Atlanta), BMI (Bloomington), CLT (Charlotte), LAX (Los Angeles), MSP (Minneapolis), DLS (The Dalles)"
     },
     {
+        "name": "Teel Construction",
+        "contactName": "Bryce Teel; Robert Tucker; Nick Davis; Adam Turner",
+        "contactEmail": "bteel@teelconstruction.com; rtucker@teelconstruction.com; ndavis@teelconstruction.com; aturner@teelconstruction.com",
+        "type": "General Contractor",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.)"
+    },
+    {
         "name": "Teklus Construction, LLC",
         "contactName": "Shu Nomura; Chris Hood; Nathan Weber; Joel McGraw",
         "contactEmail": "shu.nomura@teklus.com; chris.hood@teklus.com; nathan.weber@teklus.com; joel.mcgraw@teklus.com",
@@ -449,6 +576,15 @@ export const ContractorsData = [
         "preferredStatus": "Not Evaluated",
         "region": "West",
         "metroSite": "LAS (Las Vegas), RNO (Reno), LAX (Los Angeles), MCI (Kansas City)"
+    },
+    {
+        "name": "The Poole and Kent Corporation",
+        "contactName": "Donald Lynott; Jake Medina; Brian Touchard; Daniel Bock; Adam Snavely",
+        "contactEmail": "dlynott@emcor.net / dlynott@pkcorp.com; jmedina@emcor.net / jmedina@pkcorp.com; btouchard@emcor.net / btouchard@pkcorp.com; dbock@pkcorp.com; asnavely@emcor.net",
+        "type": "Mechanical",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "CMH (Columbus), IAD (Washington, D.C.), RIC (Richmond)"
     },
     {
         "name": "The Whiting-Turner Contracting Company",
@@ -487,15 +623,6 @@ export const ContractorsData = [
         "metroSite": "CMH (Columbus)"
     },
     {
-        "name": "Ujamaa Construction Inc.",
-        "contactName": "Todd O. Pressley; Justin Dwaun Redding; Kevin P. Waco",
-        "contactEmail": "TPressley@ujamaaconstruction.com; jredding@ujamaaconstruction.com; kwaco@ujamaaconstruction.com",
-        "type": "General Contractor",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "BMI (Bloomington), CHS (Charleston), CKV (Clarksville), ATL (Atlanta), LAS (Las Vegas), DLS (The Dalles)"
-    },
-    {
         "name": "U.S. Engineering Innovations, LLC",
         "contactName": "Vincent Michael Pianalto; Bryan Taylor; Justin Apprill; Jarrod Foster; Jeff Kiblen; Adam Provost; Richard Green",
         "contactEmail": "vince.pianalto@usengineering.com; Bryan.Taylor@usengineering.com; Justin.Apprill@useinnovations.com; Jarrod.foster@useinnovations.com; jeff.kiblen@useinnovations.com; adam.provost@useinnovations.com; richard.green@usengineering.com",
@@ -503,6 +630,15 @@ export const ContractorsData = [
         "preferredStatus": "Not Evaluated",
         "region": "West",
         "metroSite": "MCI (Kansas City), CKV (Clarksville), TUL (Tulsa)"
+    },
+    {
+        "name": "Ujamaa Construction Inc.",
+        "contactName": "Todd O. Pressley; Justin Dwaun Redding; Kevin P. Waco",
+        "contactEmail": "TPressley@ujamaaconstruction.com; jredding@ujamaaconstruction.com; kwaco@ujamaaconstruction.com",
+        "type": "General Contractor",
+        "preferredStatus": "Not Evaluated",
+        "region": "East",
+        "metroSite": "BMI (Bloomington), CHS (Charleston), CKV (Clarksville), ATL (Atlanta), LAS (Las Vegas), DLS (The Dalles)"
     },
     {
         "name": "Vertiv Corporation",
@@ -556,196 +692,7 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "Iاد (Washington, D.C.)"
-    },
-    {
-        "name": "ABB Inc",
-        "contactName": "Ted Ioannou; Edgard Rodriguez; Elina Hermunen",
-        "contactEmail": "ted.ioannou@us.abb.com; edgard.rodriguez@us.abb.com; elina.hermunen@abb.com",
-        "type": "Electrical",
-        "preferredStatus": "Not Evaluated",
-        "region": "North America",
-        "metroSite": "CLT (Charlotte), PHX (Phoenix), DFW (Dallas), CMH (Columbus)"
-    },
-    {
-        "name": "Brandt Mechanical Services",
-        "contactName": "Michael Kimmell; Enoch Paris; Josh Sperling",
-        "contactEmail": "michael.kimmell@brandt.us; enoch.paris@brandt.us; josh.sperling@brandt.us",
-        "type": "Mechanical",
-        "preferredStatus": "Not Evaluated",
-        "region": "West",
-        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
-    },
-    {
-        "name": "Cache Valley Electric Company",
-        "contactName": "Jim Laub; Michael Petric; Jammie Greer; Randi Burton",
-        "contactEmail": "jim.laub@cve.com; michael.petric@cve.com; jammie.greer@cve.com; businessdevelopment@cve.com",
-        "type": "Electrical / NICON",
-        "preferredStatus": "Not Evaluated",
-        "region": "North America",
-        "metroSite": "SLC (Salt Lake City), DLS (The Dalles), PHX (Phoenix), DFW (Dallas)"
-    },
-    {
-        "name": "Caddell Construction Co., Inc.",
-        "contactName": "Zach Moore; Scott Thompson; Ricky Byrd",
-        "contactEmail": "Zach.Moore@caddell.com; Scott.Thompson@caddell.com; Ricky.Byrd@caddell.com",
-        "type": "General Contractor",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "HSV (Huntsville), PHX (Phoenix), ATL (Atlanta)"
-    },
-    {
-        "name": "CPG Beyond",
-        "contactName": "Chad Towner; Keith Lambert",
-        "contactEmail": "chad.towner@cpgbeyond.com",
-        "type": "Electrical / Professional Services",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "IAD (Washington, D.C.), PHX (Phoenix)"
-    },
-    {
-        "name": "DPR Construction, Inc",
-        "contactName": "Luke Stocking; Damien McCants; Felix Cole; Kevin Burch; Brett Korn; Scott Hibbard; Chuck Rosenthall",
-        "contactEmail": "lukes@dpr.com; DamienM@dpr.com; felixc@dpr.com; kevinb@dpr.com; brettk@dpr.com; Scotthi@dpr.com; chuckr@dpr.com",
-        "type": "General Contractor",
-        "preferredStatus": "Not Evaluated",
-        "region": "North America",
-        "metroSite": "ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix), LAX (Los Angeles), IAD (Washington, D.C.)"
-    },
-    {
-        "name": "Dwatts Construction LLC",
-        "contactName": "Jeremiah Watts; Maricar Buot; David Doherty",
-        "contactEmail": "JWatts@dwatts.com; mbuot@dwatts.com; DDoherty@dwatts.com",
-        "type": "General Contractor",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)"
-    },
-    {
-        "name": "Dynalectric Company",
-        "contactName": "Bob Wagner; KaHee Emerson",
-        "contactEmail": "bwagner@dyna-oregon.com; kemerson@dyna-oregon.com",
-        "type": "Electrical / NICON",
-        "preferredStatus": "Not Evaluated",
-        "region": "North America",
-        "metroSite": "LAX (Los Angeles), DLS (The Dalles), IAD (Washington, D.C.), RNO (Reno), PHX (Phoenix)"
-    },
-    {
-        "name": "Environmental Air Systems, LLC",
-        "contactName": "Charles Dick; Frank Stewart; Johnny Moorefield; Bill Bullock",
-        "contactEmail": "cdick@easinc.net; fstefanick@easinc.net; jmoorefield@etrol.net; bbullock@easinc.net",
-        "type": "Mechanical",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "CLT (Charlotte), MRN (Morganton)"
-    },
-    {
-        "name": "Leapley Construction Group of Atlanta, LLC",
-        "contactName": "David Goodson; Beau Walker; Mark Cleverly; Michael Mcrae; Meredith Leapley; Alisa Henderson",
-        "contactEmail": "dgoodson@leapleyconstruction.com; bwalker@leapleyconstruction.com; mcleverly@leapleyconstruction.com; mmcrae@leapleyconstruction.com; mleapley@leapleyconstruction.com; ahenderson@leapleyconstruction.com",
-        "type": "General Contractor",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "ATL (Atlanta), HSV (Huntsville)"
-    },
-    {
-        "name": "Low Voltage Solutions, Inc.",
-        "contactName": "Gary St Cin; Nick Siwak; Tom Bleker; Steve Martin",
-        "contactEmail": "gstcin@lvsolutions.com; nsiwak@lvsolutions.com; tbleker@lvsolutions.com; smartin@lvsolutions.com",
-        "type": "NICON",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "BMI (Bloomington)"
-    },
-    {
-        "name": "Miller Electric Company [MECOJAX]",
-        "contactName": "Kevin Hebert; Derek Elmo; Helga Oliver; Donnie Smith; Nadene Young; Craig Langfeldt",
-        "contactEmail": "nhebert@mecojax.com; delmo@mecojax.com; holiver@mecojax.com; dsmith@mecojax.com; nyoung@mecojax.com; craigl@millerelect.com; byarber@mecojax.com",
-        "type": "Electrical",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)"
-    },
-    {
-        "name": "Oklahoma Electrical Supply Company",
-        "contactName": "Bill Cooper; Rick Brasher; Robert Cook; William Hill; Roger Calvert; Steve Maloney [Tulsa]; Becky Barney [Oklahoma]",
-        "contactEmail": "bcooper@oesco.com; ebrashear@oesco.com; rcook@oesco.com; bhill@oesco.com; calvert@oesco.com; smaloney@oesco.com; RBarney@oesco.com",
-        "type": "Electrical / NICON",
-        "preferredStatus": "Not Evaluated",
-        "region": "West",
-        "metroSite": "TUL (Tulsa), SWO (Stillwater), LNK (Lincoln)"
-    },
-    {
-        "name": "Suffolk Construction Company, Inc",
-        "contactName": "Darin S Hart; Michael Mallon",
-        "contactEmail": "Dhart@suffolk.com; MMallon@suffolk.com",
-        "type": "General Contractor",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "DLS (The Dalles), DFW (Dallas), LAX (Los Angeles), IAD (Washington, D.C.)"
-    },
-    {
-        "name": "Superior Fiber & Data Services, Inc.",
-        "contactName": "Randy Fuller; Tommy Osborne; Jeff Macfee",
-        "contactEmail": "rfuller@sfdcabling.com",
-        "type": "Electrical / NICON",
-        "preferredStatus": "Not Evaluated",
-        "region": "North America",
-        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
-    },
-    {
-        "name": "Teel Construction",
-        "contactName": "Bryce Teel; Robert Tucker; Nick Davis; Adam Turner",
-        "contactEmail": "bteel@teelconstruction.com; rtucker@teelconstruction.com; ndavis@teelconstruction.com; aturner@teelconstruction.com",
-        "type": "General Contractor",
-        "preferredStatus": "Not Evaluated",
-        "region": "East",
-        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.)"
-    },
-    {
-        "name": "TestABC Electrical and Mechanical",
-        "contactName": "John Smith",
-        "contactEmail": "jsmith@abcELMC.com",
-        "type": "Electrical / Mechanical / NICON",
-        "preferredStatus": "Most Preferred",
-        "region": "North America",
-        "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
-    },
-    {
-        "name": "TestWoodPine General Contractor",
-        "contactName": "Joe Smith",
-        "contactEmail": "jsmith@woodpine.com",
-        "type": "General Contractor",
-        "preferredStatus": "Most Preferred",
-        "region": "North America",
-        "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
-    },
-    {
-        "name": "TestGray Electrical/NICON",
-        "contactName": "John Smith",
-        "contactEmail": "jsmith@testgray.com",
-        "type": "Electrical / NICON",
-        "preferredStatus": "Most Preferred",
-        "region": "North America",
-        "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
-    },
-    {
-        "name": "TestRedbrick General Contractor",
-        "contactName": "Joe Smith",
-        "contactEmail": "jsmith@redbrick.com",
-        "type": "General Contractor",
-        "preferredStatus": "Most Preferred",
-        "region": "North America",
-        "metroSite": "CMH, CHS, ATL, NOVA, DFW, LAS, DLS"
-    },
-    {
-        "name": "TEST Rafael Correa",
-        "contactName": "Rafael Correa",
-        "contactEmail": "rafael.correa@linesight.com",
-        "type": "General Contractor",
-        "preferredStatus": "Most Preferred",
-        "region": "East",
-        "metroSite": "CMH, CHS, ATL, IAD, LNK/CBF, DFW, DLS, TUL, CKV, RIC, RNO, SLC, MCI, PHX, YUL, FWA, CLT, AUS, HSV, BMI, CID, FDY, SWO, AMW, LAS, LAX, MSP, MRN, MEM, PHN, ROA, DYS, HOU"
+        "metroSite": "IAD (Washington, D.C.)"
     }
 ].map((c, i) => {
     // Extract metro codes from the metroSite string
