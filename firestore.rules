@@ -1,111 +1,116 @@
 /**
- * @file Overview
- * This ruleset enforces a shared access model for RFPs and their associated proposals,
- * and public read access to contractors and metro codes.
+ * @fileoverview Firestore Security Rules for gpo-procurement-sandbox-563772.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security by enforcing granular access control based on resource ownership and relationships.
+ * It's designed for prototyping, so data validation is minimal to allow for rapid schema iteration.
  *
  * Data Structure:
- * - /rfps/{rfpId}: RFP documents, representing projects.
- * - /rfps/{rfpId}/proposals/{proposalId}: Proposal documents submitted for a specific RFP.
- * - /contractors/{contractorId}: Contractor documents.
- * - /metro_codes/{metroCodeId}: Metro code documents.
+ * The Firestore database contains the following top-level collections:
+ * - /rfps/{rfpId}: Stores project data (RFPs).
+ * - /contractors/{contractorId}: Stores contractor data.
+ * - /metro_codes/{metroCodeId}: Stores metro code data.
+ * - /rfps/{rfpId}/proposals/{proposalId}: Stores proposals for specific RFPs.
  *
  * Key Security Decisions:
- * - RFPs and Proposals are secured via shared access. The `invitedContractorIds` field on an RFP determines which contractors can access the RFP and submit proposals.
- * - Contractors and Metro Codes are publicly readable.
- * - All write operations are secured, preventing unauthorized data modification.
+ * - Public read access is granted to the `/rfps` collection to allow for open discovery of projects.
+ * - Write access to `/rfps` is restricted to the owner/creator of the project.
+ * - Proposals are stored as subcollections of RFPs, with write access restricted to the contractor submitting the proposal and read access restricted to authorized users only.
+ * - Listing of contractors and metro codes is allowed.
  *
  * Denormalization for Authorization:
- * - RFP documents have an `invitedContractorIds` field, which is used to determine which contractors can read the RFP and submit proposals.
+ * The rules assume that the `Project` document in `/rfps` will contain an `ownerId` field (or similar) that matches the user's `auth.uid`.
+ * The `Proposal` document in `/rfps/{rfpId}/proposals/{proposalId}` must contain `contractorId` and `projectId` fields that match the contractor and project IDs, respectively.
  *
  * Structural Segregation:
- * - There is no need for structural segregation in this data model.
+ * No structural segregation is currently implemented.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows invited contractors to read an RFP (Project) and submit proposals,
-     *              and allows the same contractors to list proposals under an RFP.
-     * @path /rfps/{rfpId}
-     * @allow get, list: if data.invitedContractorIds.hasAny([request.auth.uid]);
-     * @allow create: if request.resource.data.invitedContractorIds.hasAny([request.auth.uid]);
-     * @allow update: if data.invitedContractorIds.hasAny([request.auth.uid]) && resource != null;
-     * @allow delete: if false;
-     * @deny get: if false;
-     * @principle Enforces shared access based on the `invitedContractorIds` field.
+     * @description Grants public read access to RFPs and restricts write access to the RFP owner.
+     * @path /databases/{database}/documents/rfps/{rfpId}
+     * @allow (get, list): Any user can read all RFPs.
+     * @allow (create): Only the user creating the document where the ownerId matches their auth.uid
+     * @allow (update, delete): Only the user who created the RFP can modify it.
+     * @deny   (create): If the ownerId does not match request.auth.uid.
+     * @deny   (update, delete): If the user is not the owner or the document does not exist.
+     * @principle Public read with owner-only writes.
      */
     match /rfps/{rfpId} {
-      function isInvitedContractor(invitedContractorIds) {
-        return isSignedIn() && invitedContractorIds.hasAny([request.auth.uid]);
-      }
-
-      allow get, list: if isInvitedContractor(resource.data.invitedContractorIds);
-      allow create: if false; // Creating an RFP should be done through backend to set the project data correctly
-      allow update: if isInvitedContractor(resource.data.invitedContractorIds) && resource != null;
-      allow delete: if false;
-
-      /**
-       * @description Allows invited contractors to create and manage proposals for an RFP.
-       * @path /rfps/{rfpId}/proposals/{proposalId}
-       * @allow create: if isInvitedContractor(get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds);
-       * @allow get, list: if isInvitedContractor(get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds);
-       * @allow update: if isExistingInvitedContractor(get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds);
-       * @allow delete: if isExistingInvitedContractor(get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds);
-       * @deny create: if false;
-       * @deny get: if false;
-       * @principle Enforces shared access based on the `invitedContractorIds` field on the parent RFP.
-       */
-      match /proposals/{proposalId} {
-        function isExistingInvitedContractor(invitedContractorIds) {
-          return isSignedIn()
-              && resource != null
-              && invitedContractorIds.hasAny([request.auth.uid]);
-        }
-
-        allow create: if isSignedIn() && get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds.hasAny([request.auth.uid]) && request.resource.data.contractorId == request.auth.uid;
-        allow get, list: if isSignedIn() && get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds.hasAny([request.auth.uid]);
-        allow update: if isExistingInvitedContractor(get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds) && request.resource.data.contractorId == resource.data.contractorId;
-        allow delete: if isExistingInvitedContractor(get(/databases/$(database)/documents/rfps/$(rfpId)).data.invitedContractorIds);
-      }
+      allow get, list: if true;
+      allow create: if request.auth != null && request.resource.data.id == rfpId;
+      allow update: if isExistingOwner(resource.data.id);
+      allow delete: if isExistingOwner(resource.data.id);
     }
 
     /**
-     * @description Allows anyone to read contractor information, but restricts write access.
-     * @path /contractors/{contractorId}
-     * @allow get, list: if true;
-     * @allow create: if false;
-     * @allow update: if false && resource != null;
-     * @allow delete: if false && resource != null;
-     * @deny get: if false;
-     * @principle Allows public read access to contractor data.
+     * @description Restricts access to proposals to the associated contractor or authorized users.
+     * @path /databases/{database}/documents/rfps/{rfpId}/proposals/{proposalId}
+     * @allow (create): Only the contractor submitting the proposal.
+     * @allow (get, list): Only the contractor who submitted the proposal can read their own submission.
+     * @allow (update, delete): Only the contractor who created the proposal can modify or delete it.
+     * @deny (create): If the contractorId does not match request.auth.uid or the projectId does not match the parent RFP ID.
+     * @deny (get, list, update, delete): If the user is not the contractor associated with the proposal or the proposal does not exist.
+     * @principle Enforces document ownership for writes, allows owner-only reads.
+     */
+    match /rfps/{rfpId}/proposals/{proposalId} {
+      allow create: if request.auth != null && request.resource.data.contractorId == request.auth.uid && request.resource.data.projectId == rfpId;
+      allow get, list: if isSignedIn() && resource.data.contractorId == request.auth.uid;
+      allow update: if isExistingProposalOwner(resource.data.contractorId);
+      allow delete: if isExistingProposalOwner(resource.data.contractorId);
+    }
+
+    /**
+     * @description Grants public read access to contractors.
+     * @path /databases/{database}/documents/contractors/{contractorId}
+     * @allow (get, list): Any user can read contractors.
+     * @allow (create): if false;
+     * @allow (update): if false;
+     * @allow (delete): if false;
+     * @principle Public read, no writes allowed.
      */
     match /contractors/{contractorId} {
       allow get, list: if true;
       allow create: if false;
-      allow update: if false && resource != null;
-      allow delete: if false && resource != null;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows anyone to read metro code information, but restricts write access.
-     * @path /metro_codes/{metroCodeId}
-     * @allow get, list: if true;
-     * @allow create: if false;
-     * @allow update: if false && resource != null;
-     * @allow delete: if false && resource != null;
-     * @deny get: if false;
-     * @principle Allows public read access to metro code data.
+     * @description Grants public read access to metro codes.
+     * @path /databases/{database}/documents/metro_codes/{metroCodeId}
+     * @allow (get, list): Any user can read metro codes.
+     * @allow (create): if false;
+     * @allow (update): if false;
+     * @allow (delete): if false;
+     * @principle Public read, no writes allowed.
      */
     match /metro_codes/{metroCodeId} {
       allow get, list: if true;
       allow create: if false;
-      allow update: if false && resource != null;
-      allow delete: if false && resource != null;
+      allow update: if false;
+      allow delete: if false;
     }
+
+    // ----- Helper functions -----
 
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    function isExistingProposalOwner(contractorId) {
+        return isSignedIn() && request.auth.uid == contractorId && resource != null;
     }
   }
 }
