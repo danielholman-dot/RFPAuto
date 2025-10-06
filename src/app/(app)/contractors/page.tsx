@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Table,
@@ -30,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -194,39 +194,42 @@ export default function ContractorsPage() {
        </div>
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle>Contractor List</CardTitle>
-            <CardDescription>A list of all preferred contractors.</CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Input
-              placeholder="Search by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full sm:w-[200px]"
-            />
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Filter by Type" />
-                </SelectTrigger>
-                <SelectContent>
-                    {contractorTypes.map(type => (
-                        <SelectItem key={type} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            <Select value={metroCodeFilter} onValueChange={setMetroCodeFilter}>
-                <SelectTrigger className="w-full sm:w-[220px]">
-                    <SelectValue placeholder="Filter by Metro/Site" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Metros</SelectItem>
-                    {sortedMetroCodes.map(metro => (
-                        <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-          </div>
+            <div className='flex-1'>
+                <CardTitle>Contractor List</CardTitle>
+                <CardDescription>A list of all preferred contractors.</CardDescription>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <Input
+                    placeholder="Search by name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-auto md:w-[200px]"
+                />
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-full sm:w-auto md:w-[180px]">
+                        <SelectValue placeholder="Filter by Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {contractorTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Select value={metroCodeFilter} onValueChange={setMetroCodeFilter}>
+                    <SelectTrigger className="w-full sm:w-auto md:w-[220px]">
+                        <SelectValue placeholder="Filter by Metro/Site" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Metros</SelectItem>
+                        {sortedMetroCodes.map(metro => (
+                            <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <Button asChild className="w-full sm:w-auto">
+                    <Link href="/contractors/new">Create New Contractor</Link>
+                </Button>
+            </div>
         </CardHeader>
         <CardContent>
           <ContractorsList contractors={filteredContractors || []} />
