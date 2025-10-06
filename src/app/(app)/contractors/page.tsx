@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat, Loader2, Star } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, Loader2, Star, Pencil } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
 
 function ContractorsList({ contractors }: { contractors: Contractor[] }) {
   if (!contractors || contractors.length === 0) {
@@ -54,6 +55,7 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
           <TableHead>Region</TableHead>
           <TableHead>Metro/Site</TableHead>
           <TableHead>Performance</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -76,6 +78,14 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
             <TableCell>{contractor.metroSite}</TableCell>
             <TableCell className="flex items-center">
                 {contractor.performance}% <Star className="w-4 h-4 ml-1 text-yellow-500 fill-yellow-500" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Button asChild variant="ghost" size="icon">
+                <Link href={`/contractors/${contractor.id}/edit`}>
+                  <Pencil className="h-4 w-4" />
+                  <span className="sr-only">Edit Contractor</span>
+                </Link>
+              </Button>
             </TableCell>
           </TableRow>
         ))}
