@@ -1,6 +1,7 @@
 
+import type { RFP, Contractor, MetroCode } from './types';
 
-export const ContractorsData = [
+export const ContractorsData: Omit<Contractor, 'id'>[] = [
     {
         "name": "ABB Inc",
         "contactName": "Ted Ioannou; Edgard Rodriguez; Elina Hermunen",
@@ -8,7 +9,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "CLT (Charlotte), PHX (Phoenix), DFW (Dallas), CMH (Columbus)"
+        "metroSite": "CLT (Charlotte), PHX (Phoenix), DFW (Dallas), CMH (Columbus)",
+        "performance": 85,
+        "metroCodes": ["CLT", "PHX", "DFW", "CMH"],
     },
     {
         "name": "Allison-Smith Company LLC",
@@ -17,7 +20,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Preferred",
         "region": "East",
-        "metroSite": "ATL (Atlanta), CHS (Charleston)"
+        "metroSite": "ATL (Atlanta), CHS (Charleston)",
+        "performance": 92,
+        "metroCodes": ["ATL", "CHS"],
     },
     {
         "name": "Archkey Solutions LLC",
@@ -26,7 +31,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "CMH (Columbus), NOVA (Northern Virginia), CHS (Charleston)"
+        "metroSite": "CMH (Columbus), NOVA (Northern Virginia), CHS (Charleston)",
+        "performance": 95,
+        "metroCodes": ["CMH", "NOVA", "CHS"],
     },
     {
         "name": "Ascension Construction Solutions LLC",
@@ -35,7 +42,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "East",
-        "metroSite": "CMH (Columbus), DFW (Dallas)"
+        "metroSite": "CMH (Columbus), DFW (Dallas)",
+        "performance": 88,
+        "metroCodes": ["CMH", "DFW"],
     },
     {
         "name": "Batchelor and Kimball, Inc.",
@@ -44,7 +53,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Preferred",
         "region": "East",
-        "metroSite": "CHS (Charleston)"
+        "metroSite": "CHS (Charleston)",
+        "performance": 90,
+        "metroCodes": ["CHS"],
     },
     {
         "name": "BGI-GCON JV LLC",
@@ -53,7 +64,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West",
-        "metroSite": "DFW (Dallas)"
+        "metroSite": "DFW (Dallas)",
+        "performance": 98,
+        "metroCodes": ["DFW"],
     },
     {
         "name": "Bombard Electric, LLC",
@@ -62,7 +75,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Preferred",
         "region": "West Coast",
-        "metroSite": "LAS"
+        "metroSite": "LAS",
+        "performance": 89,
+        "metroCodes": ["LAS"],
     },
     {
         "name": "Brandt Mechanical Services",
@@ -71,7 +86,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)",
+        "performance": 82,
+        "metroCodes": ["DFW", "HOU", "AUS"],
     },
     {
         "name": "Bremik Construction",
@@ -80,7 +97,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "DLS (The Dalles)"
+        "metroSite": "DLS (The Dalles)",
+        "performance": 80,
+        "metroCodes": ["DLS"],
     },
     {
         "name": "C.D. Moody Construction Company, Inc",
@@ -89,7 +108,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "NOVA (Northern Virginia), CHS (Charleston)"
+        "metroSite": "NOVA (Northern Virginia), CHS (Charleston)",
+        "performance": 91,
+        "metroCodes": ["NOVA", "CHS"],
     },
     {
         "name": "Cache Valley Electric Company",
@@ -98,7 +119,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "SLC (Salt Lake City), DLS (The Dalles), PHX (Phoenix), DFW (Dallas)"
+        "metroSite": "SLC (Salt Lake City), DLS (The Dalles), PHX (Phoenix), DFW (Dallas)",
+        "performance": 84,
+        "metroCodes": ["SLC", "DLS", "PHX", "DFW"],
     },
     {
         "name": "Caddell Construction Co., Inc.",
@@ -107,7 +130,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "HSV (Huntsville), PHX (Phoenix), ATL (Atlanta)"
+        "metroSite": "HSV (Huntsville), PHX (Phoenix), ATL (Atlanta)",
+        "performance": 83,
+        "metroCodes": ["HSV", "PHX", "ATL"],
     },
     {
         "name": "Century Contractors, Inc.",
@@ -116,7 +141,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "ATL (Atlanta), CLT (Charlotte), CHS (Charleston), CKV (Clarksville), RIC (Richmond)"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte), CHS (Charleston), CKV (Clarksville), RIC (Richmond)",
+        "performance": 81,
+        "metroCodes": ["ATL", "CLT", "CHS", "CKV", "RIC"],
     },
     {
         "name": "Cleveland Electric Company",
@@ -125,7 +152,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "CHS (Charleston), LNR (Lenior), ATL (Atlanta)"
+        "metroSite": "CHS (Charleston), LNR (Lenior), ATL (Atlanta)",
+        "performance": 99,
+        "metroCodes": ["CHS", "LNR", "ATL"],
     },
     {
         "name": "CPG Beyond",
@@ -134,7 +163,9 @@ export const ContractorsData = [
         "type": "Electrical / Professional Services",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "IAD (Washington, D.C.), PHX (Phoenix)"
+        "metroSite": "IAD (Washington, D.C.), PHX (Phoenix)",
+        "performance": 80,
+        "metroCodes": ["IAD", "PHX"],
     },
     {
         "name": "Custom Computer Cable, Inc.",
@@ -143,7 +174,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)"
+        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)",
+        "performance": 82,
+        "metroCodes": ["IAD", "RIC"],
     },
     {
         "name": "D.H. Griffin Infrastructure LLC",
@@ -152,7 +185,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "East",
-        "metroSite": "LNR (Lenior)"
+        "metroSite": "LNR (Lenior)",
+        "performance": 90,
+        "metroCodes": ["LNR"],
     },
     {
         "name": "Direct Line Global LLC",
@@ -161,7 +196,9 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.), DFW (Dallas), DLS (The Dalles)"
+        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.), DFW (Dallas), DLS (The Dalles)",
+        "performance": 83,
+        "metroCodes": ["LAX", "IAD", "DFW", "DLS"],
     },
     {
         "name": "DPR Construction, Inc",
@@ -170,7 +207,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix), LAX (Los Angeles), IAD (Washington, D.C.)"
+        "metroSite": "ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix), LAX (Los Angeles), IAD (Washington, D.C.)",
+        "performance": 85,
+        "metroCodes": ["ATL", "DFW", "CLT", "PHX", "LAX", "IAD"],
     },
     {
         "name": "Dwatts Construction LLC",
@@ -179,7 +218,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)"
+        "metroSite": "IAD (Washington, D.C.), RIC (Richmond)",
+        "performance": 81,
+        "metroCodes": ["IAD", "RIC"],
     },
     {
         "name": "Dynalectric Company",
@@ -188,7 +229,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "LAX (Los Angeles), DLS (The Dalles), IAD (Washington, D.C.), RNO (Reno), PHX (Phoenix)"
+        "metroSite": "LAX (Los Angeles), DLS (The Dalles), IAD (Washington, D.C.), RNO (Reno), PHX (Phoenix)",
+        "performance": 84,
+        "metroCodes": ["LAX", "DLS", "IAD", "RNO", "PHX"],
     },
     {
         "name": "E2 Optics, LLC.",
@@ -197,7 +240,9 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Most Preferred",
         "region": "North America",
-        "metroSite": "CMH (Columbus), CHS (Charleston), NOVA (Northern Virginia), DFW (Dallas)"
+        "metroSite": "CMH (Columbus), CHS (Charleston), NOVA (Northern Virginia), DFW (Dallas)",
+        "performance": 97,
+        "metroCodes": ["CMH", "CHS", "NOVA", "DFW"],
     },
     {
         "name": "Environmental Air Systems, LLC",
@@ -206,7 +251,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "CLT (Charlotte), MRN (Morganton)"
+        "metroSite": "CLT (Charlotte), MRN (Morganton)",
+        "performance": 82,
+        "metroCodes": ["CLT", "MRN"],
     },
     {
         "name": "Faith Technologies Inc.",
@@ -215,7 +262,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Most Preferred",
         "region": "North America",
-        "metroSite": "SPC (Clarksville), TUL (Pryor)"
+        "metroSite": "SPC (Clarksville), TUL (Pryor)",
+        "performance": 96,
+        "metroCodes": ["SPC", "TUL"],
     },
     {
         "name": "Fisk Electric Company",
@@ -224,7 +273,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "LAX (Los Angeles), LAS (Las Vegas), DFW (Dallas), PHX (Phoenix)"
+        "metroSite": "LAX (Los Angeles), LAS (Las Vegas), DFW (Dallas), PHX (Phoenix)",
+        "performance": 83,
+        "metroCodes": ["LAX", "LAS", "DFW", "PHX"],
     },
     {
         "name": "Fortis Construction, Inc",
@@ -233,7 +284,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "West",
-        "metroSite": "RNO (Reno), TUL (Tulsa), SLC (Salt Lake City), DLS (The Dalles)"
+        "metroSite": "RNO (Reno), TUL (Tulsa), SLC (Salt Lake City), DLS (The Dalles)",
+        "performance": 93,
+        "metroCodes": ["RNO", "TUL", "SLC", "DLS"],
     },
     {
         "name": "Fulcrum Reliability Systems, Inc.",
@@ -242,7 +295,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "North America",
-        "metroSite": "PHX (Phoenix), DFW (Dallas), LAS (Las Vegas), CID (Cedar Rapids), ATL (Atlanta), CMH (Columbus)"
+        "metroSite": "PHX (Phoenix), DFW (Dallas), LAS (Las Vegas), CID (Cedar Rapids), ATL (Atlanta), CMH (Columbus)",
+        "performance": 98,
+        "metroCodes": ["PHX", "DFW", "LAS", "CID", "ATL", "CMH"],
     },
     {
         "name": "GBA Builders, LLC.",
@@ -251,7 +306,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "MCI (Kansas City), DFW (Dallas), BMI (Bloomington), CLT (Charlotte), IAD (Washington, D.C.)"
+        "metroSite": "MCI (Kansas City), DFW (Dallas), BMI (Bloomington), CLT (Charlotte), IAD (Washington, D.C.)",
+        "performance": 82,
+        "metroCodes": ["MCI", "DFW", "BMI", "CLT", "IAD"],
     },
     {
         "name": "GCON, Inc.",
@@ -260,7 +317,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West",
-        "metroSite": "DFW (Dallas)"
+        "metroSite": "DFW (Dallas)",
+        "performance": 98,
+        "metroCodes": ["DFW"],
     },
     {
         "name": "Gilbane Building Company",
@@ -269,7 +328,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "Multi-Region"
+        "metroSite": "Multi-Region",
+        "performance": 94,
+        "metroCodes": [],
     },
     {
         "name": "Grade A Construction, LLC",
@@ -278,7 +339,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "MEM (Memphis), CKV (Clarksville)"
+        "metroSite": "MEM (Memphis), CKV (Clarksville)",
+        "performance": 81,
+        "metroCodes": ["MEM", "CKV"],
     },
     {
         "name": "H. J. Russell & Company",
@@ -287,7 +350,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "CHS (Charleston), ATL (Atlanta), CKV (Clarksville)"
+        "metroSite": "CHS (Charleston), ATL (Atlanta), CKV (Clarksville)",
+        "performance": 97,
+        "metroCodes": ["CHS", "ATL", "CKV"],
     },
     {
         "name": "HITT Contracting, Inc",
@@ -296,7 +361,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "LAX (Los Angeles), ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)"
+        "metroSite": "LAX (Los Angeles), ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)",
+        "performance": 85,
+        "metroCodes": ["LAX", "ATL", "CLT", "DFW", "IAD"],
     },
     {
         "name": "Holder Construction Group, LLC",
@@ -305,7 +372,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "ATL (Atlanta), CLT (Charlotte), CMH (Columbus), DFW (Dallas), PHX (Phoenix), LAX (Los Angeles)"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte), CMH (Columbus), DFW (Dallas), PHX (Phoenix), LAX (Los Angeles)",
+        "performance": 86,
+        "metroCodes": ["ATL", "CLT", "CMH", "DFW", "PHX", "LAX"],
     },
     {
         "name": "Holt Brothers Construction, LLC",
@@ -314,7 +383,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "CHS (Charleston), LNR (Lenior)"
+        "metroSite": "CHS (Charleston), LNR (Lenior)",
+        "performance": 96,
+        "metroCodes": ["CHS", "LNR"],
     },
     {
         "name": "IES Communications, LLC",
@@ -323,7 +394,9 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "PHX (Phoenix), LAX (Los Angeles), ATL (Atlanta), CID (Cedar Rapids), DFW (Dallas), IAD (Washington, D.C.), SLC (Salt Lake City)"
+        "metroSite": "PHX (Phoenix), LAX (Los Angeles), ATL (Atlanta), CID (Cedar Rapids), DFW (Dallas), IAD (Washington, D.C.), SLC (Salt Lake City)",
+        "performance": 84,
+        "metroCodes": ["PHX", "LAX", "ATL", "CID", "DFW", "IAD", "SLC"],
     },
     {
         "name": "Infrastructure Professional Services and Equipment, LLC",
@@ -332,7 +405,9 @@ export const ContractorsData = [
         "type": "Electrical / Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TBD"
+        "metroSite": "TBD",
+        "performance": 80,
+        "metroCodes": [],
     },
     {
         "name": "Inglett & Stubbs, LLC",
@@ -341,7 +416,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "ATL (Atlanta)"
+        "metroSite": "ATL (Atlanta)",
+        "performance": 81,
+        "metroCodes": ["ATL"],
     },
     {
         "name": "J.E. Dunn Construction Group, Inc.",
@@ -350,7 +427,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "MCI (Kansas City), ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix)"
+        "metroSite": "MCI (Kansas City), ATL (Atlanta), DFW (Dallas), CLT (Charlotte), PHX (Phoenix)",
+        "performance": 92,
+        "metroCodes": ["MCI", "ATL", "DFW", "CLT", "PHX"],
     },
     {
         "name": "Kenimer & Knox Mechanical, LLC",
@@ -359,7 +438,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "CHS (Charleston)"
+        "metroSite": "CHS (Charleston)",
+        "performance": 96,
+        "metroCodes": ["CHS"],
     },
     {
         "name": "Kor Building Group",
@@ -368,7 +449,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "PHX (Phoenix), LAS (Las Vegas), RNO (Reno)"
+        "metroSite": "PHX (Phoenix), LAS (Las Vegas), RNO (Reno)",
+        "performance": 83,
+        "metroCodes": ["PHX", "LAS", "RNO"],
     },
     {
         "name": "Leapley Construction Group of Atlanta, LLC",
@@ -377,7 +460,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "ATL (Atlanta), HSV (Huntsville)"
+        "metroSite": "ATL (Atlanta), HSV (Huntsville)",
+        "performance": 82,
+        "metroCodes": ["ATL", "HSV"],
     },
     {
         "name": "Low Voltage Solutions, Inc.",
@@ -386,7 +471,9 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "BMI (Bloomington)"
+        "metroSite": "BMI (Bloomington)",
+        "performance": 81,
+        "metroCodes": ["BMI"],
     },
     {
         "name": "M. A. Mortenson Company",
@@ -395,7 +482,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "PHX (Phoenix), CID (Cedar Rapids), MSP (Minneapolis), DLS (The Dalles), MCI (Kansas City), DFW (Dallas)"
+        "metroSite": "PHX (Phoenix), CID (Cedar Rapids), MSP (Minneapolis), DLS (The Dalles), MCI (Kansas City), DFW (Dallas)",
+        "performance": 94,
+        "metroCodes": ["PHX", "CID", "MSP", "DLS", "MCI", "DFW"],
     },
     {
         "name": "M.C. Dean, Inc.",
@@ -404,7 +493,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "North America",
-        "metroSite": "IAD (Washington, D.C.), LAX (Los Angeles), DLS (The Dalles), SLC (Salt Lake City), DFW (Dallas), ATL (Atlanta)"
+        "metroSite": "IAD (Washington, D.C.), LAX (Los Angeles), DLS (The Dalles), SLC (Salt Lake City), DFW (Dallas), ATL (Atlanta)",
+        "performance": 99,
+        "metroCodes": ["IAD", "LAX", "DLS", "SLC", "DFW", "ATL"],
     },
     {
         "name": "Manhattan Construction Company",
@@ -413,7 +504,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
-        "metroSite": "TUL (Pryor)"
+        "metroSite": "TUL (Pryor)",
+        "performance": 97,
+        "metroCodes": ["TUL"],
     },
     {
         "name": "McFarland Building Group, LLC",
@@ -422,7 +515,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "LNR (Lenior)"
+        "metroSite": "LNR (Lenior)",
+        "performance": 96,
+        "metroCodes": ["LNR"],
     },
     {
         "name": "McKenney's, Inc.",
@@ -431,7 +526,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "ATL (Atlanta), CLT (Charlotte)"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte)",
+        "performance": 84,
+        "metroCodes": ["ATL", "CLT"],
     },
     {
         "name": "Miller Electric Company [MECOJAX]",
@@ -440,7 +537,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)"
+        "metroSite": "ATL (Atlanta), CLT (Charlotte), DFW (Dallas), IAD (Washington, D.C.)",
+        "performance": 83,
+        "metroCodes": ["ATL", "CLT", "DFW", "IAD"],
     },
     {
         "name": "Miller Electric Company [Omaha]",
@@ -449,7 +548,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
-        "metroSite": "OMA (Omaha)"
+        "metroSite": "OMA (Omaha)",
+        "performance": 98,
+        "metroCodes": ["OMA"],
     },
     {
         "name": "MMC Mechanical Contractors, Inc",
@@ -458,7 +559,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "CMH (Columbus)"
+        "metroSite": "CMH (Columbus)",
+        "performance": 82,
+        "metroCodes": ["CMH"],
     },
     {
         "name": "OEG, Inc",
@@ -467,7 +570,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Most Preferred",
         "region": "West",
-        "metroSite": "DLS (The Dalles)"
+        "metroSite": "DLS (The Dalles)",
+        "performance": 97,
+        "metroCodes": ["DLS"],
     },
     {
         "name": "Oklahoma Electrical Supply Company",
@@ -476,7 +581,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "TUL (Tulsa), SWO (Stillwater), LNK (Lincoln)"
+        "metroSite": "TUL (Tulsa), SWO (Stillwater), LNK (Lincoln)",
+        "performance": 83,
+        "metroCodes": ["TUL", "SWO", "LNK"],
     },
     {
         "name": "P & C Construction, Inc.",
@@ -485,7 +592,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "HSV (Huntsville), BMI (Bloomington), CKV (Clarksville), ATL (Atlanta), CLT (Charlotte), DFW (Dallas)"
+        "metroSite": "HSV (Huntsville), BMI (Bloomington), CKV (Clarksville), ATL (Atlanta), CLT (Charlotte), DFW (Dallas)",
+        "performance": 81,
+        "metroCodes": ["HSV", "BMI", "CKV", "ATL", "CLT", "DFW"],
     },
     {
         "name": "P1 Group",
@@ -494,7 +603,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "LAS (Las Vegas), MCI (Kansas City)"
+        "metroSite": "LAS (Las Vegas), MCI (Kansas City)",
+        "performance": 82,
+        "metroCodes": ["LAS", "MCI"],
     },
     {
         "name": "Palmetto Tri-Venture",
@@ -503,7 +614,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "CMH (Columbus), CHS (Charleston), DFW (Dallas), CID (Cedar Rapids), DLS (The Dalles), CLT (Charlotte)"
+        "metroSite": "CMH (Columbus), CHS (Charleston), DFW (Dallas), CID (Cedar Rapids), DLS (The Dalles), CLT (Charlotte)",
+        "performance": 84,
+        "metroCodes": ["CMH", "CHS", "DFW", "CID", "DLS", "CLT"],
     },
     {
         "name": "Patterson & Dewar Engineers, Inc.",
@@ -512,7 +625,9 @@ export const ContractorsData = [
         "type": "Electrical / Professional Services",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "ATL (Atlanta), PHX (Phoenix), CKV (Clarksville), DFW (Dallas), RIC (Richmond)"
+        "metroSite": "ATL (Atlanta), PHX (Phoenix), CKV (Clarksville), DFW (Dallas), RIC (Richmond)",
+        "performance": 83,
+        "metroCodes": ["ATL", "PHX", "CKV", "DFW", "RIC"],
     },
     {
         "name": "R. Lafferty & Son Industrial And Commercial Contractors, LLC",
@@ -521,7 +636,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "TBD"
+        "metroSite": "TBD",
+        "performance": 80,
+        "metroCodes": [],
     },
     {
         "name": "Southland Industries",
@@ -530,7 +647,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
-        "metroSite": "DFW (Dallas), MEM (Memphis)"
+        "metroSite": "DFW (Dallas), MEM (Memphis)",
+        "performance": 96,
+        "metroCodes": ["DFW", "MEM"],
     },
     {
         "name": "Suffolk Construction Company, Inc",
@@ -539,7 +658,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "DLS (The Dalles), DFW (Dallas), LAX (Los Angeles), IAD (Washington, D.C.)"
+        "metroSite": "DLS (The Dalles), DFW (Dallas), LAX (Los Angeles), IAD (Washington, D.C.)",
+        "performance": 84,
+        "metroCodes": ["DLS", "DFW", "LAX", "IAD"],
     },
     {
         "name": "Superior Fiber & Data Services, Inc.",
@@ -548,7 +669,9 @@ export const ContractorsData = [
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
-        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)",
+        "performance": 83,
+        "metroCodes": ["DFW", "HOU", "AUS"],
     },
     {
         "name": "T5 Data Centers LLC",
@@ -557,7 +680,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
-        "metroSite": "ATL (Atlanta), BMI (Bloomington), CLT (Charlotte), LAX (Los Angeles), MSP (Minneapolis), DLS (The Dalles)"
+        "metroSite": "ATL (Atlanta), BMI (Bloomington), CLT (Charlotte), LAX (Los Angeles), MSP (Minneapolis), DLS (The Dalles)",
+        "performance": 91,
+        "metroCodes": ["ATL", "BMI", "CLT", "LAX", "MSP", "DLS"],
     },
     {
         "name": "Teel Construction",
@@ -566,7 +691,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.)"
+        "metroSite": "LAX (Los Angeles), IAD (Washington, D.C.)",
+        "performance": 82,
+        "metroCodes": ["LAX", "IAD"],
     },
     {
         "name": "Teklus Construction, LLC",
@@ -575,7 +702,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "LAS (Las Vegas), RNO (Reno), LAX (Los Angeles), MCI (Kansas City)"
+        "metroSite": "LAS (Las Vegas), RNO (Reno), LAX (Los Angeles), MCI (Kansas City)",
+        "performance": 83,
+        "metroCodes": ["LAS", "RNO", "LAX", "MCI"],
     },
     {
         "name": "The Poole and Kent Corporation",
@@ -584,7 +713,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "CMH (Columbus), IAD (Washington, D.C.), RIC (Richmond)"
+        "metroSite": "CMH (Columbus), IAD (Washington, D.C.), RIC (Richmond)",
+        "performance": 84,
+        "metroCodes": ["CMH", "IAD", "RIC"],
     },
     {
         "name": "The Whiting-Turner Contracting Company",
@@ -593,7 +724,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
-        "metroSite": "OMA (Omaha)"
+        "metroSite": "OMA (Omaha)",
+        "performance": 98,
+        "metroCodes": ["OMA"],
     },
     {
         "name": "TM Source Building Group, Inc.",
@@ -602,7 +735,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)"
+        "metroSite": "DFW (Dallas), HOU (Houston), AUS (Austin)",
+        "performance": 81,
+        "metroCodes": ["DFW", "HOU", "AUS"],
     },
     {
         "name": "Turner Construction Company Inc",
@@ -611,7 +746,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "CMH (Columbus)"
+        "metroSite": "CMH (Columbus)",
+        "performance": 97,
+        "metroCodes": ["CMH"],
     },
     {
         "name": "TW Constructors, LLC",
@@ -620,7 +757,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "CMH (Columbus)"
+        "metroSite": "CMH (Columbus)",
+        "performance": 98,
+        "metroCodes": ["CMH"],
     },
     {
         "name": "U.S. Engineering Innovations, LLC",
@@ -629,7 +768,9 @@ export const ContractorsData = [
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "MCI (Kansas City), CKV (Clarksville), TUL (Tulsa)"
+        "metroSite": "MCI (Kansas City), CKV (Clarksville), TUL (Tulsa)",
+        "performance": 83,
+        "metroCodes": ["MCI", "CKV", "TUL"],
     },
     {
         "name": "Ujamaa Construction Inc.",
@@ -638,7 +779,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "BMI (Bloomington), CHS (Charleston), CKV (Clarksville), ATL (Atlanta), LAS (Las Vegas), DLS (The Dalles)"
+        "metroSite": "BMI (Bloomington), CHS (Charleston), CKV (Clarksville), ATL (Atlanta), LAS (Las Vegas), DLS (The Dalles)",
+        "performance": 84,
+        "metroCodes": ["BMI", "CHS", "CKV", "ATL", "LAS", "DLS"],
     },
     {
         "name": "Vertiv Corporation",
@@ -647,7 +790,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "CMH (Columbus), HSV (Huntsville)"
+        "metroSite": "CMH (Columbus), HSV (Huntsville)",
+        "performance": 82,
+        "metroCodes": ["CMH", "HSV"],
     },
     {
         "name": "Viking Engineering and Construction, LLC",
@@ -656,7 +801,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West",
-        "metroSite": "DLS (The Dalles)"
+        "metroSite": "DLS (The Dalles)",
+        "performance": 97,
+        "metroCodes": ["DLS"],
     },
     {
         "name": "Vision Technologies, LLC",
@@ -665,7 +812,9 @@ export const ContractorsData = [
         "type": "NICON",
         "preferredStatus": "Most Preferred",
         "region": "East",
-        "metroSite": "CHS (Charleston), CMH (Columbus), NOVA (Northern Virginia)"
+        "metroSite": "CHS (Charleston), CMH (Columbus), NOVA (Northern Virginia)",
+        "performance": 96,
+        "metroCodes": ["CHS", "CMH", "NOVA"],
     },
     {
         "name": "W. G. Yates & Sons Construction Company",
@@ -674,7 +823,9 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
-        "metroSite": "HSV (Huntsville), MEM (Memphis), DFW (Dallas), ATL (Atlanta), LAX (Los Angeles)"
+        "metroSite": "HSV (Huntsville), MEM (Memphis), DFW (Dallas), ATL (Atlanta), LAX (Los Angeles)",
+        "performance": 83,
+        "metroCodes": ["HSV", "MEM", "DFW", "ATL", "LAX"],
     },
     {
         "name": "Walker Engineering, Inc.",
@@ -683,7 +834,9 @@ export const ContractorsData = [
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "West",
-        "metroSite": "DFW (Dallas)"
+        "metroSite": "DFW (Dallas)",
+        "performance": 98,
+        "metroCodes": ["DFW"],
     },
     {
         "name": "Wycliffe Trinity, LLC",
@@ -692,40 +845,19 @@ export const ContractorsData = [
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
-        "metroSite": "IAD (Washington, D.C.)"
+        "metroSite": "IAD (Washington, D.C.)",
+        "performance": 81,
+        "metroCodes": ["IAD"],
     }
-].map((c, i) => {
-    // Extract metro codes from the metroSite string
-    const metroSiteString = c.metroSite || '';
-    // This regex will find all 3-4 letter uppercase codes, handling cases like LNK/CBF by finding LNK and CBF
-    const regex = /([A-Z]{3,4})/g;
-    const matches = metroSiteString.match(regex) || [];
-    
-    const contractorMetroCodes = Array.from(new Set(matches));
-
-    let preference = 3;
-    if (c.preferredStatus === 'Most Preferred') preference = 1;
-    if (c.preferredStatus === 'Preferred') preference = 2;
-
-    let performance = Math.floor(Math.random() * 21) + 80; // 80 to 100
-    if (c.name === 'TEST Rafael Correa') {
-        performance = 100;
-    }
-
-
-    return {
-        id: `contractor-${i + 1}`,
-        ...c,
-        metroCodes: contractorMetroCodes,
-        performance,
-        preference,
-    };
-});
+].map((c, i) => ({
+    id: `contractor-${i + 1}`,
+    ...c,
+}));
 
 export const contractorTypes = Array.from(new Set(ContractorsData.map(c => c.type))).sort();
 
 
-export const MetroCodesData = [
+export const MetroCodesData: MetroCode[] = [
   { "id": "metro-1", "code": "CMH", "city": "Columbus", "state": "Ohio", "region": "North America - East", "lat": 39.9612, "lon": -82.9988 },
   { "id": "metro-2", "code": "IAD", "city": "Gainesville", "state": "Virginia", "region": "North America - East", "lat": 38.7932, "lon": -77.6142 },
   { "id": "metro-3", "code": "LNK/CBF", "city": "Council Bluffs", "state": "Iowa", "region": "North America - Central", "lat": 41.2619, "lon": -95.8608 },
@@ -761,7 +893,7 @@ export const MetroCodesData = [
   { "id": "metro-33", "code": "HOU", "city": "Houston", "state": "Texas", "region": "North America - Central", "lat": 29.7604, "lon": -95.3698 }
 ];
 
-const now = new Date();
+
 const getFutureDate = (baseDate: Date, days: number): Date => {
     const futureDate = new Date(baseDate);
     futureDate.setDate(futureDate.getDate() + days);
@@ -770,18 +902,15 @@ const getFutureDate = (baseDate: Date, days: number): Date => {
 
 const baseStartDate = new Date('2025-10-26T00:00:00Z');
 
-export const RFPData = [
+export const RFPData: Partial<RFP>[] = [
   {
     projectName: 'Data Center HVAC Upgrade',
     scopeOfWork: 'Upgrade the existing HVAC system to a more energy-efficient solution.',
     metroCode: 'DFW',
     contractorType: 'Mechanical',
     estimatedBudget: 2500000,
-    rfpStartDate: getFutureDate(baseStartDate, 0),
-    rfpEndDate: getFutureDate(baseStartDate, 20),
-    projectStartDate: getFutureDate(baseStartDate, 31),
-    projectEndDate: getFutureDate(baseStartDate, 213),
-    status: 'Selection'
+    status: 'Selection',
+    id: 'rfp-1',
   },
   {
     projectName: 'West Coast Fiber Network Expansion',
@@ -789,11 +918,8 @@ export const RFPData = [
     metroCode: 'LAX',
     contractorType: 'NICON',
     estimatedBudget: 15000000,
-    rfpStartDate: getFutureDate(baseStartDate, 15),
-    rfpEndDate: getFutureDate(baseStartDate, 45),
-    projectStartDate: getFutureDate(baseStartDate, 62),
-    projectEndDate: getFutureDate(baseStartDate, 427),
-    status: 'Selection'
+    status: 'Invitation',
+    id: 'rfp-2',
   },
   {
     projectName: 'Columbus Campus Security System Overhaul',
@@ -801,11 +927,8 @@ export const RFPData = [
     metroCode: 'CMH',
     contractorType: 'Electrical / NICON',
     estimatedBudget: 5000000,
-    rfpStartDate: getFutureDate(baseStartDate, 31),
-    rfpEndDate: getFutureDate(baseStartDate, 62),
-    projectStartDate: getFutureDate(baseStartDate, 92),
-    projectEndDate: getFutureDate(baseStartDate, 274),
-    status: 'Selection'
+    status: 'Proposals',
+    id: 'rfp-3',
   },
   {
     projectName: 'Council Bluffs Power Distribution Unit Refresh',
@@ -813,11 +936,8 @@ export const RFPData = [
     metroCode: 'LNK/CBF',
     contractorType: 'Electrical',
     estimatedBudget: 7500000,
-    rfpStartDate: getFutureDate(baseStartDate, -30),
-    rfpEndDate: getFutureDate(baseStartDate, 0),
-    projectStartDate: getFutureDate(baseStartDate, 20),
-    projectEndDate: getFutureDate(baseStartDate, 202),
-    status: 'Selection'
+    status: 'Analysis',
+    id: 'rfp-4',
   },
   {
     projectName: 'New Office Build-out in Austin',
@@ -825,10 +945,7 @@ export const RFPData = [
     metroCode: 'AUS',
     contractorType: 'General Contractor',
     estimatedBudget: 12000000,
-    rfpStartDate: getFutureDate(baseStartDate, 92),
-    rfpEndDate: getFutureDate(baseStartDate, 122),
-    projectStartDate: getFutureDate(baseStartDate, 132),
-    projectEndDate: getFutureDate(baseStartDate, 437),
-    status: 'Selection'
+    status: 'Award',
+    id: 'rfp-5',
   },
 ];
