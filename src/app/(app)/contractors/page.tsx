@@ -85,10 +85,9 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
             </TableCell>
             <TableCell>{contractor.metroCodes?.join(', ')}</TableCell>
             <TableCell className="text-right">
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="icon">
                     <Link href={`/contractors/${contractor.id}/edit`}>
-                        <Pencil className="mr-2 h-4 w-4"/>
-                        Edit
+                        <Pencil className="h-4 w-4"/>
                     </Link>
                 </Button>
             </TableCell>
@@ -248,5 +247,3 @@ export default function ContractorsPage() {
     </div>
   );
 }
-
-    
