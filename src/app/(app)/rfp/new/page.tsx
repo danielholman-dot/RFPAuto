@@ -25,12 +25,15 @@ export default function NewRfpPage() {
     return metroCodes.map(m => ({ code: m.code, city: m.city }));
   }, [metroCodes]);
 
-  const loading = isUserLoading || metrosLoading;
+  const contractorTypes = useMemo(() => allContractorTypes || [], []);
+
+  const loading = isUserLoading || metrosLoading || !contractorTypes || contractorTypes.length === 0;
 
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-2">Loading form...</p>
       </div>
     );
   }
@@ -45,7 +48,7 @@ export default function NewRfpPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectIntakeForm metroCodes={metroOptions || []} contractorTypes={allContractorTypes || []} />
+          <ProjectIntakeForm metroCodes={metroOptions} contractorTypes={contractorTypes} />
         </CardContent>
       </Card>
     </div>
