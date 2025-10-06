@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter, useParams, notFound } from "next/navigation";
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { doc, collection, updateDoc } from "firebase/firestore";
@@ -21,15 +21,13 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const contractorSchema = z.object({
-  name: z.string().min(1, "Name is required."),
+  companyName: z.string().min(1, "Company Name is required."),
   contactName: z.string().min(1, "Contact name is required."),
   contactEmail: z.string().min(1, "Contact email is required."),
-  type: z.string().min(1, "Contractor type is required."),
-  preferredStatus: z.string().min(1, "Preferred status is required."),
-  region: z.string().min(1, "Region is required."),
-  metroSite: z.string().min(1, "Metro/Site is required."),
-  performance: z.coerce.number().min(0).max(100),
+  contractorType: z.string().min(1, "Contractor type is required."),
+  preferred: z.boolean().default(false),
   metroCodes: z.array(z.string()).min(1, "At least one metro code is required."),
+  contactPhone: z.string().min(1, "Contact phone is required."),
 });
 
 export default function EditContractorPage() {
@@ -48,14 +46,12 @@ export default function EditContractorPage() {
   const form = useForm<z.infer<typeof contractorSchema>>({
     resolver: zodResolver(contractorSchema),
     defaultValues: {
-      name: "",
+      companyName: "",
       contactName: "",
       contactEmail: "",
-      type: "",
-      preferredStatus: "",
-      region: "",
-      metroSite: "",
-      performance: 0,
+      contactPhone: "",
+      contractorType: "",
+      preferred: false,
       metroCodes: [],
     },
   });
@@ -63,20 +59,19 @@ export default function EditContractorPage() {
   useEffect(() => {
     if (contractor) {
       form.reset({
-        name: contractor.name,
+        companyName: contractor.companyName,
         contactName: contractor.contactName,
         contactEmail: contractor.contactEmail,
-        type: contractor.type,
-        preferredStatus: contractor.preferredStatus,
-        region: contractor.region,
-        metroSite: contractor.metroSite,
-        performance: contractor.performance,
+        contactPhone: contractor.contactPhone,
+        contractorType: contractor.contractorType,
+        preferred: contractor.preferred,
         metroCodes: contractor.metroCodes || [],
       });
     }
   }, [contractor, form]);
 
   const onSubmit = async (values: z.infer<typeof contractorSchema>) => {
+    if (!contractorRef) return;
     try {
       await updateDoc(contractorRef, values);
       toast({
@@ -98,10 +93,6 @@ export default function EditContractorPage() {
     return ["Electrical", "Electrical / NICON", "Electrical / Professional Services", "General Contractor", "Mechanical", "NICON"];
   }, []);
 
-  const preferredStatuses = ["Most Preferred", "Preferred", "Not Evaluated"];
-  const regions = ["North America", "East", "West", "West (Central)"];
-
-
   if (contractorLoading || metrosLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -119,14 +110,14 @@ export default function EditContractorPage() {
       <Card>
         <CardHeader>
           <CardTitle>Edit Contractor</CardTitle>
-          <CardDescription>Update the details for {contractor.name}.</CardDescription>
+          <CardDescription>Update the details for {contractor.companyName}.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
-                name="name"
+                name="companyName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Contractor Name</FormLabel>
@@ -159,11 +150,22 @@ export default function EditContractorPage() {
                   </FormItem>
                 )}
               />
+               <FormField
+                control={form.control}
+                name="contactPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>POC Phone</FormLabel>
+                    <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid md:grid-cols-2 gap-8">
                 <FormField
                   control={form.control}
-                  name="type"
+                  name="contractorType"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Contractor Type</FormLabel>
@@ -181,62 +183,35 @@ export default function EditContractorPage() {
                 />
                  <FormField
                   control={form.control}
-                  name="preferredStatus"
+                  name="preferred"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Preferred Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select a status" /></SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {preferredStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 mt-8">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">
+                          Preferred Contractor
+                        </FormLabel>
+                        <FormDescription>
+                          Mark this contractor as a preferred partner.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
                     </FormItem>
                   )}
                 />
               </div>
 
-               <div className="grid md:grid-cols-2 gap-8">
-                <FormField
-                  control={form.control}
-                  name="region"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Region</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Select a region" /></SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {regions.map(region => <SelectItem key={region} value={region}>{region}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                    control={form.control}
-                    name="metroSite"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Metro / Site Description</FormLabel>
-                        <FormControl><Input placeholder="CLT (Charlotte), PHX (Phoenix)" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              </div>
                 <FormField
                     control={form.control}
                     name="metroCodes"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Operating Metro Codes</FormLabel>
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {metroCodes?.map((metro) => (
                                     <FormField
                                         key={metro.id}
@@ -287,5 +262,3 @@ export default function EditContractorPage() {
     </div>
   );
 }
-
-    
