@@ -227,7 +227,7 @@ export default function ContractorsPage() {
                     </SelectContent>
                 </Select>
                  <Button asChild className="w-full sm:w-auto">
-                    <Link href="/contractors/new">Create New Contractor</Link>
+                    <Link href="/contractors/new">Add new Contractor</Link>
                 </Button>
             </div>
         </CardHeader>
