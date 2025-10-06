@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { useState, useMemo } from 'react';
-import { Users, Wrench, Zap, HardHat, Loader2, Star, Pencil } from 'lucide-react';
+import { Users, Wrench, Zap, HardHat, Loader2, Star, Pencil, Upload } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -219,8 +219,8 @@ export default function ContractorsPage() {
                         <SelectValue placeholder="Filter by Type" />
                     </SelectTrigger>
                     <SelectContent>
-                        {contractorTypes.map((type, index) => (
-                            <SelectItem key={type + index} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
+                        {contractorTypes.map((type) => (
+                            <SelectItem key={type} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -235,6 +235,10 @@ export default function ContractorsPage() {
                         ))}
                     </SelectContent>
                 </Select>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import / Export
+                </Button>
                  <Button asChild className="w-full sm:w-auto">
                     <Link href="/contractors/new">Add new Contractor</Link>
                 </Button>
@@ -247,3 +251,5 @@ export default function ContractorsPage() {
     </div>
   );
 }
+
+    
