@@ -27,7 +27,8 @@ export default function NewRfpPage() {
 
   const contractorTypes = useMemo(() => allContractorTypes || [], []);
 
-  const loading = isUserLoading || metrosLoading || !contractorTypes || contractorTypes.length === 0;
+  // Only wait for user and metro codes to load. Contractor types are static.
+  const loading = isUserLoading || metrosLoading;
 
   if (loading) {
     return (
