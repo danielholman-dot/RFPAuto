@@ -76,24 +76,24 @@ export default function EditContractorPage() {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: useMemo(() => ({
-            companyName: contractor?.companyName ?? "",
-            contactName: contractor?.contactName ?? "",
-            contactEmail: contractor?.contactEmail ?? "",
-            contractorType: contractor?.contractorType ?? "",
-            preferred: contractor?.preferred ?? false,
-            metroCodes: contractor?.metroCodes ?? [],
-        }), [contractor]),
+        defaultValues: {
+            companyName: "",
+            contactName: "",
+            contactEmail: "",
+            contractorType: "",
+            preferred: false,
+            metroCodes: [],
+        },
     });
 
     useEffect(() => {
         if (contractor) {
             form.reset({
-                companyName: contractor.companyName,
-                contactName: contractor.contactName,
-                contactEmail: contractor.contactEmail,
-                contractorType: contractor.contractorType,
-                preferred: contractor.preferred,
+                companyName: contractor.companyName || "",
+                contactName: contractor.contactName || "",
+                contactEmail: contractor.contactEmail || "",
+                contractorType: contractor.contractorType || "",
+                preferred: contractor.preferred || false,
                 metroCodes: contractor.metroCodes || [],
             });
         }
@@ -144,7 +144,7 @@ export default function EditContractorPage() {
 
     const loading = isUserLoading || contractorLoading || metrosLoading;
 
-    if (loading || !contractor) {
+    if (loading) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
 
@@ -310,5 +310,3 @@ export default function EditContractorPage() {
         </div>
     );
 }
-
-    
