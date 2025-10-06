@@ -5,7 +5,7 @@ import { useParams, notFound, useRouter } from 'next/navigation';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { HardHat, Users, Wrench, Zap, Star, MapPin, Loader2, Phone } from 'lucide-react';
+import { HardHat, Users, Wrench, Zap, MapPin, Loader2, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useDoc, useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
