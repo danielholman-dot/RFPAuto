@@ -25,6 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -235,10 +241,19 @@ export default function ContractorsPage() {
                         ))}
                     </SelectContent>
                 </Select>
-                <Button variant="outline" className="w-full sm:w-auto">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import / Export
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Import / Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Export Template</DropdownMenuItem>
+                    <DropdownMenuItem>Export Information</DropdownMenuItem>
+                    <DropdownMenuItem>Import Information</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                  <Button asChild className="w-full sm:w-auto">
                     <Link href="/contractors/new">Add new Contractor</Link>
                 </Button>
@@ -251,5 +266,3 @@ export default function ContractorsPage() {
     </div>
   );
 }
-
-    
