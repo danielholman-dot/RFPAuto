@@ -7,11 +7,12 @@
   "scripts": {
     "dev": "next dev",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
-    "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
+    "genkit:watch": "genkit start -- tsx --watch srcai/dev.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed:db": "tsx scripts/seed-db.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.19.3",
