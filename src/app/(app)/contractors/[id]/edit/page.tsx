@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useParams, notFound } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     useFirestore,
     useDoc,
@@ -337,3 +337,5 @@ export default function EditContractorPage() {
         </div>
     );
 }
+
+    
