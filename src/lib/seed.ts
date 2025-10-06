@@ -1,11 +1,4 @@
 
-
-
-
-
-
-
-
 export const ContractorsData = [
     {
         "name": "Allison-Smith Company LLC",
@@ -782,6 +775,8 @@ export const ContractorsData = [
     };
 });
 
+export const contractorTypes = Array.from(new Set(ContractorsData.map(c => c.type))).sort();
+
 const now = new Date();
 const getFutureDate = (baseDate: Date, days: number): Date => {
     const futureDate = new Date(baseDate);
@@ -853,13 +848,3 @@ export const RFPData = [
     status: 'Selection'
   },
 ];
-
-    
-
-    
-
-
-
-
-
-
