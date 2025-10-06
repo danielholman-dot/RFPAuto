@@ -34,7 +34,7 @@ import {
     useUser,
     useMemoFirebase,
 } from "@/firebase";
-import { doc, updateDoc, deleteDoc, collection, query } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, collection } from "firebase/firestore";
 import type { Contractor, MetroCode } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,19 +60,22 @@ export default function EditContractorPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const contractorRef = useMemoFirebase(() => {
-        if (!user) return null;
+        if (!firestore || !id) return null;
         return doc(firestore, "contractors", id);
-    }, [firestore, id, user]);
+    }, [firestore, id]);
     const { data: contractor, isLoading: contractorLoading } = useDoc<Contractor>(contractorRef);
 
-    const metroCodesQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+    const metroCodesQuery = useMemoFirebase(() => {
+      if (!firestore) return null;
+      return collection(firestore, 'metro_codes');
+    }, [firestore]);
     const { data: allMetroCodes, isLoading: metrosLoading } = useCollection<MetroCode>(metroCodesQuery);
     
     const contractorTypes = useMemo(() => {
-        if (!allMetroCodes) return [];
-        // This should ideally come from a dedicated collection or a comprehensive scan
+        // In a real app, this might come from a dedicated collection.
+        // For now, we hardcode a comprehensive list.
         return ["Electrical", "Electrical / NICON", "Electrical / Professional Services", "General Contractor", "Mechanical", "Electrical / Mechanical", "NICON"].sort();
-    }, [allMetroCodes]);
+    }, []);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -103,7 +106,9 @@ export default function EditContractorPage() {
         setIsSubmitting(true);
         if (!contractorRef) return;
         try {
-            await updateDoc(contractorRef, values as any);
+            // Firestore does not allow 'id' to be written inside the document data
+            const { ...dataToUpdate } = values;
+            await updateDoc(contractorRef, dataToUpdate);
             toast({
                 title: "Contractor Updated",
                 description: `${values.companyName} has been successfully updated.`,
@@ -158,7 +163,7 @@ export default function EditContractorPage() {
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Edit Contractor</CardTitle>
-                    <CardDescription>Update the details for {contractor.companyName}.</CardDescription>
+                    <CardDescription>Update the details for {contractor?.companyName}.</CardDescription>
                 </div>
                 <Button variant="destructive" onClick={handleDelete}>
                     <Trash className="mr-2 h-4 w-4" />
@@ -173,7 +178,7 @@ export default function EditContractorPage() {
                     name="companyName"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Contractor Name</FormLabel>
+                        <FormLabel>Company Name</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                     </FormItem>
@@ -213,7 +218,7 @@ export default function EditContractorPage() {
                         <FormItem>
                             <FormLabel>Contractor Type</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Select a type..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {contractorTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                             </SelectContent>
@@ -226,7 +231,7 @@ export default function EditContractorPage() {
                         control={form.control}
                         name="preferred"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 mt-8">
                                 <div className="space-y-0.5">
                                 <FormLabel className="text-base">
                                     Preferred Contractor
@@ -310,3 +315,5 @@ export default function EditContractorPage() {
         </div>
     );
 }
+
+    
