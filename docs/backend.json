@@ -114,7 +114,7 @@
           "type": "string",
           "description": "Unique identifier for the contractor."
         },
-        "companyName": {
+        "name": {
           "type": "string",
           "description": "Name of the contractor's company."
         },
@@ -138,7 +138,7 @@
             "type": "string"
           }
         },
-        "contractorType": {
+        "type": {
           "type": "string",
           "description": "Type of contractor (e.g., General Contractor)."
         },
@@ -149,12 +149,12 @@
       },
       "required": [
         "id",
-        "companyName",
+        "name",
         "contactName",
         "contactEmail",
         "contactPhone",
         "metroCodes",
-        "contractorType",
+        "type",
         "preferred"
       ]
     },

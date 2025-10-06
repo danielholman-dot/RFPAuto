@@ -29,9 +29,11 @@ export type Contractor = {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
-  contractorType: string;
+  type: string;
   metroCodes: string[];
   preferred: boolean;
+  performance: number;
+  region: string;
 };
 
 export type Proposal = {

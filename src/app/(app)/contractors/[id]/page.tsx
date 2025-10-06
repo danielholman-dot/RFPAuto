@@ -71,12 +71,12 @@ export default function ContractorDetailPage() {
             <div className="flex flex-row items-start gap-4">
                 <Avatar className="w-16 h-16">
                     <AvatarFallback className="text-2xl bg-muted">
-                        {getIconForType(contractor.contractorType)}
+                        {getIconForType(contractor.type)}
                     </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                     <CardTitle className="text-3xl">{contractor.name}</CardTitle>
-                    <CardDescription className="text-md">{contractor.contractorType}</CardDescription>
+                    <CardDescription className="text-md">{contractor.type}</CardDescription>
                     <div className="flex items-center gap-2 mt-2">
                         {contractor.preferred && <Badge>Preferred</Badge>}
                     </div>
@@ -99,6 +99,13 @@ export default function ContractorDetailPage() {
                             <Phone className="w-4 h-4 text-muted-foreground" />
                             <p><strong>Phone:</strong> {contractor.contactPhone}</p>
                         </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 className="font-semibold mb-2">Details</h3>
+                    <div className="space-y-2 text-sm">
+                        <p><strong>Region:</strong> {contractor.region}</p>
+                        <p><strong>Performance Score:</strong> {contractor.performance}%</p>
                     </div>
                 </div>
             </div>

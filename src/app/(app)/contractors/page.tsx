@@ -64,7 +64,7 @@ function ContractorsList({ contractors }: { contractors: Contractor[] }) {
             </TableCell>
             <TableCell>{renderMultiLine(contractor.contactName)}</TableCell>
             <TableCell>{renderMultiLine(contractor.contactEmail)}</TableCell>
-            <TableCell>{contractor.contractorType}</TableCell>
+            <TableCell>{contractor.type}</TableCell>
             <TableCell>
                 <Badge variant={contractor.preferred ? 'default' : 'secondary'}>
                     {contractor.preferred ? 'Yes' : 'No'}
@@ -112,7 +112,7 @@ export default function ContractorsPage() {
 
   const contractorTypes = useMemo(() => {
     if (!allContractors) return [];
-    return ['all', ...Array.from(new Set(allContractors.map(c => c.contractorType))).sort()];
+    return ['all', ...Array.from(new Set(allContractors.map(c => c.type))).sort()];
   }, [allContractors]);
 
   const sortedMetroCodes = useMemo(() => {
@@ -124,7 +124,7 @@ export default function ContractorsPage() {
     if (!allContractors) return [];
     const stats: { [key: string]: number } = {};
     allContractors.forEach(c => {
-      stats[c.contractorType] = (stats[c.contractorType] || 0) + 1;
+      stats[c.type] = (stats[c.type] || 0) + 1;
     });
     return Object.entries(stats).sort((a,b) => b[1] - a[1]);
   }, [allContractors]);
@@ -132,7 +132,7 @@ export default function ContractorsPage() {
   const filteredContractors = useMemo(() => {
     if (!allContractors) return [];
     return allContractors.filter(contractor => {
-      const typeMatch = typeFilter === 'all' || contractor.contractorType === typeFilter;
+      const typeMatch = typeFilter === 'all' || contractor.type === typeFilter;
       const metroCodeMatch = metroCodeFilter === 'all' || (contractor.metroCodes && contractor.metroCodes.includes(metroCodeFilter));
       const searchMatch = searchTerm === '' || contractor.name.toLowerCase().includes(searchTerm.toLowerCase());
       return typeMatch && metroCodeMatch && searchMatch;
