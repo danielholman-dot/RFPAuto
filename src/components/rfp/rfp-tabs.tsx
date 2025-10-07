@@ -71,11 +71,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   const [rfp, setRfp] = useState(rfpProp);
   const [activeTab, setActiveTab] = useState(rfp.status === 'Draft' ? 'Selection' : rfp.status);
   
-  const getInitialCompletedStages = (status: RfpStage) => {
-    const currentIndex = STAGES.indexOf(status);
-    return STAGES.slice(0, currentIndex);
-  };
-  const [completedStages, setCompletedStages] = useState<RfpStage[]>(rfp.completedStages as RfpStage[] || getInitialCompletedStages(rfp.status as RfpStage));
+  const [completedStages, setCompletedStages] = useState<RfpStage[]>(rfp.completedStages as RfpStage[] || []);
   const { toast } = useToast();
 
   const [selectedContractorToAdd, setSelectedContractorToAdd] = useState<string>('');
@@ -99,7 +95,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
 
   useEffect(() => {
     setRfp(rfpProp);
-    setCompletedStages(rfpProp.completedStages as RfpStage[] || getInitialCompletedStages(rfpProp.status as RfpStage));
+    setCompletedStages(rfpProp.completedStages as RfpStage[] || []);
     setActiveTab(rfpProp.status === 'Draft' ? 'Selection' : rfpProp.status);
   }, [rfpProp]);
 

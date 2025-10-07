@@ -100,6 +100,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         technicalDocumentsLinks: values.technicalDocumentsLinks,
         technicalDocumentUrls: [],
         invitedContractors: [],
+        completedStages: [],
       };
       
       const docRef = await addDoc(rfpsCol, newRfpData);
