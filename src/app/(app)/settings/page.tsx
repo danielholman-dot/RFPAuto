@@ -216,9 +216,8 @@ export default function SettingsPage() {
                             </Button>
                         </div>
                     ) : (
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit
+                        <Button variant="outline" size="icon" onClick={() => handleEdit(item)}>
+                            <Pencil className="h-4 w-4" />
                         </Button>
                     )}
                   </TableCell>
