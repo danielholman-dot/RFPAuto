@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -95,7 +94,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
 
   useEffect(() => {
     setRfp(rfpProp);
-    setCompletedStages(rfpProp.completedStages as RfpStage[] || []);
+    setCompletedStages(rfpProp.completedStages || []);
     setActiveTab(rfpProp.status === 'Draft' ? 'Selection' : rfpProp.status);
   }, [rfpProp]);
 
@@ -382,6 +381,10 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
     return Object.entries(grouped);
 }, [proposalsWithBids]);
 
+  const handleRfpUpdate = (updatedRfp: RFP) => {
+    setRfp(updatedRfp);
+  };
+
 
   return (
     <>
@@ -442,7 +445,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
         </TabsContent>
 
         <TabsContent value="Drafting" className="mt-4">
-            <RfpDrafting rfp={rfp} />
+            <RfpDrafting rfp={rfp} onRfpUpdate={handleRfpUpdate} />
             <StageCompletion stage="Drafting" completedStages={completedStages} onStageToggle={handleStageToggle} />
         </TabsContent>
         <TabsContent value="Invitation" className="mt-4">
