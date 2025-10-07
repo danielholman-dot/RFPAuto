@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useFirebase } from "@/firebase"
 import { collection, addDoc, doc, updateDoc, Timestamp } from 'firebase/firestore'
-import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import type { RFP, MetroCode } from "@/lib/types"
 import { FileInput } from "../ui/file-input"
 
@@ -507,7 +507,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                 <FormItem>
                   <FormLabel>Technical Documents (Files)</FormLabel>
                   <FormControl>
-                    <FileInput onFileChange={field.onChange} multiple>
+                    <FileInput onFileChange={(files) => field.onChange(files)} multiple>
                       <p className="text-xs text-muted-foreground">
                         Upload any relevant local files like specs, drawings, or zipped documents.
                       </p>
