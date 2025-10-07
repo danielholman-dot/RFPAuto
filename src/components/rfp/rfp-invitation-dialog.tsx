@@ -35,7 +35,8 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
 
   const formatDate = (date: any) => {
     if (!date) return 'TBD';
-    const d = date.toDate ? date.toDate() : new Date(date);
+    const d = date?.toDate ? date.toDate() : new Date(date);
+    if (isNaN(d.getTime())) return 'TBD';
     return format(d, 'MM/dd/yyyy');
   };
 
@@ -45,7 +46,13 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
       setIsEditing(false);
       setEmailContent(null);
       
-      const rfpEndDate = rfp.rfpEndDate ? new Date(rfp.rfpEndDate) : new Date();
+      const rfpEndDate = rfp.rfpEndDate ? (rfp.rfpEndDate.toDate ? rfp.rfpEndDate.toDate() : new Date(rfp.rfpEndDate)) : new Date();
+      if (isNaN(rfpEndDate.getTime())) {
+          console.error("Invalid rfpEndDate");
+          setIsLoading(false);
+          toast({ variant: "destructive", title: "Error", description: "Invalid RFP End Date."});
+          return;
+      }
       const submissionLink = `${window.location.origin}/proposal/submit/${rfp.id}`;
 
       generateRfpReleaseEmail({
@@ -70,7 +77,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
         setIsLoading(false);
       });
     }
-  }, [isOpen, rfp, contractor]);
+  }, [isOpen, rfp, contractor, toast]);
 
   const handleContentChange = (field: 'subject' | 'body', value: string) => {
     if (emailContent) {
