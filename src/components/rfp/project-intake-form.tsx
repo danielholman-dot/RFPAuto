@@ -26,7 +26,8 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useFirestore } from "@/firebase"
-import { collection, addDoc, Timestamp } from 'firebase/firestore'
+import { collection, addDoc, doc, updateDoc, Timestamp } from 'firebase/firestore'
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { RFP, MetroCode } from "@/lib/types"
 import { FileInput } from "../ui/file-input"
 
@@ -80,7 +81,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     try {
       const rfpsCol = collection(firestore, 'rfps');
       
-      const newRfpData = {
+      const newRfpData: Omit<RFP, 'id'> = {
         projectName: values.projectName || "Untitled RFP",
         scopeOfWork: values.scopeOfWork || "",
         metroCode: values.metroCode || "",
@@ -96,16 +97,43 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         status: "Draft" as const,
         createdAt: Timestamp.now(),
         technicalDocumentsLinks: values.technicalDocumentsLinks,
+        technicalDocumentUrls: [],
         invitedContractors: [],
       };
       
       const docRef = await addDoc(rfpsCol, newRfpData);
+      const rfpId = docRef.id;
+
+      // Handle file uploads
+      if (values.technicalDocuments && values.technicalDocuments.length > 0) {
+        toast({
+            title: "Uploading files...",
+            description: `Attaching ${values.technicalDocuments.length} document(s). Please wait.`,
+        });
+
+        const storage = getStorage();
+        const downloadUrls = [];
+
+        for (const file of values.technicalDocuments) {
+            const storageRef = ref(storage, `rfp-technical-documents/${rfpId}/${file.name}`);
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+            downloadUrls.push(downloadUrl);
+        }
+
+        // Update Firestore document with storage URLs
+        const rfpDoc = doc(firestore, 'rfps', rfpId);
+        await updateDoc(rfpDoc, {
+            technicalDocumentUrls: downloadUrls
+        });
+      }
+
 
       toast({
         title: "RFP Draft Created",
         description: `Project "${values.projectName || "Untitled RFP"}" has been saved as a draft.`,
       });
-      router.push(`/rfp/${docRef.id}`);
+      router.push(`/rfp/${rfpId}`);
 
     } catch (error) {
       console.error("Error creating RFP: ", error);
@@ -497,3 +525,5 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     </Form>
   )
 }
+
+    

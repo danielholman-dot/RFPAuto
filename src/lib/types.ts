@@ -20,6 +20,7 @@ export type RFP = {
   additionalStakeholderEmails?: string;
   createdAt?: Timestamp;
   technicalDocumentsLinks?: string;
+  technicalDocumentUrls?: string[];
   completedStages?: string[];
 };
 
@@ -75,3 +76,5 @@ export type MetroCode = {
     lat: number;
     lon: number;
 };
+
+    
