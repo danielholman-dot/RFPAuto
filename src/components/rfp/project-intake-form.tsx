@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useFirebase } from "@/firebase"
 import { collection, addDoc, doc, updateDoc, Timestamp } from 'firebase/firestore'
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import type { RFP, MetroCode } from "@/lib/types"
 import { FileInput } from "../ui/file-input"
 
@@ -113,10 +113,31 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         });
 
         const storage = getStorage(firebaseApp);
-        const uploadPromises = values.technicalDocuments.map(async (file) => {
+        const uploadPromises = values.technicalDocuments.map(file => {
+          return new Promise<string>((resolve, reject) => {
             const storageRef = ref(storage, `rfp-technical-documents/${rfpId}/${file.name}`);
-            await uploadBytes(storageRef, file);
-            return getDownloadURL(storageRef);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                // Optional: handle progress
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+              },
+              (error) => {
+                console.error("Upload failed:", error);
+                reject(error);
+              },
+              async () => {
+                try {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                } catch (error) {
+                    reject(error);
+                }
+              }
+            );
+          });
         });
 
         const downloadUrls = await Promise.all(uploadPromises);
