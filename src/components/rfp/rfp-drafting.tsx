@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import Textarea from "../ui/textarea";
 import type { RFP } from "@/lib/types";
 import { generateProjectRFPInstructions } from "@/ai/flows/generate-project-rfp-instructions";
-import { Bot, Edit, Loader2, Save, Sparkles } from "lucide-react";
+import { Bot, Edit, Loader2, Save, Sparkles, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 type RfpDraftingProps = {
     rfp: RFP;
@@ -22,15 +23,21 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
     const [draftContent, setDraftContent] = useState<string | null>(null);
     const { toast } = useToast();
 
-    const handleGenerateDraft = async () => {
-        const missingFields = [];
-        if (!rfp.projectName || rfp.projectName === 'New RFP Draft') missingFields.push("Project Name");
-        if (!rfp.scopeOfWork || rfp.scopeOfWork === 'To be defined.') missingFields.push("Scope of Work");
-        if (!rfp.metroCode || rfp.metroCode === 'N/A') missingFields.push("Metro Code (Campus)");
-        if (!rfp.contractorType || rfp.contractorType === 'N/A') missingFields.push("Contractor Type");
-        if (!rfp.projectStartDate) missingFields.push("Project Start Date");
+    const getMissingFields = () => {
+        const missing = [];
+        if (!rfp.projectName || rfp.projectName === 'New RFP Draft') missing.push("Project Name");
+        if (!rfp.scopeOfWork || rfp.scopeOfWork === 'To be defined.') missing.push("Scope of Work");
+        if (!rfp.metroCode || rfp.metroCode === 'N/A') missing.push("Metro Code (Campus)");
+        if (!rfp.contractorType || rfp.contractorType === 'N/A') missing.push("Contractor Type");
+        if (!rfp.projectStartDate) missing.push("Project Start Date");
+        return missing;
+    }
 
-        if (missingFields.length > 0) {
+    const missingFields = getMissingFields();
+    const isGenerationDisabled = missingFields.length > 0;
+
+    const handleGenerateDraft = async () => {
+        if (isGenerationDisabled) {
             toast({
                 variant: "destructive",
                 title: "Missing Information",
@@ -93,12 +100,33 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
                     <div className="text-center py-12">
                         <Bot className="mx-auto h-12 w-12 text-muted-foreground" />
                         <h3 className="mt-2 text-sm font-semibold text-gray-900">Ready to Draft</h3>
-                        <p className="mt-1 text-sm text-gray-500">Click the button to generate the initial RFP draft.</p>
+                        <p className="mt-1 text-sm text-gray-500">
+                           {isGenerationDisabled 
+                                ? "Complete the RFP details to enable draft generation."
+                                : "Click the button to generate the initial RFP draft."
+                           }
+                        </p>
                         <div className="mt-6">
-                            <Button onClick={handleGenerateDraft}>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Generate Draft RFP
-                            </Button>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="inline-block">
+                                            <Button onClick={handleGenerateDraft} disabled={isGenerationDisabled || isGenerating}>
+                                                <Sparkles className="mr-2 h-4 w-4" />
+                                                Generate Draft RFP
+                                            </Button>
+                                        </div>
+                                    </TooltipTrigger>
+                                    {isGenerationDisabled && (
+                                        <TooltipContent>
+                                            <p>Please provide the following missing fields:</p>
+                                            <ul className="list-disc list-inside">
+                                                {missingFields.map(field => <li key={field}>{field}</li>)}
+                                            </ul>
+                                        </TooltipContent>
+                                    )}
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                     </div>
                 )}
