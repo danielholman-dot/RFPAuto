@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/lib/types";
 import { AddUserDialog } from "@/components/settings/add-user-dialog";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { collection, doc, deleteDoc } from "firebase/firestore";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { EditUserDialog } from "@/components/settings/edit-user-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 const initialPermissionsData = [
     { feature: "Dashboard", page: true, gpo: true, pm: false },
@@ -41,10 +54,35 @@ export default function SettingsPage() {
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [tempPermissions, setTempPermissions] = useState<PermissionItem | null>(null);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const firestore = useFirestore();
   const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
   const { data: users, isLoading: usersLoading } = useCollection<User>(usersQuery);
+
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setIsEditUserDialogOpen(true);
+  };
+  
+  const handleDeleteClick = async (userId: string) => {
+    if (!firestore) return;
+    try {
+        await deleteDoc(doc(firestore, "users", userId));
+        toast({
+            title: "User Deleted",
+            description: "The user has been successfully removed.",
+        });
+    } catch (error) {
+        console.error("Error deleting user: ", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to delete user. Please try again.",
+        });
+    }
+  };
 
 
   const handleEdit = (item: PermissionItem) => {
@@ -88,25 +126,25 @@ export default function SettingsPage() {
   return (
     <>
       <div className="grid gap-6">
-        <Accordion type="multiple" className="w-full space-y-6" defaultValue={["user-management", "user-roles"]}>
+        <Accordion type="multiple" className="w-full space-y-6" defaultValue={["user-management"]}>
           <AccordionItem value="user-management" className="border-b-0">
             <Card>
-              <AccordionTrigger className="p-6 hover:no-underline text-left">
-                <div>
-                  <CardTitle>User Management</CardTitle>
-                  <CardDescription className="mt-1">
-                    Add, remove, and manage user roles and access.
-                  </CardDescription>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-6 pb-6">
-                <CardContent className="p-0">
-                    <div className="flex justify-end mb-4">
-                        <Button onClick={() => setIsAddUserDialogOpen(true)}>
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          Add User
-                        </Button>
+                <AccordionTrigger className="p-6 hover:no-underline text-left flex justify-between">
+                    <div>
+                        <CardTitle>User Management</CardTitle>
+                        <CardDescription className="mt-1">
+                            Add, remove, and manage user roles and access.
+                        </CardDescription>
                     </div>
+                </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                 <div className="flex justify-end mb-4">
+                    <Button onClick={() => setIsAddUserDialogOpen(true)}>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Add User
+                    </Button>
+                </div>
+                <CardContent className="p-0">
                     {usersLoading ? (
                         <div className="flex items-center justify-center h-40">
                             <Loader2 className="w-8 h-8 animate-spin" />
@@ -139,12 +177,33 @@ export default function SettingsPage() {
                                     <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon">
-                                    <Pencil className="h-4 w-4" />
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)}>
+                                        <Pencil className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                    <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action will permanently delete the user {user.name}.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                className="bg-destructive hover:bg-destructive/90"
+                                                onClick={() => handleDeleteClick(user.id)}
+                                            >
+                                                Delete
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </TableCell>
                                 </TableRow>
                             ))}
@@ -238,6 +297,15 @@ export default function SettingsPage() {
         isOpen={isAddUserDialogOpen}
         onOpenChange={setIsAddUserDialogOpen}
       />
+      {selectedUser && (
+        <EditUserDialog
+            isOpen={isEditUserDialogOpen}
+            onOpenChange={setIsEditUserDialogOpen}
+            user={selectedUser}
+        />
+      )}
     </>
   );
 }
+
+    
