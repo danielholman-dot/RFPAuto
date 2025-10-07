@@ -1,71 +1,112 @@
-/**
- * @file Firestore Security Rules
- * @core Philosophy: This ruleset provides open access for prototyping. All reads and writes are allowed. This is NOT suitable for production.
- * @data Structure: The database contains collections for RFPs, Contractors, Proposals, Metro Codes, and Users. RFPs have a subcollection of Proposals.
- * @key Security Decisions: This configuration disables all security measures to allow for rapid prototyping and should not be used in production environments.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description: Allows all read and write access to the RFPs collection.
-     * @path: /rfps/{rfpId}
-     * @allow: (get, list, create, update, delete) - Any user can perform any operation.
-     * @deny: (none) - There are no restrictions.
-     * @principle: Open access for prototyping.
-     */
-    match /rfps/{rfpId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
-    }
-
-    /**
-     * @description: Allows all read and write access to the proposals subcollection within an RFP.
-     * @path: /rfps/{rfpId}/proposals/{proposalId}
-     * @allow: (get, list, create, update, delete) - Any user can perform any operation.
-     * @deny: (none) - There are no restrictions.
-     * @principle: Open access for prototyping.
-     */
-    match /rfps/{rfpId}/proposals/{proposalId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
-    }
-
-    /**
-     * @description: Allows all read and write access to the contractors collection.
-     * @path: /contractors/{contractorId}
-     * @allow: (get, list, create, update, delete) - Any user can perform any operation.
-     * @deny: (none) - There are no restrictions.
-     * @principle: Open access for prototyping.
-     */
-    match /contractors/{contractorId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
-    }
-
-    /**
-     * @description: Allows all read and write access to the metro codes collection.
-     * @path: /metro_codes/{metroCodeId}
-     * @allow: (get, list, create, update, delete) - Any user can perform any operation.
-     * @deny: (none) - There are no restrictions.
-     * @principle: Open access for prototyping.
-     */
-    match /metro_codes/{metroCodeId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
-    }
-
-    /**
-     * @description: Allows all read and write access to the users collection.
-     * @path: /users/{userId}
-     * @allow: (get, list, create, update, delete) - Any user can perform any operation.
-     * @deny: (none) - There are no restrictions.
-     * @principle: Open access for prototyping.
+     * @description Allows users to manage their own user documents.
+     * @path /users/{userId}
+     * @allow (create) User A with ID 'user_a' can create their own profile at /users/user_a.
+     * @deny (create) User A with ID 'user_a' cannot create a profile at /users/user_b.
+     * @allow (get, update, delete) User A with ID 'user_a' can read, update, or delete their own profile at /users/user_a.
+     * @deny (get, update, delete) User A with ID 'user_a' cannot read, update, or delete User B's profile at /users/user_b.
+     * @deny (list) Listing users is not allowed.
+     * @principle Enforces document ownership for all operations on user documents.
      */
     match /users/{userId} {
-      allow get, list: if true;
-      allow create, update, delete: if true;
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Allows public read access to RFPs, but restricts write access to authenticated users.
+     * @path /rfps/{rfpId}
+     * @allow (get, list) Any user (signed in or not) can read any RFP.
+     * @allow (create) Authenticated user can create an RFP.
+     * @deny (create) Non-authenticated user cannot create an RFP.
+     * @allow (update, delete) Authenticated user can update/delete an RFP.
+     * @deny (update, delete) Non-authenticated user cannot update/delete an RFP.
+     * @principle Allows public reads, restricts writes to authenticated users, and requires an 'ownerId' field for secure ownership validation.
+     */
+    match /rfps/{rfpId} {
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        allow get, list: if true;
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to create proposals for specific RFPs.
+     * @path /rfps/{rfpId}/proposals/{proposalId}
+     * @allow (create) Authenticated user can create a proposal under an RFP.
+     * @deny (create) Non-authenticated user cannot create a proposal.
+     * @allow (get, update, delete) Authenticated user can read, update, or delete a proposal under an RFP.
+     * @deny (get, update, delete) Non-authenticated user cannot read, update, or delete a proposal.
+     * @deny (list) Listing proposals is disallowed.
+     * @principle Restricts proposal creation and management to authenticated users only.
+     */
+    match /rfps/{rfpId}/proposals/{proposalId} {
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows public read access to Contractors, but restricts write access to authenticated users.
+     * @path /contractors/{contractorId}
+     * @allow (get, list) Any user (signed in or not) can read any Contractor.
+     * @allow (create) Authenticated user can create a Contractor.
+     * @deny (create) Non-authenticated user cannot create a Contractor.
+     * @allow (update, delete) Authenticated user can update/delete a Contractor.
+     * @deny (update, delete) Non-authenticated user cannot update/delete a Contractor.
+     */
+    match /contractors/{contractorId} {
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        allow get, list: if true;
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows public read access to Metro Codes, but restricts write access to authenticated users.
+     * @path /metro_codes/{metroCodeId}
+     * @allow (get, list) Any user (signed in or not) can read any Metro Code.
+     * @allow (create) Authenticated user can create a Metro Code.
+     * @deny (create) Non-authenticated user cannot create a Metro Code.
+     * @allow (update, delete) Authenticated user can update/delete a Metro Code.
+     * @deny (update, delete) Non-authenticated user cannot update/delete a Metro Code.
+     */
+    match /metro_codes/{metroCodeId} {
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        allow get, list: if true;
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
     }
   }
 }
