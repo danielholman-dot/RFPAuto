@@ -93,9 +93,9 @@ export default function SettingsPage() {
             <Card>
               <AccordionTrigger className="p-6 hover:no-underline w-full">
                 <div className="flex flex-row items-center justify-between w-full">
-                  <div>
+                  <div className="text-left">
                     <CardTitle>User Management</CardTitle>
-                    <CardDescription>
+                    <CardDescription className="mt-1">
                       Add, remove, and manage user roles and access.
                     </CardDescription>
                   </div>
@@ -105,8 +105,8 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </AccordionTrigger>
-              <AccordionContent>
-                <CardContent>
+              <AccordionContent className="px-6 pb-6">
+                <CardContent className="p-0">
                     {usersLoading ? (
                         <div className="flex items-center justify-center h-40">
                             <Loader2 className="w-8 h-8 animate-spin" />
@@ -158,16 +158,16 @@ export default function SettingsPage() {
           
           <AccordionItem value="user-roles" className="border-b-0">
             <Card>
-              <AccordionTrigger className="p-6 hover:no-underline">
-                <CardHeader className="p-0">
+              <AccordionTrigger className="p-6 hover:no-underline text-left">
+                <div>
                   <CardTitle>User Roles & Permissions</CardTitle>
-                  <CardDescription>
+                  <CardDescription className="mt-1">
                     Overview of access levels for different user roles within the system.
                   </CardDescription>
-                </CardHeader>
+                </div>
               </AccordionTrigger>
-              <AccordionContent>
-                <CardContent>
+              <AccordionContent className="px-6 pb-6">
+                <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
