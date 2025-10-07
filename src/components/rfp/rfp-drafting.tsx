@@ -52,6 +52,7 @@ export function RfpDrafting({ rfp }: RfpDraftingProps) {
                 estimatedBudget: rfp.estimatedBudget,
                 startDate: format(startDateValue, 'MM/dd/yyyy'),
                 technicalDocuments: "N/A",
+                primaryStakeholderName: rfp.primaryStakeholderName,
                 primaryStakeholderEmail: rfp.primaryStakeholderEmail,
             });
             setDraftContent(result.rfpInstructions);
