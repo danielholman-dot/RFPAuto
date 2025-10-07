@@ -91,20 +91,20 @@ export default function SettingsPage() {
         <Accordion type="multiple" className="w-full space-y-6" defaultValue={["user-management", "user-roles"]}>
           <AccordionItem value="user-management" className="border-b-0">
             <Card>
-              <AccordionTrigger className="p-6 hover:no-underline w-full">
-                <div className="flex flex-row items-center justify-between w-full">
+              <div className="flex items-center p-6">
+                <AccordionTrigger className="hover:no-underline flex-1">
                   <div className="text-left">
                     <CardTitle>User Management</CardTitle>
                     <CardDescription className="mt-1">
                       Add, remove, and manage user roles and access.
                     </CardDescription>
                   </div>
-                  <Button onClick={(e) => { e.stopPropagation(); setIsAddUserDialogOpen(true); }}>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Add User
-                  </Button>
-                </div>
-              </AccordionTrigger>
+                </AccordionTrigger>
+                <Button onClick={() => setIsAddUserDialogOpen(true)} className="ml-4">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Add User
+                </Button>
+              </div>
               <AccordionContent className="px-6 pb-6">
                 <CardContent className="p-0">
                     {usersLoading ? (
