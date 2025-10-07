@@ -10,8 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/lib/types";
-import { usersData as staticUsers } from "@/lib/data"; // Use static data
 import { AddUserDialog } from "@/components/settings/add-user-dialog";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 
 const initialPermissionsData = [
     { feature: "Dashboard", page: true, gpo: true, pm: false },
@@ -40,9 +41,9 @@ export default function SettingsPage() {
   const [tempPermissions, setTempPermissions] = useState<PermissionItem | null>(null);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
 
-  // Use the static user data instead of querying Firestore
-  const users: User[] = staticUsers;
-  const usersLoading = false;
+  const firestore = useFirestore();
+  const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
+  const { data: users, isLoading: usersLoading } = useCollection<User>(usersQuery);
 
 
   const handleEdit = (item: PermissionItem) => {
