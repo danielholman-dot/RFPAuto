@@ -77,6 +77,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
+    let rfpId = '';
     
     try {
       const rfpsCol = collection(firestore, 'rfps');
@@ -102,7 +103,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       };
       
       const docRef = await addDoc(rfpsCol, newRfpData);
-      const rfpId = docRef.id;
+      rfpId = docRef.id;
 
       // Handle file uploads
       if (values.technicalDocuments && values.technicalDocuments.length > 0) {
@@ -112,14 +113,13 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         });
 
         const storage = getStorage();
-        const downloadUrls = [];
-
-        for (const file of values.technicalDocuments) {
+        const uploadPromises = values.technicalDocuments.map(async (file) => {
             const storageRef = ref(storage, `rfp-technical-documents/${rfpId}/${file.name}`);
             await uploadBytes(storageRef, file);
-            const downloadUrl = await getDownloadURL(storageRef);
-            downloadUrls.push(downloadUrl);
-        }
+            return getDownloadURL(storageRef);
+        });
+
+        const downloadUrls = await Promise.all(uploadPromises);
 
         // Update Firestore document with storage URLs
         const rfpDoc = doc(firestore, 'rfps', rfpId);
@@ -135,12 +135,12 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       });
       router.push(`/rfp/${rfpId}`);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating RFP: ", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to create RFP draft. Please try again.",
+        title: "Error Creating RFP",
+        description: error.message || "Failed to create RFP draft. Please check the console for details.",
       });
       setIsSubmitting(false);
     }
@@ -525,5 +525,3 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     </Form>
   )
 }
-
-    
