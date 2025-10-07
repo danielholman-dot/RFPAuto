@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -35,6 +36,7 @@ import { Input } from "../ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
+import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 type RfpTabsProps = {
@@ -70,7 +72,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   const [rfp, setRfp] = useState(rfpProp);
   const [activeTab, setActiveTab] = useState(rfp.status === 'Draft' ? 'Selection' : rfp.status);
   
-  const [completedStages, setCompletedStages] = useState<RfpStage[]>(rfp.completedStages as RfpStage[] || []);
+  const [completedStages, setCompletedStages] = useState<RfpStage[]>(rfp.completedStages || []);
   const { toast } = useToast();
 
   const [selectedContractorToAdd, setSelectedContractorToAdd] = useState<string>('');
@@ -95,8 +97,11 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   useEffect(() => {
     setRfp(rfpProp);
     setCompletedStages(rfpProp.completedStages || []);
-    setActiveTab(rfpProp.status === 'Draft' ? 'Selection' : rfpProp.status);
-  }, [rfpProp]);
+    // Only reset the tab if the RFP itself changes, not just its data
+    if (rfpProp.id !== rfp.id) {
+      setActiveTab(rfpProp.status === 'Draft' ? 'Selection' : rfpProp.status);
+    }
+  }, [rfpProp, rfp.id]);
 
   // Data fetching using hooks
   const allContractorsQuery = useMemoFirebase(() => collection(firestore, 'contractors'), [firestore]);
@@ -181,8 +186,11 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
         newCompletedStages = completedStages.filter(s => STAGES.indexOf(s) < stageIndex);
         newStatus = stage;
     }
+    
+    // Optimistically update local state
     setCompletedStages(newCompletedStages);
     setRfp(prev => ({...prev, status: newStatus as RFP['status'], completedStages: newCompletedStages}));
+    setActiveTab(newStatus);
 
 
     const rfpDocRef = doc(firestore, 'rfps', rfp.id);
