@@ -26,6 +26,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 
 const initialPermissionsData = [
@@ -47,6 +49,61 @@ const initialPermissionsData = [
 ];
 
 type PermissionItem = typeof initialPermissionsData[0];
+
+function DeleteUserDialog({ user, onConfirm, children }: { user: User, onConfirm: () => void, children: React.ReactNode }) {
+    const [confirmationEmail, setConfirmationEmail] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+
+    const isMatch = confirmationEmail === user.email;
+
+    const handleConfirm = () => {
+        onConfirm();
+        setIsOpen(false);
+        setConfirmationEmail('');
+    }
+    
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            setConfirmationEmail('');
+        }
+        setIsOpen(open);
+    }
+
+    return (
+        <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
+            <AlertDialogTrigger asChild>
+                {children}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the user <span className="font-semibold">{user.name}</span>.
+                        To confirm, please type <span className="font-semibold text-foreground">{user.email}</span> below.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="py-2">
+                    <Input 
+                        id="delete-confirm" 
+                        value={confirmationEmail}
+                        onChange={(e) => setConfirmationEmail(e.target.value)}
+                        placeholder="user@example.com"
+                    />
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={handleConfirm}
+                        disabled={!isMatch}
+                    >
+                        Delete User
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -180,30 +237,11 @@ export default function SettingsPage() {
                                     <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)}>
                                         <Pencil className="h-4 w-4" />
                                     </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action will permanently delete the user {user.name}.
-                                            </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                className="bg-destructive hover:bg-destructive/90"
-                                                onClick={() => handleDeleteClick(user.id)}
-                                            >
-                                                Delete
-                                            </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
+                                    <DeleteUserDialog user={user} onConfirm={() => handleDeleteClick(user.id)}>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </DeleteUserDialog>
                                 </TableCell>
                                 </TableRow>
                             ))}
@@ -307,5 +345,3 @@ export default function SettingsPage() {
     </>
   );
 }
-
-    
