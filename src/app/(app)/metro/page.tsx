@@ -15,23 +15,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MetroCodesData } from '@/lib/data';
 import type { MetroCode } from '@/lib/types';
-import { useState, useEffect } from 'react';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
 export default function MetroPage() {
-  const [metros, setMetros] = useState<MetroCode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
+  const metrosQuery = useMemoFirebase(() => collection(firestore, 'metro_codes'), [firestore]);
+  const { data: metros, isLoading } = useCollection<MetroCode>(metrosQuery);
 
-  useEffect(() => {
-    setMetros(MetroCodesData);
-    setLoading(false);
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p>Loading...</p>
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
