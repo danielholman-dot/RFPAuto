@@ -28,6 +28,7 @@ import { format } from "date-fns"
 import { useFirestore } from "@/firebase"
 import { collection, addDoc, Timestamp } from 'firebase/firestore'
 import type { RFP, MetroCode } from "@/lib/types"
+import { FileInput } from "../ui/file-input"
 
 const formSchema = z.object({
   projectName: z.string().min(1, "Project name is required."),
@@ -42,7 +43,7 @@ const formSchema = z.object({
   rfpEndDate: z.date().optional(),
   projectStartDate: z.date({ required_error: "A project start date is required."}),
   projectEndDate: z.date().optional(),
-  technicalDocuments: z.any().optional(),
+  technicalDocuments: z.array(z.instanceof(File)).optional(),
   technicalDocumentsLinks: z.string().optional(),
 })
 
@@ -69,6 +70,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       metroCode: "",
       contractorType: "",
       technicalDocumentsLinks: "",
+      technicalDocuments: [],
     },
   })
 
@@ -456,9 +458,12 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                 <FormItem>
                   <FormLabel>Technical Documents (Files)</FormLabel>
                   <FormControl>
-                    <Input type="file" multiple />
+                    <FileInput onFileChange={field.onChange} multiple>
+                      <p className="text-xs text-muted-foreground">
+                        Upload any relevant local files like specs, drawings, or zipped documents.
+                      </p>
+                    </FileInput>
                   </FormControl>
-                  <FormDescription>Upload any relevant local files like specs, drawings, or zipped documents.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
