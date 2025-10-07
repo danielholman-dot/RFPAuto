@@ -9,8 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { usersData } from "@/lib/data";
 import type { User } from "@/lib/types";
 
 const initialPermissionsData = [
@@ -39,9 +38,9 @@ export default function SettingsPage() {
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [tempPermissions, setTempPermissions] = useState<PermissionItem | null>(null);
 
-  const firestore = useFirestore();
-  const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
-  const { data: users, isLoading: usersLoading } = useCollection<User>(usersQuery);
+  const [users, setUsers] = useState<User[]>(usersData);
+  const [usersLoading, setUsersLoading] = useState(false);
+
 
   const handleEdit = (item: PermissionItem) => {
     setEditingRow(item.feature);
