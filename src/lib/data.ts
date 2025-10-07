@@ -1,6 +1,30 @@
 
 import type { MetroCode } from './types';
 
+export const usersData = [
+    {
+        id: 'usr_1',
+        name: 'Alice Johnson',
+        email: 'alice.j@example.com',
+        role: 'Google Procurement Office',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1080',
+    },
+    {
+        id: 'usr_2',
+        name: 'Bob Williams',
+        email: 'bob.w@example.com',
+        role: 'Project Management',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1080',
+    },
+    {
+        id: 'usr_3',
+        name: 'Charlie Brown',
+        email: 'charlie.b@example.com',
+        role: 'Project Management',
+        avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=1080',
+    }
+];
+
 export const ContractorsData = [
     {
         "name": "ABB Inc",
@@ -838,3 +862,22 @@ export const RFPData = [
     status: 'Selection'
   },
 ];
+
+
+// MOCK FIRESTORE FUNCTIONS
+// In a real app, these would be making calls to Firestore
+export const getRfps = async () => {
+    return RFPData;
+}
+export const getRfpById = async (id: string) => {
+    return RFPData.find(rfp => `rfp-${RFPData.indexOf(rfp)+1}` === id) || null;
+}
+export const getContractors = async () => {
+    return ContractorsData;
+}
+export const getProposalsByRfpId = async (rfpId: string) => {
+    return []; // No mock proposals yet
+}
+export const addProposal = async (rfpId: string, proposal: any) => {
+    console.log("Adding proposal to RFP:", rfpId, proposal);
+}

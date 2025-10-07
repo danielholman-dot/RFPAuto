@@ -4,11 +4,14 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, Pencil, X, Save, Trash2, UserPlus } from "lucide-react";
+import { Check, Pencil, X, Save, Trash2, UserPlus, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import type { User } from "@/lib/types";
 
 const initialPermissionsData = [
     { feature: "Dashboard", page: true, gpo: true, pm: false },
@@ -28,39 +31,17 @@ const initialPermissionsData = [
     { feature: "RFP: Feedback Collection", page: false, gpo: true, pm: false },
 ];
 
-const initialUsersData = [
-    {
-        id: 'usr_1',
-        name: 'Alice Johnson',
-        email: 'alice.j@example.com',
-        role: 'Google Procurement Office',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1080',
-    },
-    {
-        id: 'usr_2',
-        name: 'Bob Williams',
-        email: 'bob.w@example.com',
-        role: 'Project Management',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1080',
-    },
-    {
-        id: 'usr_3',
-        name: 'Charlie Brown',
-        email: 'charlie.b@example.com',
-        role: 'Project Management',
-        avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=1080',
-    }
-];
-
 type PermissionItem = typeof initialPermissionsData[0];
-type UserItem = typeof initialUsersData[0];
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [permissions, setPermissions] = useState(initialPermissionsData);
-  const [users, setUsers] = useState(initialUsersData);
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [tempPermissions, setTempPermissions] = useState<PermissionItem | null>(null);
+
+  const firestore = useFirestore();
+  const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
+  const { data: users, isLoading: usersLoading } = useCollection<User>(usersQuery);
 
   const handleEdit = (item: PermissionItem) => {
     setEditingRow(item.feature);
@@ -116,44 +97,50 @@ export default function SettingsPage() {
           </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            {usersLoading ? (
+                <div className="flex items-center justify-center h-40">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                </div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {users && users.map((user) => (
+                        <TableRow key={user.id}>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarImage src={user.avatar} alt={user.name} />
+                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </div>
+                            </div>
+                        </TableCell>
+                        <TableCell>
+                            <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            <Button variant="ghost" size="icon">
+                            <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+            )}
         </CardContent>
       </Card>
 

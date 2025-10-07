@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, writeBatch, doc, getDocs, Timestamp } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { firebaseConfig } from '../src/firebase/config';
-import { ContractorsData, MetroCodesData, RFPData as seedRFPData } from '../src/lib/data';
+import { ContractorsData, MetroCodesData, RFPData as seedRFPData, usersData } from '../src/lib/data';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -57,12 +57,9 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
 
 async function seedDatabase() {
     try {
-        console.log('Signing in anonymously...');
-        await signInAnonymously(auth);
-        console.log('Signed in.');
-
         console.log('Starting database seed...');
         
+        await seedCollection('users', usersData, 'id');
         await seedCollection('contractors', ContractorsData, 'id');
         await seedCollection('metro_codes', MetroCodesData, 'id');
         

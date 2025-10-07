@@ -1,62 +1,122 @@
 /**
- * @file Firestore Security Rules
- * @core_philosophy This ruleset grants public read access to all data while restricting write access. Since there is no authentication, anyone can read any document. No write operation is allowed.
- * @data_structure The database consists of four top-level collections: `rfps`, `contractors`, `metro_codes`. The `rfps` collection has a subcollection called `proposals`.
- * @key_security_decisions
- *   - All read operations (get, list) are publicly accessible.
- *   - All write operations (create, update, delete) are denied.
- *   - There is no authentication or user-based authorization in this ruleset.
+ * @fileoverview Firestore Security Rules for RFP Management Application
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security by enforcing strict ownership and
+ * relationship constraints. It leverages denormalization and helper functions
+ * to optimize rule execution and maintain data integrity. Anonymous authentication is used.
+ *
+ * Data Structure:
+ * - /rfps/{rfpId}: Stores project details.
+ * - /rfps/{rfpId}/proposals/{proposalId}: Stores proposals submitted for each project.
+ * - /contractors/{contractorId}: Stores contractor information.
+ * - /metro_codes/{metroCodeId}: Stores metro code details.
+ *
+ * Key Security Decisions:
+ * - Public read access is granted to /rfps, /contractors, and /metro_codes.
+ * - Write access to /rfps is restricted to authenticated users, ensuring only logged-in users can create, update, or delete projects.
+ * - Proposals can only be created if the contractorId matches the authenticated user's ID.
+ * - Deletion and updates are restricted to the creator of the document.
+ *
+ * Denormalization for Authorization:
+ * - Proposals include both projectId and contractorId, allowing direct
+ *   validation of the relationship between projects, contractors, and proposals
+ *   without additional reads.
+ *
+ * Structural Segregation:
+ * - No segregation is explicitly defined; all collections are treated as
+ *   containing published data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows anyone to read RFPs, but nobody can create, update, or delete them.
+     * @description Grants public read access to RFPs (Projects), but restricts write access to authenticated users only.
      * @path /rfps/{rfpId}
-     * @allow (get, list) - Any user can read the rfps.
-     * @deny (create, update, delete) - No one can create, update, or delete rfps.
-     * @principle Grants public read access and denies all write operations.
+     * @allow (get, list) - Any user can read RFP details.
+     * @allow (create) - An authenticated user can create an RFP.
+     * @deny (create) - An unauthenticated user cannot create an RFP.
+     * @deny (update, delete) - Only the owner can update or delete an RFP.
+     * @principle Allows public read access while restricting writes to authenticated users with ownership.
      */
     match /rfps/{rfpId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create: if isSignedIn() && request.resource.data.id == rfpId;
+      allow update: if isExistingOwner(request.auth.uid, resource.data.id);
+      allow delete: if isExistingOwner(request.auth.uid, resource.data.id);
     }
 
     /**
-     * @description Allows anyone to read proposals, but nobody can create, update, or delete them.
+     * @description Allows authenticated contractors to create proposals for specific RFPs, while restricting updates and deletes.
      * @path /rfps/{rfpId}/proposals/{proposalId}
-     * @allow (get, list) - Any user can read the proposals.
-     * @deny (create, update, delete) - No one can create, update, or delete proposals.
-     * @principle Grants public read access and denies all write operations.
+     * @allow (create) - An authenticated user can create a proposal if contractorId matches their UID.
+     * @allow (get, list) - Any user can read proposals.
+     * @deny (create) - An unauthenticated user cannot create a proposal.
+     * @deny (update, delete) - Only the owner can update or delete a proposal.
+     * @principle Enforces contractor ownership for proposal creation and restricts modification/deletion.
      */
     match /rfps/{rfpId}/proposals/{proposalId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create: if isSignedIn() && request.resource.data.contractorId == request.auth.uid && request.resource.data.projectId == rfpId;
+      allow update: if isExistingOwner(request.auth.uid, resource.data.contractorId);
+      allow delete: if isExistingOwner(request.auth.uid, resource.data.contractorId);
     }
 
     /**
-     * @description Allows anyone to read contractors, but nobody can create, update, or delete them.
+     * @description Grants public read access to contractors and allows only authenticated users to create, update, or delete contractor profiles.
      * @path /contractors/{contractorId}
-     * @allow (get, list) - Any user can read the contractors.
-     * @deny (create, update, delete) - No one can create, update, or delete contractors.
-     * @principle Grants public read access and denies all write operations.
+     * @allow (get, list) - Any user can read contractor details.
+     * @allow (create) - An authenticated user can create a contractor profile.
+     * @deny (create) - An unauthenticated user cannot create a contractor profile.
+     * @deny (update, delete) - Only the owner can update or delete the contractor profile.
+     * @principle Restricts write access to authenticated users, enforcing ownership.
      */
     match /contractors/{contractorId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create: if isSignedIn() && request.resource.data.id == contractorId;
+      allow update: if isExistingOwner(request.auth.uid, resource.data.id);
+      allow delete: if isExistingOwner(request.auth.uid, resource.data.id);
     }
 
     /**
-     * @description Allows anyone to read metro codes, but nobody can create, update, or delete them.
+     * @description Grants public read access to metro codes; creation, modification, and deletion are disallowed.
      * @path /metro_codes/{metroCodeId}
-     * @allow (get, list) - Any user can read the metro codes.
+     * @allow (get, list) - Any user can read metro code details.
      * @deny (create, update, delete) - No one can create, update, or delete metro codes.
-     * @principle Grants public read access and denies all write operations.
+     * @principle Restricts write access to metro codes.
      */
     match /metro_codes/{metroCodeId} {
       allow get, list: if true;
       allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the user is the owner of the resource.
+     * @param {string} userId - The user ID to check against.
+     * @param {string} resourceId - The resource ID to check against.
+     * @return {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId, resourceId) {
+        return isSignedIn() && userId == resourceId;
+    }
+
+        /**
+     * @description Checks if the user is the owner of the resource and the resource exists.
+     * @param {string} userId - The user ID to check against.
+     * @param {string} resourceId - The resource ID to check against.
+     * @return {boolean} True if the user is the owner and the resource exists, false otherwise.
+     */
+    function isExistingOwner(userId, resourceId) {
+        return isOwner(userId, resourceId) && resource != null;
     }
   }
 }
