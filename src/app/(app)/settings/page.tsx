@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/lib/types";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { usersData as staticUsers } from "@/lib/data"; // Use static data
 import { AddUserDialog } from "@/components/settings/add-user-dialog";
 
 const initialPermissionsData = [
@@ -36,14 +35,15 @@ type PermissionItem = typeof initialPermissionsData[0];
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const firestore = useFirestore();
   const [permissions, setPermissions] = useState(initialPermissionsData);
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [tempPermissions, setTempPermissions] = useState<PermissionItem | null>(null);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
 
-  const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
-  const { data: users, isLoading: usersLoading } = useCollection<User>(usersQuery);
+  // Use the static user data instead of querying Firestore
+  const users: User[] = staticUsers;
+  const usersLoading = false;
+
 
   const handleEdit = (item: PermissionItem) => {
     setEditingRow(item.feature);
