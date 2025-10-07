@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,9 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { usersData } from "@/lib/data";
 import type { User } from "@/lib/types";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 
 const initialPermissionsData = [
     { feature: "Dashboard", page: true, gpo: true, pm: false },
@@ -34,13 +35,13 @@ type PermissionItem = typeof initialPermissionsData[0];
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [permissions, setPermissions] = useState(initialPermissionsData);
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [tempPermissions, setTempPermissions] = useState<PermissionItem | null>(null);
 
-  const [users, setUsers] = useState<User[]>(usersData);
-  const [usersLoading, setUsersLoading] = useState(false);
-
+  const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
+  const { data: users, isLoading: usersLoading } = useCollection<User>(usersQuery);
 
   const handleEdit = (item: PermissionItem) => {
     setEditingRow(item.feature);
