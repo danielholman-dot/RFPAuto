@@ -25,7 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
-import { useFirestore } from "@/firebase"
+import { useFirebase } from "@/firebase"
 import { collection, addDoc, doc, updateDoc, Timestamp } from 'firebase/firestore'
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { RFP, MetroCode } from "@/lib/types"
@@ -56,7 +56,7 @@ type ProjectIntakeFormProps = {
 export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntakeFormProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const firestore = useFirestore();
+  const { firestore, firebaseApp } = useFirebase();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedBudget, setFormattedBudget] = useState("");
 
@@ -112,7 +112,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
             description: `Attaching ${values.technicalDocuments.length} document(s). Please wait.`,
         });
 
-        const storage = getStorage();
+        const storage = getStorage(firebaseApp);
         const uploadPromises = values.technicalDocuments.map(async (file) => {
             const storageRef = ref(storage, `rfp-technical-documents/${rfpId}/${file.name}`);
             await uploadBytes(storageRef, file);
