@@ -38,7 +38,7 @@ export type GenerateProjectRFPInstructionsOutput = z.infer<
 export async function generateProjectRFPInstructions(
   input: GenerateProjectRFPInstructionsInput
 ): Promise<GenerateProjectRFPInstructionsOutput> {
-  const startDate = new Date(input.startDate);
+  const startDate = input.startDate ? new Date(input.startDate) : new Date();
   
   // Validate the date and default to now() if it's invalid.
   const validStartDate = !isNaN(startDate.getTime()) ? startDate : new Date();
