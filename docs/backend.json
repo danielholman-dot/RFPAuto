@@ -253,9 +253,7 @@
     }
   },
   "auth": {
-    "providers": [
-      "anonymous"
-    ]
+    "providers": []
   },
   "firestore": {
     "/rfps/{rfpId}": {

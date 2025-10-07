@@ -1,14 +1,12 @@
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, writeBatch, doc, getDocs, Timestamp } from 'firebase/firestore';
-import { getAuth, signInAnonymously } from 'firebase/auth';
 import { firebaseConfig } from '../src/firebase/config';
 import { ContractorsData, MetroCodesData, RFPData as seedRFPData, usersData } from '../src/lib/data';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
 async function seedCollection(collectionName: string, data: any[], idField?: string) {
     const collectionRef = collection(db, collectionName);
