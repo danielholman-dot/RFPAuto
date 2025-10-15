@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -117,5 +118,5 @@ function ProposalSubmitForm() {
 export default function ProposalSubmitPage() {
     return (
       <ProposalSubmitForm />
-    )
+    );
 }
