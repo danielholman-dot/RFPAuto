@@ -1,18 +1,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, writeBatch, doc, getDocs, Timestamp } from 'firebase/firestore';
-
-// This config must be kept in sync with src/firebase/config.ts
-const firebaseConfig = {
-  "projectId": "gpo-procurement-sandbox-563772",
-  "appId": "1:1071160844261:web:30144bf94e97dfb6dad90c",
-  "storageBucket": "gpo-procurement-sandbox-563772.appspot.com",
-  "apiKey": "AIzaSyCvHiAeqP8TGLnkcpxRfo7XAwS8AJxpk2k",
-  "authDomain": "gpo-procurement-sandbox-563772.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "1071160844261"
-};
-
+import { firebaseConfig } from '../src/firebase/config';
 import { ContractorsData, MetroCodesData, RFPData as seedRFPData, usersData } from '../src/lib/data';
 
 // Initialize Firebase
@@ -126,3 +115,5 @@ async function seedDatabase() {
 }
 
 seedDatabase();
+
+    

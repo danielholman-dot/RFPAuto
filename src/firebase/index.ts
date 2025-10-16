@@ -2,8 +2,8 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 // This module-level variable will hold the single initialized Firebase services instance.
 let firebaseServices: {
@@ -39,13 +39,6 @@ export function initializeFirebase() {
   return firebaseServices;
 }
 
-export function getSdks(firebaseApp: FirebaseApp) {
-  return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
-  };
-}
 
 export * from './provider';
 export * from './client-provider';
@@ -55,3 +48,5 @@ export * from './non-blocking-updates';
 export * from './errors';
 export * from './error-emitter';
 export * from './auth/use-user';
+
+    

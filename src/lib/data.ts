@@ -1,5 +1,7 @@
 
-import type { MetroCode } from './types';
+import { collection, getDocs, doc, getDoc, addDoc, query, where, Timestamp } from 'firebase/firestore';
+import { firestore } from '@/firebase/firestore-instance';
+import type { MetroCode, RFP, Contractor, Proposal } from './types';
 
 export const usersData = [
     {
@@ -864,19 +866,41 @@ export const RFPData = [
 ];
 
 
-// MOCK FIRESTORE FUNCTIONS
-// In a real app, these would be making calls to Firestore
-export const getRfps = async () => {
-    return RFPData;
-}
-export const getRfpById = async (id: string) => { // Find the RFP data const rfp = RFPData.find(rfp => `rfp-${RFPData.indexOf(rfp)+1}` === id); // If we found it, return a new object that includes the ID if (rfp) { return { ...rfp, id: id // This adds the missing 'id' field (e.g., "rfp-1") }; } // Otherwise, return null return null;
-}
-export const getContractors = async () => {
-    return ContractorsData;
-}
-export const getProposalsByRfpId = async (rfpId: string) => {
-    return []; // No mock proposals yet
-}
-export const addProposal = async (rfpId: string, proposal: any) => {
-    console.log("Adding proposal to RFP:", rfpId, proposal);
-}
+export const getRfps = async (): Promise<RFP[]> => {
+    const rfpsCol = collection(firestore, 'rfps');
+    const rfpSnapshot = await getDocs(rfpsCol);
+    const rfpList = rfpSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RFP));
+    return rfpList;
+};
+
+export const getRfpById = async (id: string): Promise<RFP | null> => {
+    const rfpDocRef = doc(firestore, 'rfps', id);
+    const rfpSnap = await getDoc(rfpDocRef);
+    if (rfpSnap.exists()) {
+        return { id: rfpSnap.id, ...rfpSnap.data() } as RFP;
+    } else {
+        return null;
+    }
+};
+
+export const getContractors = async (): Promise<Contractor[]> => {
+    const contractorsCol = collection(firestore, 'contractors');
+    const contractorSnapshot = await getDocs(contractorsCol);
+    const contractorList = contractorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contractor));
+    return contractorList;
+};
+
+export const getProposalsByRfpId = async (rfpId: string): Promise<Proposal[]> => {
+    const proposalsCol = collection(firestore, `rfps/${rfpId}/proposals`);
+    const proposalSnapshot = await getDocs(proposalsCol);
+    const proposalList = proposalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Proposal));
+    return proposalList;
+};
+
+export const addProposal = async (rfpId: string, proposal: Omit<Proposal, 'id'>) => {
+    const proposalsCol = collection(firestore, `rfps/${rfpId}/proposals`);
+    const docRef = await addDoc(proposalsCol, proposal);
+    return docRef.id;
+};
+
+    

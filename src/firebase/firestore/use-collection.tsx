@@ -28,9 +28,11 @@ export interface UseCollectionResult<T> {
 // Helper to create a stable string representation of a query
 const getQueryPath = (query: Query | CollectionReference | null | undefined): string | null => {
   if (!query) return null;
-  if ('path' in query) return query.path;
-  // Fallback for complex queries that don't have a simple path
-  return JSON.stringify(query); 
+  // This is a simplified representation. For complex queries, you might need a more robust serialization
+  if ('_query' in query && query._query) {
+      return `${query.path}-${JSON.stringify(query._query.filters)}`
+  }
+  return query.path;
 }
 
 /**
@@ -107,3 +109,5 @@ export function useCollection<T = any>(
 
   return { data, isLoading, error };
 }
+
+    
