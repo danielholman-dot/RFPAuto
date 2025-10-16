@@ -6,9 +6,11 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
 import { AppSidebar } from '@/components/layout/sidebar';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Header } from '@/components/layout/header';
 import { usePathname } from 'next/navigation';
+import { SidebarInset } from '@/components/ui/sidebar';
+
 
 export default function RootLayout({
   children,
@@ -29,19 +31,21 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased', 'min-h-screen bg-background font-sans')}>
         <FirebaseClientProvider>
-          {isPublicPage ? (
-            <main>{children}</main>
-          ) : (
             <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset className='bg-background'>
-                <Header />
-                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-                  {children}
-                </main>
-              </SidebarInset>
+              {isPublicPage ? (
+                <main>{children}</main>
+              ) : (
+                <>
+                  <AppSidebar />
+                  <SidebarInset>
+                    <Header />
+                    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+                      {children}
+                    </main>
+                  </SidebarInset>
+                </>
+              )}
             </SidebarProvider>
-          )}
         </FirebaseClientProvider>
         <Toaster />
       </body>
