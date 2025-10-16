@@ -34,8 +34,6 @@ function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps
       const rfpData = await getRfpById(rfpId);
       setRfp(rfpData);
 
-      // In a real app, you might get this from an auth context or URL param
-      // For now, we'll just pick a random one for demonstration
       const contractors = await getContractors();
       if (contractors.length > 0) {
         const randomContractor = contractors[Math.floor(Math.random() * contractors.length)];
@@ -62,16 +60,13 @@ function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps
     setIsSubmitting(true);
 
     try {
-      // In a real app, you would upload the file to Firebase Storage
-      // and get the download URL. Here we'll simulate it.
       const proposalDocumentUrl = `proposals/${rfpId}/${file.name}`;
-      // In a real app, you might use a Cloud Function to extract text.
       const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
 
       await addProposal(rfpId, {
         contractorId: contractorId,
         rfpId: rfpId,
-        submittedDate: new Date(),
+        submitted Date: new Date(),
         status: 'Submitted',
         proposalDocumentUrl,
         proposalText,
@@ -107,7 +102,7 @@ function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps
             <div className="space-y-2">
               <Label htmlFor="proposal-file">Proposal Document</Label>
               <Input id="proposal-file" type="file" onChange={handleFileChange} required />
-               <p className="text-xs text-muted-foreground">To upload a Google Sheet, first go to File > Download > Microsoft Excel (.xlsx) and upload the exported file.</p>
+              <p className="text-xs text-muted-foreground">To upload a Google Sheet, first go to File > Download > Microsoft Excel (.xlsx) and upload the exported file.</p>
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -130,6 +125,10 @@ export default function ProposalSubmitPage() {
 
     if (!rfpId) {
         return <div className="flex justify-center items-center h-screen"><p>Invalid RFP link.</p></div>;
+    }
+
+    if (!firebase.firestore) {
+        return <div className="flex justify-center items-center h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
     }
 
     return <ProposalSubmitForm rfpId={rfpId} router={router} firebase={firebase} />;
