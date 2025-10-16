@@ -218,7 +218,7 @@ export default function GoLivePage() {
                                                 <AccordionContent className="px-4">
                                                      <div className="mt-2 pl-10 text-xs text-muted-foreground space-y-1">
                                                         <p className="font-bold mb-2">Steps:</p>
-                                                        {task.steps.map((step, index) => (
+                                                        {task.steps.map((step: any, index: number) => (
                                                             <p key={index}>{step}</p>
                                                         ))}
                                                     </div>

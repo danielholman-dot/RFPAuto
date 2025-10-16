@@ -869,8 +869,7 @@ export const RFPData = [
 export const getRfps = async () => {
     return RFPData;
 }
-export const getRfpById = async (id: string) => {
-    return RFPData.find(rfp => `rfp-${RFPData.indexOf(rfp)+1}` === id) || null;
+export const getRfpById = async (id: string) => { // Find the RFP data const rfp = RFPData.find(rfp => `rfp-${RFPData.indexOf(rfp)+1}` === id); // If we found it, return a new object that includes the ID if (rfp) { return { ...rfp, id: id // This adds the missing 'id' field (e.g., "rfp-1") }; } // Otherwise, return null return null;
 }
 export const getContractors = async () => {
     return ContractorsData;

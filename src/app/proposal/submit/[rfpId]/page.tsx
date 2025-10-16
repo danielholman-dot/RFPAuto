@@ -11,22 +11,27 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useFirebase } from '@/firebase';
+import type { FirebaseServicesAndUser } from '@/firebase/provider';
 
-function ProposalSubmitForm() {
-  const { rfpId } = useParams();
-  const router = useRouter();
+type ProposalSubmitFormProps = {
+  rfpId: string;
+  router: ReturnType<typeof useRouter>;
+  firebase: FirebaseServicesAndUser;
+};
+
+function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contractorId, setContractorId] = useState('');
   const [rfp, setRfp] = useState<RFP | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const { firestore } = useFirebase();
+  
+  const { firestore } = firebase;
 
   useEffect(() => {
     async function loadData() {
       if (!firestore) return;
-      const rfpData = await getRfpById(rfpId as string);
+      const rfpData = await getRfpById(rfpId);
       setRfp(rfpData);
 
       // In a real app, you might get this from an auth context or URL param
@@ -63,9 +68,9 @@ function ProposalSubmitForm() {
       // In a real app, you might use a Cloud Function to extract text.
       const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
 
-      await addProposal(rfpId as string, {
+      await addProposal(rfpId, {
         contractorId: contractorId,
-        rfpId: rfpId as string,
+        rfpId: rfpId,
         submittedDate: new Date(),
         status: 'Submitted',
         proposalDocumentUrl,
@@ -102,7 +107,7 @@ function ProposalSubmitForm() {
             <div className="space-y-2">
               <Label htmlFor="proposal-file">Proposal Document</Label>
               <Input id="proposal-file" type="file" onChange={handleFileChange} required />
-               <p className="text-xs text-muted-foreground">To upload a Google Sheet, first go to File &gt; Download &gt; Microsoft Excel (.xlsx) and upload the exported file.</p>
+               <p className="text-xs text-muted-foreground">To upload a Google Sheet, first go to File > Download > Microsoft Excel (.xlsx) and upload the exported file.</p>
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -115,8 +120,17 @@ function ProposalSubmitForm() {
   );
 }
 
+
 export default function ProposalSubmitPage() {
-    return (
-      <ProposalSubmitForm />
-    );
+    const params = useParams();
+    const router = useRouter();
+    const firebase = useFirebase();
+
+    const rfpId = params.rfpId as string;
+
+    if (!rfpId) {
+        return <div className="flex justify-center items-center h-screen"><p>Invalid RFP link.</p></div>;
+    }
+
+    return <ProposalSubmitForm rfpId={rfpId} router={router} firebase={firebase} />;
 }
