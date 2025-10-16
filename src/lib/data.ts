@@ -652,7 +652,7 @@ export const ContractorsData = [
     {
         "name": "U.S. Engineering Innovations, LLC",
         "contactName": "Vincent Michael Pianalto; Bryan Taylor; Justin Apprill; Jarrod Foster; Jeff Kiblen; Adam Provost; Richard Green",
-        "contactEmail": "vince.pianalto@usengineering.com; Bryan.Taylor@usengineering.com; Justin.Apprill@useinnovations.com; Jarrod.foster@useinnovations.com; jeff.kiblen@useinnovations.com; adam.provost@useinnovations.com; richard.green@usengineering.com",
+        "contactEmail": "vince.pianalto@usengineering.com; Bryan.Taylor@usengineering.com; Justin.Apprill@useinnovations.com; Jarrod.foster@useinnovations.com; jeff.kiblen@useinnovations.com; adam.provost@usengineering.com; richard.green@usengineering.com",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -891,7 +891,7 @@ export const getContractors = async (): Promise<Contractor[]> => {
 };
 
 export const getProposalsByRfpId = async (rfpId: string): Promise<Proposal[]> => {
-    const proposalsCol = collection(firestore, `rfps/${rfpId}/proposals`);
+    const proposalsCol = collection(firestore, 'rfps', rfpId, 'proposals');
     const proposalSnapshot = await getDocs(proposalsCol);
     const proposalList = proposalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Proposal));
     return proposalList;
@@ -899,8 +899,10 @@ export const getProposalsByRfpId = async (rfpId: string): Promise<Proposal[]> =>
 
 export const addProposal = async (rfpId: string, proposal: Omit<Proposal, 'id'>) => {
     const proposalsCol = collection(firestore, `rfps/${rfpId}/proposals`);
-    const docRef = await addDoc(proposalsCol, proposal);
+    const newProposalData = {
+        ...proposal,
+        submittedDate: Timestamp.now(),
+    }
+    const docRef = await addDoc(proposalsCol, newProposalData);
     return docRef.id;
 };
-
-    
