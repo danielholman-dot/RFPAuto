@@ -19,6 +19,7 @@ import type { MetroCode } from '@/lib/types';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function MetroPage() {
   const firestore = useFirestore();
@@ -55,7 +56,7 @@ export default function MetroPage() {
         <CardHeader>
           <CardTitle>Metro Codes</CardTitle>
           <CardDescription>
-            List of active metro codes for projects.
+            List of active metro codes for projects. Click on a code to see a detailed summary.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -73,7 +74,11 @@ export default function MetroPage() {
             <TableBody>
               {metros.map((metro) => (
                 <TableRow key={metro.id}>
-                  <TableCell className="font-medium">{metro.code}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/metro/${metro.code}`} className="text-primary hover:underline">
+                        {metro.code}
+                    </Link>
+                  </TableCell>
                   <TableCell>{metro.city}</TableCell>
                   <TableCell>{metro.state}</TableCell>
                   <TableCell>{metro.region}</TableCell>
