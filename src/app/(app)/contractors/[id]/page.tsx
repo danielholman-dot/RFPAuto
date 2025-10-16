@@ -5,11 +5,13 @@ import { useParams, notFound, useRouter } from 'next/navigation';
 import type { Contractor, MetroCode } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { HardHat, Users, Wrench, Zap, MapPin, Loader2, Phone } from 'lucide-react';
+import { HardHat, Users, Wrench, Zap, MapPin, Loader2, Phone, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useDoc, useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { doc, collection, query, where } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const getIconForType = (type: string) => {
     switch (type) {
@@ -78,8 +80,8 @@ export default function ContractorDetailPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
-            <div className="flex flex-row items-start gap-4">
+        <CardHeader className="flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex flex-row items-start gap-4 flex-1">
                 <Avatar className="w-16 h-16">
                     <AvatarFallback className="text-2xl bg-muted">
                         {getIconForType(contractor.type)}
@@ -93,6 +95,11 @@ export default function ContractorDetailPage() {
                     </div>
                 </div>
             </div>
+             <Button asChild variant="outline">
+                <Link href={`/contractors/${id}/edit`}>
+                    <Pencil className="mr-2 h-4 w-4" /> Edit Contractor
+                </Link>
+            </Button>
         </CardHeader>
         <CardContent className="space-y-6">
             <Separator />
