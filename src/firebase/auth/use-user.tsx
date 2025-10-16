@@ -1,19 +1,18 @@
 'use client';
 
-import { usersData } from '@/lib/data';
+import { useFirebase } from '@/firebase/provider';
 import type { User } from '@/lib/types';
 
 /**
  * Hook for accessing the authenticated user's state.
- * NOTE: Authentication is currently disabled. This hook returns a mock user.
+ * It returns the user object from the Firebase context.
  */
 export const useUser = () => {
-  // Return the first user from the mock data as the logged-in user.
-  const mockUser = usersData[0] as User;
-
+  const { user, isUserLoading, userError } = useFirebase();
+  // The user object from the provider already conforms to the User type.
   return {
-    user: mockUser,
-    isUserLoading: false, // Always false as we are not fetching a real user.
-    userError: null,
+    user: user as User | null,
+    isUserLoading,
+    userError,
   };
 };

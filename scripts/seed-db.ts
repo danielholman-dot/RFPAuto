@@ -34,13 +34,21 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
     let count = 0;
 
     data.forEach((item, index) => {
-        const id = idField ? item[idField] : (item.id || `${collectionName.slice(0, -1)}-${index + 1}`);
+        let id;
+        if (idField && item[idField]) {
+            id = item[idField];
+        } else if (item.id) {
+            id = item.id;
+        } else if (collectionName === 'users' && item.email) {
+            // Use a deterministic ID for users based on email for claim purposes
+            id = item.email.replace(/[^a-zA-Z0-9]/g, '_');
+        } else {
+            id = `${collectionName.slice(0, -1)}-${index + 1}`;
+        }
+        
         const docRef = doc(db, collectionName, id);
         
-        const dataToSet = { ...item };
-        if (!idField || !item[idField]) {
-          dataToSet.id = id;
-        }
+        const dataToSet = { ...item, id: id };
 
         // Convert JS Dates to Firestore Timestamps
         Object.keys(dataToSet).forEach(key => {
@@ -55,6 +63,10 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
             delete dataToSet.preferred;
         }
 
+        // Add admin claim for the first user for demo purposes
+        if (collectionName === 'users' && index === 0) {
+            (dataToSet as any).customClaims = { admin: true };
+        }
 
         batch.set(docRef, dataToSet);
         count++;
@@ -87,6 +99,7 @@ async function seedDatabase() {
                     id, 
                     createdAt: Timestamp.now(),
                     invitedContractors: [],
+                    completedStages: [], // Ensure this is initialized as empty
                 };
                  // Convert JS Dates to Firestore Timestamps
                 Object.keys(dataWithId).forEach(key => {
@@ -104,7 +117,7 @@ async function seedDatabase() {
         }
 
 
-        console.log('Database seeding completed successfully.');
+        console.log('Database seeding completed successfully. Run "npm run dev" to start the app.');
         process.exit(0);
     } catch (error) {
         console.error('Error seeding database:', error);

@@ -1,112 +1,119 @@
+/**
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict user-ownership model for user profiles
+ * and public read access to projects, contractors, and metro codes.
+ *
+ * Data Structure:
+ * - /users/{userId}: User profile data, accessible only by the user themselves.
+ * - /rfps/{rfpId}: Project data, publicly readable but writable only with valid ownership.
+ * - /contractors/{contractorId}: Contractor data, publicly readable.
+ * - /metro_codes/{metroCodeId}: Metro code data, publicly readable.
+ * - /rfps/{rfpId}/proposals/{proposalId}: Proposals for a specific RFP, writable only with valid contractorId.
+ *
+ * Key Security Decisions:
+ * - User profiles are private and only accessible by the authenticated user.
+ * - Project (RFP) data is public, but write access is restricted to authorized users.
+ * - Contractor and Metro Code data is public and read-only.
+ *
+ * Denormalization for Authorization:
+ * - Projects (RFPs) should include an `ownerId` field to simplify write authorization.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to manage their own user documents.
+     * @description Allows users to read and write their own user profile data.
      * @path /users/{userId}
-     * @allow (create) User A with ID 'user_a' can create their own profile at /users/user_a.
-     * @deny (create) User A with ID 'user_a' cannot create a profile at /users/user_b.
-     * @allow (get, update, delete) User A with ID 'user_a' can read, update, or delete their own profile at /users/user_a.
-     * @deny (get, update, delete) User A with ID 'user_a' cannot read, update, or delete User B's profile at /users/user_b.
-     * @deny (list) Listing users is not allowed.
-     * @principle Enforces document ownership for all operations on user documents.
+     * @allow (create) User with UID 'user123' can create their own profile.
+     * @allow (get) User with UID 'user123' can read their own profile.
+     * @allow (update) User with UID 'user123' can update their own profile.
+     * @allow (delete) User with UID 'user123' can delete their own profile.
+     * @deny (create) User with UID 'user123' cannot create a profile for 'user456'.
+     * @deny (get) User with UID 'user123' cannot read the profile of 'user456'.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return request.auth != null && request.auth.uid == userId;
       }
+      allow get: if isOwner(userId);
+      allow list: if false; // No listing of all users
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Allows anyone to read projects, but only authorized users can create, update, or delete them.
+     * @path /rfps/{rfpId}
+     * @allow (get) Any user can read project with ID 'project123'.
+     * @allow (list) Any user can list all projects.
+     * @allow (create) User with UID 'user123' can create a new project with 'ownerId' set to 'user123'.
+     * @allow (update) User with UID 'user123' can update project with ID 'project123' if they are the owner.
+     * @allow (delete) User with UID 'user123' can delete project with ID 'project123' if they are the owner.
+     * @deny (create) User with UID 'user123' cannot create a new project with 'ownerId' set to 'user456'.
+     * @deny (update) User with UID 'user123' cannot update project with ID 'project123' if they are not the owner.
+     * @principle Allows public reads with owner-only writes, enforcing ownership for write operations.
+     */
+    match /rfps/{rfpId} {
       function isSignedIn() {
         return request.auth != null;
       }
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      function isOwner() {
+        return isSignedIn() && request.auth.token.email == resource.data.primaryStakeholderEmail;
+      }
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.primaryStakeholderEmail == request.auth.token.email;
+      allow update: if isOwner();
+      allow delete: if isOwner();
     }
 
     /**
-     * @description Allows public read access to RFPs, but restricts write access to authenticated users.
-     * @path /rfps/{rfpId}
-     * @allow (get, list) Any user (signed in or not) can read any RFP.
-     * @allow (create) Authenticated user can create an RFP.
-     * @deny (create) Non-authenticated user cannot create an RFP.
-     * @allow (update, delete) Authenticated user can update/delete an RFP.
-     * @deny (update, delete) Non-authenticated user cannot update/delete an RFP.
-     * @principle Allows public reads, restricts writes to authenticated users, and requires an 'ownerId' field for secure ownership validation.
-     */
-    match /rfps/{rfpId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Allows authenticated users to create proposals for specific RFPs.
+     * @description Allows contractors to create, update, and delete proposals for a specific RFP if they are the contractorId, and anyone to read proposals
      * @path /rfps/{rfpId}/proposals/{proposalId}
-     * @allow (create) Authenticated user can create a proposal under an RFP.
-     * @deny (create) Non-authenticated user cannot create a proposal.
-     * @allow (get, update, delete) Authenticated user can read, update, or delete a proposal under an RFP.
-     * @deny (get, update, delete) Non-authenticated user cannot read, update, or delete a proposal.
-     * @deny (list) Listing proposals is disallowed.
-     * @principle Restricts proposal creation and management to authenticated users only.
+     * @allow (get) Any user can read proposal with ID 'proposal123' under project 'project123'.
+     * @allow (list) Any user can list all proposals under project 'project123'.
+     * @allow (create) User with UID 'contractor123' can create a new proposal under project 'project123' if they are the contractor.
+     * @deny (create) User with UID 'user123' cannot create a new proposal under project 'project123' with 'contractorId' set to 'user456'.
+     * @principle Enforces that only the contractor can create proposals for RFPs.
      */
     match /rfps/{rfpId}/proposals/{proposalId} {
         function isSignedIn() {
-            return request.auth != null;
-        }
+        return request.auth != null;
+      }
+       function isContractor() {
+        return isSignedIn() && request.auth.uid == resource.data.contractorId;
+      }
 
-        allow get: if isSignedIn();
-        allow list: if false;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.contractorId == request.auth.uid;
+      allow update: if isContractor();
+      allow delete: if isContractor();
     }
 
     /**
-     * @description Allows public read access to Contractors, but restricts write access to authenticated users.
+     * @description Allows anyone to read contractor data.
      * @path /contractors/{contractorId}
-     * @allow (get, list) Any user (signed in or not) can read any Contractor.
-     * @allow (create) Authenticated user can create a Contractor.
-     * @deny (create) Non-authenticated user cannot create a Contractor.
-     * @allow (update, delete) Authenticated user can update/delete a Contractor.
-     * @deny (update, delete) Non-authenticated user cannot update/delete a Contractor.
+     * @allow (get) Any user can read contractor with ID 'contractor123'.
+     * @allow (list) Any user can list all contractors.
+     * @principle Contractor data is publicly readable.
      */
     match /contractors/{contractorId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows public read access to Metro Codes, but restricts write access to authenticated users.
+     * @description Allows anyone to read metro code data.
      * @path /metro_codes/{metroCodeId}
-     * @allow (get, list) Any user (signed in or not) can read any Metro Code.
-     * @allow (create) Authenticated user can create a Metro Code.
-     * @deny (create) Non-authenticated user cannot create a Metro Code.
-     * @allow (update, delete) Authenticated user can update/delete a Metro Code.
-     * @deny (update, delete) Non-authenticated user cannot update/delete a Metro Code.
+     * @allow (get) Any user can read metro code with ID 'metro123'.
+     * @allow (list) Any user can list all metro codes.
+     * @principle Metro code data is publicly readable.
      */
     match /metro_codes/{metroCodeId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
   }
 }
