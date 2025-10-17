@@ -13,10 +13,7 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
-
-# This setting makes the backend service private, only allowing traffic
-# from within your Google Cloud project (including the App Hosting frontend).
-accessControl:
+  # Sets the ingress traffic to internal-only to comply with organization policy.
   ingress: INGRESS_TRAFFIC_INTERNAL_ONLY
 
 # Defines the behavior of your live deployment.
