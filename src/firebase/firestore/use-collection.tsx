@@ -30,15 +30,17 @@ export interface UseCollectionResult<T> {
 const getQueryPath = (query: Query | CollectionReference | null | undefined): string | null => {
   if (!query) return null;
 
-  if ('_query' in query) { // It's a Query
+  // Check if it's a Query object
+  if ('ref' in query && 'where' in query) {
     const q = query as Query;
     // A Query's ref points to the CollectionReference, which has the path.
     const path = q.ref.path;
-    const filters = JSON.stringify((q as any)._query.filters);
+    const filters = JSON.stringify((q as any)._query?.filters || []);
     return `${path}-${filters}`;
   }
   
-  if ('path' in query) { // It's a CollectionReference
+  // Check if it's a CollectionReference
+  if ('path' in query && 'id' in query) {
     return (query as CollectionReference).path;
   }
   
@@ -119,3 +121,4 @@ export function useCollection<T = any>(
 
   return { data, isLoading, error };
 }
+
