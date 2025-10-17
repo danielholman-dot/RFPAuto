@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -26,27 +25,6 @@ export interface UseCollectionResult<T> {
   error: FirestoreError | Error | null; // Error object, or null.
 }
 
-// Helper to create a stable string representation of a query
-const getQueryPath = (query: Query | CollectionReference | null | undefined): string | null => {
-  if (!query) return null;
-
-  // Check if it's a Query object
-  if ('ref' in query && 'where' in query) {
-    const q = query as Query;
-    // A Query's ref points to the CollectionReference, which has the path.
-    const path = q.ref.path;
-    const filters = JSON.stringify((q as any)._query?.filters || []);
-    return `${path}-${filters}`;
-  }
-  
-  // Check if it's a CollectionReference
-  if ('path' in query && 'id' in query) {
-    return (query as CollectionReference).path;
-  }
-  
-  return null;
-}
-
 /**
  * React hook to subscribe to a Firestore collection or query in real-time.
  * Handles nullable references/queries.
@@ -69,18 +47,21 @@ export function useCollection<T = any>(
   const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  // Use a ref to track a stable representation of the query
-  const queryPathRef = useRef<string | null>(null);
+  // Use a ref to track the previous query object for comparison.
+  const prevQueryRef = useRef<(CollectionReference<DocumentData> | Query<DocumentData>)  | null | undefined>(null);
 
   useEffect(() => {
-    const newQueryPath = getQueryPath(memoizedTargetRefOrQuery);
+    // Determine if the query has actually changed using Firestore's `isEqual` method.
+    const queryChanged = 
+      (prevQueryRef.current && !memoizedTargetRefOrQuery) ||
+      (!prevQueryRef.current && memoizedTargetRefOrQuery) ||
+      (prevQueryRef.current && memoizedTargetRefOrQuery && !prevQueryRef.current.isEqual(memoizedTargetRefOrQuery));
 
-    // Only reset and show loading if the actual query has changed.
-    if (newQueryPath !== queryPathRef.current) {
+    if (queryChanged) {
         setData(null);
         setError(null);
         setIsLoading(true);
-        queryPathRef.current = newQueryPath;
+        prevQueryRef.current = memoizedTargetRefOrQuery;
     }
 
     if (!memoizedTargetRefOrQuery) {
@@ -101,7 +82,13 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        const path = getQueryPath(memoizedTargetRefOrQuery) || 'Unknown path';
+        let path = 'Unknown path';
+        if ('path' in memoizedTargetRefOrQuery) {
+            path = memoizedTargetRefOrQuery.path;
+        } else if ('ref' in memoizedTargetRefOrQuery) {
+            path = memoizedTargetRefOrQuery.ref.path;
+        }
+        
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
@@ -121,4 +108,3 @@ export function useCollection<T = any>(
 
   return { data, isLoading, error };
 }
-
