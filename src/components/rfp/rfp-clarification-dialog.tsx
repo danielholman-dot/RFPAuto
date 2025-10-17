@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from "react";
@@ -20,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Textarea from "../ui/textarea";
+import Textarea from "../ui/textarea"; // Assuming this is a custom component
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -31,7 +30,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { RFP, MetroCode } from "@/lib/types";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, doc, updateDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, Timestamp } from 'firebase/firestore'; // Import Timestamp
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { contractorTypes } from "@/lib/data";
@@ -44,6 +43,7 @@ type RfpClarificationDialogProps = {
   onSubmit: (updatedRfp: RFP) => void;
 };
 
+// Schema for the form fields being validated
 const formSchema = z.object({
   projectName: z.string().min(1, "Project name is required."),
   scopeOfWork: z.string().min(1, "Scope of work is required."),
@@ -51,6 +51,9 @@ const formSchema = z.object({
   contractorType: z.string().min(1, "Contractor type is required."),
   projectStartDate: z.date({ required_error: "A project start date is required."}),
 });
+
+// Type for the form values inferred from the schema
+type FormValues = z.infer<typeof formSchema>;
 
 export function RfpClarificationDialog({ isOpen, onOpenChange, rfp, missingFields, onSubmit }: RfpClarificationDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,15 +68,9 @@ export function RfpClarificationDialog({ isOpen, onOpenChange, rfp, missingField
     return [...allMetroCodes].sort((a, b) => a.code.localeCompare(b.code));
   }, [allMetroCodes]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      projectName: rfp.projectName !== 'New RFP Draft' ? rfp.projectName : '',
-      scopeOfWork: rfp.scopeOfWork !== 'To be defined.' ? rfp.scopeOfWork : '',
-      metroCode: rfp.metroCode !== 'N/A' ? rfp.metroCode : '',
-      contractorType: rfp.contractorType !== 'N/A' ? rfp.contractorType : '',
-      projectStartDate: rfp.projectStartDate?.toDate(),
-    },
+    // Default values are set in useEffect
   });
 
   useEffect(() => {
@@ -83,30 +80,44 @@ export function RfpClarificationDialog({ isOpen, onOpenChange, rfp, missingField
             scopeOfWork: rfp.scopeOfWork !== 'To be defined.' ? rfp.scopeOfWork : '',
             metroCode: rfp.metroCode !== 'N/A' ? rfp.metroCode : '',
             contractorType: rfp.contractorType !== 'N/A' ? rfp.contractorType : '',
-            projectStartDate: rfp.projectStartDate?.toDate(),
-        })
+            projectStartDate: rfp.projectStartDate?.toDate(), // Convert Timestamp to Date for the form
+        });
     }
-  }, [rfp, form]);
+  }, [rfp, form.reset]);
 
-  const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleFormSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
         const rfpDocRef = doc(firestore, 'rfps', rfp.id);
-        const updatedData = {
-            ...values,
-            projectStartDate: values.projectStartDate ? new Date(values.projectStartDate) : undefined
+
+        // Convert JavaScript Date from form to Firestore Timestamp
+        const firestoreProjectStartDate = values.projectStartDate
+            ? Timestamp.fromDate(values.projectStartDate)
+            : undefined;
+
+        const dataToUpdate = {
+            projectName: values.projectName,
+            scopeOfWork: values.scopeOfWork,
+            metroCode: values.metroCode,
+            contractorType: values.contractorType,
+            projectStartDate: firestoreProjectStartDate, // Use the Timestamp here
         };
 
-        await updateDoc(rfpDocRef, updatedData);
+        // Update the document in Firestore
+        await updateDoc(rfpDocRef, dataToUpdate);
 
-        const updatedRfp = { ...rfp, ...updatedData };
-        
+        // Create the updated RFP object to pass to the onSubmit callback
+        const updatedRfp: RFP = {
+          ...rfp,
+          ...dataToUpdate,
+        };
+
         toast({
             title: "RFP Updated",
             description: "RFP details have been saved.",
         });
-        
-        onSubmit(updatedRfp);
+
+        onSubmit(updatedRfp); // Pass the object with the correct Timestamp type
         onOpenChange(false);
     } catch (error) {
       console.error("Failed to update RFP:", error);
@@ -234,7 +245,7 @@ export function RfpClarificationDialog({ isOpen, onOpenChange, rfp, missingField
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button type="submit" disabled={isSubmitting || !form.formState.isValid}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Update and Generate
                     </Button>
@@ -246,3 +257,4 @@ export function RfpClarificationDialog({ isOpen, onOpenChange, rfp, missingField
     </Dialog>
   );
 }
+

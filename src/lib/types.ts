@@ -1,5 +1,5 @@
 
-import type { Timestamp } from "firebase/firestore";
+import { Timestamp, FieldValue } from 'firebase/firestore';
 
 export type RFP = {
   id: string;
@@ -49,7 +49,7 @@ export type Proposal = {
   id: string;
   contractorId: string;
   rfpId: string;
-  submittedDate: Timestamp;
+  submittedDate: Timestamp | FieldValue; 
   status: 'Pending' | 'Submitted' | 'Under Review' | 'Awarded' | 'Rejected';
   scorecard?: Scorecard;
   proposalDocumentUrl?: string;

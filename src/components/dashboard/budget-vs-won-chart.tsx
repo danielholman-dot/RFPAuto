@@ -11,7 +11,7 @@ type BudgetVsWonChartProps = {
 export function BudgetVsWonChart({ rfps }: BudgetVsWonChartProps) {
   const awardedData = useMemo(() => {
     return rfps
-      .filter(rfp => rfp.status === 'Awarded' || rfp.status === 'Completed')
+      .filter(rfp => rfp.status === 'Award' || rfp.status === 'Completed')
       .map(rfp => {
         const awardedProposal = rfp.proposals?.find(p => p.status === 'Awarded');
         return {

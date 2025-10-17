@@ -46,7 +46,7 @@ export function RfpInvitationDialog({ isOpen, onOpenChange, rfp, contractor, onE
       setIsEditing(false);
       setEmailContent(null);
       
-      const rfpEndDate = rfp.rfpEndDate ? (rfp.rfpEndDate.toDate ? rfp.rfpEndDate.toDate() : new Date(rfp.rfpEndDate)) : new Date();
+      const rfpEndDate = rfp.rfpEndDate ? rfp.rfpEndDate.toDate() : new Date();
       if (isNaN(rfpEndDate.getTime())) {
           console.error("Invalid rfpEndDate");
           setIsLoading(false);

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -35,9 +34,8 @@ import { RfpDrafting } from "./rfp-drafting"
 import { Input } from "../ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp, arrayUnion } from "firebase/firestore";
+import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp, arrayUnion, Timestamp, FieldValue } from "firebase/firestore";
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
 
 type RfpTabsProps = {
   rfp: RFP;
@@ -70,13 +68,13 @@ const StageCompletion = ({ stage, completedStages, onStageToggle }: { stage: Rfp
 export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   const firestore = useFirestore();
   const [rfp, setRfp] = useState(rfpProp);
-  const [activeTab, setActiveTab] = useState(rfp.status === 'Draft' ? 'Selection' : rfp.status);
-  
-  const [completedStages, setCompletedStages] = useState<RfpStage[]>(rfp.completedStages || []);
+  const [activeTab, setActiveTab] = useState(rfpProp.status === 'Draft' ? 'Selection' : rfpProp.status);
+
+  const [completedStages, setCompletedStages] = useState<RfpStage[]>((rfpProp.completedStages || []) as RfpStage[]);
   const { toast } = useToast();
 
   const [selectedContractorToAdd, setSelectedContractorToAdd] = useState<string>('');
-  
+
   const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
   const [isChecklistDialogOpen, setIsChecklistDialogOpen] = useState(false);
   const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
@@ -86,7 +84,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const [winningContractorId, setWinningContractorId] = useState<string | null>(null);
-  
+
   const [isAwardDialogOpen, setIsAwardDialogOpen] = useState(false);
   const [isNonAwardDialogOpen, setIsNonAwardDialogOpen] = useState(false);
   const [contractorForDialog, setContractorForDialog] = useState<Contractor | null>(null);
@@ -96,8 +94,9 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
 
   useEffect(() => {
     setRfp(rfpProp);
-    setCompletedStages(rfpProp.completedStages || []);
-    // Only reset the tab if the RFP itself changes, not just its data
+    // Ensure the type assertion is applied when updating from props
+    setCompletedStages((rfpProp.completedStages || []) as RfpStage[]);
+
     if (rfpProp.id !== rfp.id) {
       setActiveTab(rfpProp.status === 'Draft' ? 'Selection' : rfpProp.status);
     }
@@ -110,7 +109,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   const suggestedContractorsQuery = useMemoFirebase(() => {
     if (isDraft || !rfp.metroCode || !rfp.contractorType) return null;
     return query(
-        collection(firestore, 'contractors'), 
+        collection(firestore, 'contractors'),
         where('metroCodes', 'array-contains', rfp.metroCode),
         where('type', '==', rfp.contractorType)
     );
@@ -128,7 +127,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
     return collection(firestore, 'rfps', rfp.id, 'proposals');
   }, [firestore, isDraft, rfp.id]);
   const { data: proposals, isLoading: proposalsLoading } = useCollection<Proposal>(proposalsQuery);
-  
+
   const proposalsWithBids = useMemo(() => {
     return proposals?.map(p => ({...p, bidAmount: p.bidAmount || Math.floor(Math.random() * (rfp.estimatedBudget * 1.5 - rfp.estimatedBudget * 0.8 + 1)) + rfp.estimatedBudget * 0.8 })) || [];
   }, [proposals, rfp.estimatedBudget]);
@@ -145,10 +144,11 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
     const proposalDocumentUrl = `proposals/${rfp.id}/${file.name}`;
     const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
 
+    // Ensure Proposal type allows FieldValue for submittedDate on creation
     const newProposalData: Omit<Proposal, 'id'> = {
         contractorId,
         rfpId: rfp.id,
-        submittedDate: serverTimestamp() as any,
+        submittedDate: serverTimestamp(), // Assumes Proposal type accepts FieldValue
         status: 'Submitted',
         proposalDocumentUrl,
         proposalText,
@@ -175,7 +175,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
   const handleStageToggle = async (stage: RfpStage) => {
     const isCompleting = !completedStages.includes(stage);
     let newCompletedStages = [...completedStages];
-    let newStatus: RfpStage | 'Completed';
+    let newStatus: RfpStage | 'Completed'; // Check if 'Completed' is part of RFP['status']
 
     if (isCompleting) {
         newCompletedStages.push(stage);
@@ -186,15 +186,15 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
         newCompletedStages = completedStages.filter(s => STAGES.indexOf(s) < stageIndex);
         newStatus = stage;
     }
-    
-    // Optimistically update local state
+
+    const finalStatus = newStatus as RFP['status']; // This cast assumes 'Completed' is a valid status
+
     setCompletedStages(newCompletedStages);
-    setRfp(prev => ({...prev, status: newStatus as RFP['status'], completedStages: newCompletedStages}));
+    setRfp(prev => ({...prev, status: finalStatus, completedStages: newCompletedStages}));
     setActiveTab(newStatus);
 
-
     const rfpDocRef = doc(firestore, 'rfps', rfp.id);
-    await updateDoc(rfpDocRef, { status: newStatus as RFP['status'], completedStages: newCompletedStages });
+    await updateDoc(rfpDocRef, { status: finalStatus, completedStages: newCompletedStages });
 
     toast({
         title: "Status Updated",
@@ -213,7 +213,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
 
   const handleAddContractorToRfp = async () => {
     if (!selectedContractorToAdd) return;
-    
+
     const rfpDocRef = doc(firestore, 'rfps', rfp.id);
     await updateDoc(rfpDocRef, { invitedContractors: arrayUnion(selectedContractorToAdd) });
     setRfp(prev => ({ ...prev, invitedContractors: [...(prev.invitedContractors || []), selectedContractorToAdd]}));
@@ -233,12 +233,12 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
     });
     return statusMap;
   }, [invitedContractors, proposalsWithBids]);
-  
+
   const handleInviteClick = (contractor: Contractor) => {
     setSelectedContractor(contractor);
     setIsInvitationDialogOpen(true);
   };
-  
+
   const handleEoiSent = (contractorId: string) => {
     setSentEoiContractors(prev => [...prev, contractorId]);
     setIsInvitationDialogOpen(false);
@@ -258,11 +258,11 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
     setProposalLinks(prev => {
         const newLinks = { ...prev };
         newLinks[contractorId][index] = value;
-        
+
         if (index === newLinks[contractorId].length - 1 && value !== '') {
             newLinks[contractorId].push('');
         }
-        
+
         return newLinks;
     });
   };
@@ -275,7 +275,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
           description: `Submitting link for ${getContractorById(contractorId)?.name}.`,
       });
 
-      const newProposalData = {
+      const newProposalData: Omit<Proposal, 'id'> = {
           contractorId: contractorId,
           rfpId: rfp.id,
           submittedDate: serverTimestamp(),
@@ -345,19 +345,31 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
 };
 
   const handleProposalSelection = (proposalId: string) => {
-    setSelectedProposals(prev => 
-      prev.includes(proposalId) 
+    setSelectedProposals(prev =>
+      prev.includes(proposalId)
         ? prev.filter(id => id !== proposalId)
         : [...prev, proposalId]
     );
   };
 
-  const formatDate = (date: any) => {
+  const formatDate = (date: Date | Timestamp | FieldValue | null | undefined): string => {
     if (!date) return 'N/A';
-    if (date.toDate) { // Firebase Timestamp
+    if (date instanceof Timestamp) {
       return date.toDate().toLocaleDateString();
     }
-    return new Date(date).toLocaleDateString();
+    if (date instanceof Date) {
+      return date.toLocaleDateString();
+    }
+    // FieldValue like serverTimestamp() won't have a date until after write,
+    // so can't format it. Handle as a special case.
+    if (typeof date === 'object' && 'isEqual' in date) { // Heuristic for FieldValue
+        return 'Pending Server Time';
+    }
+    try {
+        return new Date(date as any).toLocaleDateString();
+    } catch {
+        return 'Invalid Date';
+    }
   };
 
   const getContractorById = useCallback((id: string) => {
@@ -393,10 +405,11 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
     setRfp(updatedRfp);
   };
 
-
+  // ... Rest of the JSX remains the same as you provided ...
   return (
     <>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+           <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as RfpStage)} className="w-full">
+ 
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
             {STAGES.map(stage => (
                  <TabsTrigger key={stage} value={stage} className="flex items-center gap-2">
@@ -576,9 +589,9 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
                                                                 onChange={(e) => handleLinkChange(contractor.id, index, e.target.value)}
                                                                 className="flex-grow"
                                                             />
-                                                            <Button 
-                                                                variant="secondary" 
-                                                                size="sm" 
+                                                            <Button
+                                                                variant="secondary"
+                                                                size="sm"
                                                                 onClick={() => handleLinkSubmit(contractor.id, link, index)}
                                                                 disabled={!link.trim()}
                                                             >
@@ -664,16 +677,16 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
                         )}
                     </CardContent>
                 </Card>
-                
+
                 <div className="text-center">
                 <Button onClick={handleAnalyze} disabled={isAnalyzing || selectedProposals.length === 0}>
                     {isAnalyzing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Run AI Evaluation
                 </Button>
                 </div>
-                
+
                 {isAnalyzing && <div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /><p className="ml-2">Generating comparative analysis...</p></div>}
-                
+
                 {comparativeAnalysisResult && (
                 <div className="space-y-6">
                     <Card>

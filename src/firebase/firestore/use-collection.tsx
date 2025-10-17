@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -29,10 +30,17 @@ export interface UseCollectionResult<T> {
 const getQueryPath = (query: Query | CollectionReference | null | undefined): string | null => {
   if (!query) return null;
   // This is a simplified representation. For complex queries, you might need a more robust serialization
-  if ('_query' in query && query._query) {
-      return `${query.path}-${JSON.stringify(query._query.filters)}`
+  if ('_query' in query && (query as any)._query) {
+      const q = query as any;
+      const path = q._query.ref.path; // Correctly access path for both Query and CollectionReference
+      const filters = JSON.stringify(q._query.filters);
+      return `${path}-${filters}`;
   }
-  return query.path;
+  // Fallback for CollectionReference
+  if ('path' in query) {
+    return (query as CollectionReference).path;
+  }
+  return null;
 }
 
 /**
@@ -109,5 +117,3 @@ export function useCollection<T = any>(
 
   return { data, isLoading, error };
 }
-
-    
