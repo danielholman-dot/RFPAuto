@@ -29,17 +29,19 @@ export interface UseCollectionResult<T> {
 // Helper to create a stable string representation of a query
 const getQueryPath = (query: Query | CollectionReference | null | undefined): string | null => {
   if (!query) return null;
-  // This is a simplified representation. For complex queries, you might need a more robust serialization
-  if ('_query' in query && (query as any)._query) {
-      const q = query as any;
-      const path = q._query.ref.path; // Correctly access path for both Query and CollectionReference
-      const filters = JSON.stringify(q._query.filters);
-      return `${path}-${filters}`;
+
+  if ('_query' in query) { // It's a Query
+    const q = query as Query;
+    // A Query's ref points to the CollectionReference, which has the path.
+    const path = q.ref.path;
+    const filters = JSON.stringify((q as any)._query.filters);
+    return `${path}-${filters}`;
   }
-  // Fallback for CollectionReference
-  if ('path' in query) {
+  
+  if ('path' in query) { // It's a CollectionReference
     return (query as CollectionReference).path;
   }
+  
   return null;
 }
 
