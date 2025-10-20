@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Query,
   onSnapshot,
@@ -29,8 +30,8 @@ export interface UseCollectionResult<T> {
  * React hook to subscribe to a Firestore collection or query in real-time.
  * Handles nullable references/queries.
  * 
- * IMPORTANT! YOU MUST MEMOIZE the inputted memoizedTargetRefOrQuery or BAD THINGS WILL HAPPEN
- * use useMemoFirebase to memoize it per React guidance.
+ * IMPORTANT! To prevent infinite loops, the query/reference passed to this hook
+ * MUST be memoized, for example, by using the `useMemoFirebase` hook.
  *  
  * @template T Optional type for document data. Defaults to any.
  * @param {CollectionReference<DocumentData> | Query<DocumentData> | null | undefined} memoizedTargetRefOrQuery -
@@ -44,28 +45,15 @@ export function useCollection<T = any>(
   type StateDataType = ResultItemType[] | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  // Use a ref to track the previous query object for comparison.
-  const prevQueryRef = useRef<(CollectionReference<DocumentData> | Query<DocumentData>)  | null | undefined>(null);
-
   useEffect(() => {
-    // Determine if the query has actually changed using Firestore's `isEqual` method.
-    const queryChanged = 
-      (prevQueryRef.current && !memoizedTargetRefOrQuery) ||
-      (!prevQueryRef.current && memoizedTargetRefOrQuery) ||
-      (prevQueryRef.current && memoizedTargetRefOrQuery && !prevQueryRef.current.isEqual(memoizedTargetRefOrQuery));
-
-    if (queryChanged) {
-        setData(null);
-        setError(null);
-        setIsLoading(true);
-        prevQueryRef.current = memoizedTargetRefOrQuery;
-    }
+    setData(null);
+    setError(null);
+    setIsLoading(true);
 
     if (!memoizedTargetRefOrQuery) {
-        // If the query is null/undefined, we are not loading.
         setIsLoading(false);
         return;
     }
@@ -81,7 +69,7 @@ export function useCollection<T = any>(
         setError(null);
         setIsLoading(false);
       },
-      (error: FirestoreError) => {
+      (err: FirestoreError) => {
         let path = 'Unknown path';
         if ('path' in memoizedTargetRefOrQuery) {
             path = memoizedTargetRefOrQuery.path;

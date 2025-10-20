@@ -1,6 +1,7 @@
+
 'use client';
     
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -28,13 +29,11 @@ export interface UseDocResult<T> {
  * React hook to subscribe to a single Firestore document in real-time.
  * Handles nullable references.
  * 
- * IMPORTANT! YOU MUST MEMOIZE the inputted memoizedDocRef or BAD THINGS WILL HAPPEN
- * use useMemo to memoize it per React guidence.  Also make sure that it's dependencies are stable
- * references
- *
+ * IMPORTANT! To prevent infinite loops, the document reference passed to this hook
+ * MUST be memoized, for example, by using the `useMemoFirebase` hook.
  *
  * @template T Optional type for document data. Defaults to any.
- * @param {DocumentReference<DocumentData> | null | undefined} docRef -
+ * @param {DocumentReference<DocumentData> | null | undefined} memoizedDocRef -
  * The Firestore DocumentReference. Waits if null/undefined.
  * @returns {UseDocResult<T>} Object with data, isLoading, error.
  */
@@ -47,22 +46,12 @@ export function useDoc<T = any>(
   const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  // Use a ref to track the path of the current docRef to detect changes
-  const pathRef = useRef<string | null>(null);
-
   useEffect(() => {
-    const newPath = memoizedDocRef ? memoizedDocRef.path : null;
-
-    // Only reset and show loading if the actual document path has changed.
-    if (newPath !== pathRef.current) {
-      setData(null);
-      setError(null);
-      setIsLoading(true);
-      pathRef.current = newPath;
-    }
+    setData(null);
+    setError(null);
+    setIsLoading(true);
 
     if (!memoizedDocRef) {
-      // If the ref is null/undefined, we are not loading.
       setIsLoading(false);
       return;
     }
@@ -79,7 +68,7 @@ export function useDoc<T = any>(
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
         setIsLoading(false);
       },
-      (error: FirestoreError) => {
+      (err: FirestoreError) => {
         const contextualError = new FirestorePermissionError({
           operation: 'get',
           path: memoizedDocRef.path,

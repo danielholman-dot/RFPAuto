@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from "react";
@@ -83,7 +84,7 @@ export function RfpClarificationDialog({ isOpen, onOpenChange, rfp, missingField
             projectStartDate: rfp.projectStartDate?.toDate(), // Convert Timestamp to Date for the form
         });
     }
-  }, [rfp, form.reset]);
+  }, [rfp, form]);
 
   const handleFormSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
@@ -257,4 +258,3 @@ export function RfpClarificationDialog({ isOpen, onOpenChange, rfp, missingField
     </Dialog>
   );
 }
-
