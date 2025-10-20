@@ -71,10 +71,14 @@ export function useCollection<T = any>(
       },
       (err: FirestoreError) => {
         let path = 'Unknown path';
-        if ('path' in memoizedTargetRefOrQuery) {
-            path = memoizedTargetRefOrQuery.path;
-        } else if ('ref' in memoizedTargetRefOrQuery) {
-            path = memoizedTargetRefOrQuery.ref.path;
+        // Handle CollectionReference
+        if ('path' in memoizedTargetRefOrQuery && typeof (memoizedTargetRefOrQuery as CollectionReference).path === 'string') {
+            path = (memoizedTargetRefOrQuery as CollectionReference).path;
+        } 
+        // Handle Query
+        else if ('ref' in memoizedTargetRefOrQuery) {
+            // Asserting the type of 'ref' to be a CollectionReference, which has a path.
+            path = (memoizedTargetRefOrQuery.ref as CollectionReference).path;
         }
         
         const contextualError = new FirestorePermissionError({
