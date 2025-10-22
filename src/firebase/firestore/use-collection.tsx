@@ -49,14 +49,15 @@ export function useCollection<T = any>(
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
-    setData(null);
-    setError(null);
-    setIsLoading(true);
-
+    // If the target reference/query is not yet available, do nothing.
     if (!memoizedTargetRefOrQuery) {
-        setIsLoading(false);
+        setData(null);
+        setIsLoading(false); // Not loading because we're not fetching anything.
+        setError(null);
         return;
     }
+
+    setIsLoading(true);
 
     const unsubscribe = onSnapshot(
       memoizedTargetRefOrQuery,

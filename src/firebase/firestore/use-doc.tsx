@@ -43,18 +43,19 @@ export function useDoc<T = any>(
   type StateDataType = WithId<T> | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
+  const [isLoading, setIsLoading] = useState<boolean>(true); 
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
-    setData(null);
-    setError(null);
-    setIsLoading(true);
-
+    // If the document reference is not yet available, do nothing.
     if (!memoizedDocRef) {
-      setIsLoading(false);
+      setData(null);
+      setIsLoading(false); // Not loading because we're not fetching anything.
+      setError(null);
       return;
     }
+
+    setIsLoading(true);
 
     const unsubscribe = onSnapshot(
       memoizedDocRef,
@@ -65,7 +66,7 @@ export function useDoc<T = any>(
           // Document does not exist
           setData(null);
         }
-        setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
+        setError(null); 
         setIsLoading(false);
       },
       (err: FirestoreError) => {
