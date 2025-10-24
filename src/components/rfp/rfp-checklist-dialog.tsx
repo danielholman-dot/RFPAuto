@@ -21,16 +21,25 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import type { RFP } from '@/lib/types';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
-// Define the shape of a checklist item
 interface ChecklistItem {
   criterion: string;
   weight: number;
 }
 
+interface ChecklistDocument {
+    id: string;
+    items: ChecklistItem[];
+}
+
 type RfpChecklistDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  rfp: RFP;
 };
 
 const initialChecklistData: ChecklistItem[] = [
@@ -45,44 +54,43 @@ const initialChecklistData: ChecklistItem[] = [
   { criterion: 'FEP/MARCUS PMO', weight: 5.0 },
 ];
 
-const LOCAL_STORAGE_KEY = 'rfpChecklistConfig';
+const DEFAULT_CHECKLIST_ID = 'main';
 
-// Helper function to load and parse checklist from localStorage
-function loadChecklistFromLocalStorage(): ChecklistItem[] {
-  if (typeof window === 'undefined') {
-    return initialChecklistData;
-  }
-  const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      // Validate and convert weights to numbers
-      if (Array.isArray(parsed)) {
-        return parsed.map(item => ({
-          criterion: String(item.criterion || ''),
-          weight: parseFloat(String(item.weight)) || 0,
-        }));
-      }
-    } catch (error) {
-      console.error("Failed to parse checklist from localStorage", error);
-    }
-  }
-  return initialChecklistData;
-}
-
-export function RfpChecklistDialog({ isOpen, onOpenChange }: RfpChecklistDialogProps) {
-  const [checklist, setChecklist] = useState<ChecklistItem[]>(loadChecklistFromLocalStorage);
+export function RfpChecklistDialog({ isOpen, onOpenChange, rfp }: RfpChecklistDialogProps) {
+  const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklistData);
   const { toast } = useToast();
+  const firestore = useFirestore();
 
-  // Effect to reload from localStorage when the dialog is opened
+  const checklistRef = useMemoFirebase(() => {
+    if (!rfp.id) return null;
+    return doc(firestore, 'rfps', rfp.id, 'evaluation_checklist', DEFAULT_CHECKLIST_ID);
+  }, [firestore, rfp.id]);
+
+  const { data: checklistDoc, isLoading: isChecklistLoading } = useDoc<ChecklistDocument>(checklistRef);
+
   useEffect(() => {
     if (isOpen) {
-      setChecklist(loadChecklistFromLocalStorage());
+        if (checklistDoc) {
+            if (checklistDoc.items && checklistDoc.items.length > 0) {
+                setChecklist(checklistDoc.items);
+            } else {
+                 // If doc exists but is empty, populate it with the default
+                setChecklist(initialChecklistData);
+                if (checklistRef) {
+                    setDoc(checklistRef, { items: initialChecklistData });
+                }
+            }
+        } else if (!isChecklistLoading && checklistRef) {
+            // If doc doesn't exist, create it with default data
+            setChecklist(initialChecklistData);
+            setDoc(checklistRef, { items: initialChecklistData });
+        }
     }
-  }, [isOpen]);
+  }, [isOpen, checklistDoc, isChecklistLoading, checklistRef]);
+
 
   const totalWeight = useMemo(() => {
-    return checklist.reduce((sum: number, item: ChecklistItem) => sum + (item.weight || 0), 0);
+    return checklist.reduce((sum, item) => sum + (item.weight || 0), 0);
   }, [checklist]);
 
   const isTotalValid = useMemo(() => Math.abs(totalWeight - 100) < 0.01, [totalWeight]);
@@ -99,7 +107,7 @@ export function RfpChecklistDialog({ isOpen, onOpenChange }: RfpChecklistDialogP
     });
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!isTotalValid) {
       toast({
         variant: "destructive",
@@ -108,23 +116,22 @@ export function RfpChecklistDialog({ isOpen, onOpenChange }: RfpChecklistDialogP
       });
       return;
     }
+    if (!checklistRef) return;
 
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(checklist));
-        toast({
-          title: "Configuration Saved",
-          description: "The RFP checklist weighting has been updated.",
-        });
-        onOpenChange(false);
-      } catch (error) {
-        console.error("Failed to save checklist to localStorage", error);
-        toast({
-          variant: "destructive",
-          title: "Save Failed",
-          description: "Could not save the configuration. Please try again.",
-        });
-      }
+    try {
+      await updateDoc(checklistRef, { items: checklist });
+      toast({
+        title: "Configuration Saved",
+        description: "The RFP checklist weighting has been updated.",
+      });
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to save checklist to Firestore", error);
+      toast({
+        variant: "destructive",
+        title: "Save Failed",
+        description: "Could not save the configuration. Please try again.",
+      });
     }
   };
 
@@ -134,58 +141,63 @@ export function RfpChecklistDialog({ isOpen, onOpenChange }: RfpChecklistDialogP
         <DialogHeader>
           <DialogTitle>RFP Evaluation Checklist Configuration</DialogTitle>
           <DialogDescription>
-            Review and adjust the weighting for each evaluation criterion.
+            Review and adjust the weighting for each evaluation criterion for this RFP.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <Alert variant={isTotalValid ? 'default' : 'destructive'} className={cn(isTotalValid && "bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700")}>
-            <AlertDescription className="flex justify-between items-center">
-              <span>Weighting must add up to 100%.</span>
-              <span className={cn("font-bold", isTotalValid ? "text-green-800 dark:text-green-200" : "text-destructive")}>
-                Total: {totalWeight.toFixed(1)}%
-              </span>
-            </AlertDescription>
-          </Alert>
-          <div className="overflow-y-auto max-h-[45vh] border rounded-md">
-            <Table>
-              <TableHeader className="sticky top-0 bg-muted/50">
-                <TableRow>
-                  <TableHead>Criterion</TableHead>
-                  <TableHead className="text-right w-48">Weighting</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {checklist.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{item.criterion}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Input
-                          type="number"
-                          value={item.weight}
-                          onChange={(e) => handleWeightChange(index, e.target.value)}
-                          className="w-24 ml-auto text-right bg-background"
-                          step="0.1"
-                        />
-                        <span className="text-muted-foreground">%</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+        {isChecklistLoading ? (
+             <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+        ) : (
+            <div className="space-y-4">
+            <Alert variant={isTotalValid ? 'default' : 'destructive'} className={cn(isTotalValid && "bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700")}>
+                <AlertDescription className="flex justify-between items-center">
+                <span>Weighting must add up to 100%.</span>
+                <span className={cn("font-bold", isTotalValid ? "text-green-800 dark:text-green-200" : "text-destructive")}>
+                    Total: {totalWeight.toFixed(1)}%
+                </span>
+                </AlertDescription>
+            </Alert>
+            <div className="overflow-y-auto max-h-[45vh] border rounded-md">
+                <Table>
+                <TableHeader className="sticky top-0 bg-muted/50">
+                    <TableRow>
+                    <TableHead>Criterion</TableHead>
+                    <TableHead className="text-right w-48">Weighting</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {checklist.map((item, index) => (
+                    <TableRow key={index}>
+                        <TableCell className="font-medium">{item.criterion}</TableCell>
+                        <TableCell>
+                        <div className="flex items-center justify-end gap-2">
+                            <Input
+                            type="number"
+                            value={item.weight}
+                            onChange={(e) => handleWeightChange(index, e.target.value)}
+                            className="w-24 ml-auto text-right bg-background"
+                            step="0.1"
+                            />
+                            <span className="text-muted-foreground">%</span>
+                        </div>
+                        </TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
+            </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!isTotalValid}>Save Configuration</Button>
+          <Button onClick={handleSave} disabled={!isTotalValid || isChecklistLoading}>Save Configuration</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-

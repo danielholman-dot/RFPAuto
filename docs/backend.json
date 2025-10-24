@@ -250,6 +250,35 @@
         }
       },
       "required": ["id", "name", "email", "role"]
+    },
+    "EvaluationChecklist": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Evaluation Checklist",
+      "type": "object",
+      "description": "Stores the configured weighting for an RFP's evaluation checklist.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the checklist document."
+        },
+        "items": {
+          "type": "array",
+          "description": "An array of checklist criteria and their weights.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "criterion": {
+                "type": "string"
+              },
+              "weight": {
+                "type": "number"
+              }
+            },
+            "required": ["criterion", "weight"]
+          }
+        }
+      },
+      "required": ["id", "items"]
     }
   },
   "auth": {
@@ -267,6 +296,12 @@
         "$ref": "#/entities/Proposal"
       },
       "description": "Sub-collection of proposals for a specific RFP."
+    },
+    "/rfps/{rfpId}/evaluation_checklist/{checklistId}": {
+      "schema": {
+        "$ref": "#/entities/EvaluationChecklist"
+      },
+      "description": "Stores the evaluation checklist configuration for a specific RFP."
     },
     "/contractors/{contractorId}": {
       "schema": {

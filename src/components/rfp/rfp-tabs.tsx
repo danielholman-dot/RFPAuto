@@ -836,6 +836,7 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
       <RfpChecklistDialog
         isOpen={isChecklistDialogOpen}
         onOpenChange={setIsChecklistDialogOpen}
+        rfp={rfp}
       />
     </>
   )
