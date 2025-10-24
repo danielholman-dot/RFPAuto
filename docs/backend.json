@@ -259,7 +259,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the checklist document."
+          "description": "Unique identifier for the checklist document, which is the RFP ID."
         },
         "items": {
           "type": "array",
@@ -297,7 +297,7 @@
       },
       "description": "Sub-collection of proposals for a specific RFP."
     },
-    "/rfps/{rfpId}/evaluation_checklist/{checklistId}": {
+    "/RFP_Weighting_evaluation/{rfpId}": {
       "schema": {
         "$ref": "#/entities/EvaluationChecklist"
       },

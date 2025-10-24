@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { RFP } from '@/lib/types';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 
 interface ChecklistItem {
@@ -50,62 +50,68 @@ const initialChecklistData: ChecklistItem[] = [
   { criterion: 'Mission Critical Experience/Data Center Experience', weight: 10.0 },
   { criterion: 'NICON', weight: 10.0 },
   { criterion: 'EHS', weight: 20.0 },
-  { criterion: 'GPO', weight: 5.0 },
-  { criterion: 'FEP/MARCUS PMO', weight: 5.0 },
+  { criterion: 'GPO', weight: 10.0 },
+  { criterion: 'FEP/MARCUS PMO', weight: 10.0 },
 ];
 
-const DEFAULT_CHECKLIST_ID = 'main';
+const COLLECTION_NAME = 'RFP_Weighting_evaluation';
 
 export function RfpChecklistDialog({ isOpen, onOpenChange, rfp }: RfpChecklistDialogProps) {
-  const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklistData);
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const firestore = useFirestore();
 
   const checklistRef = useMemoFirebase(() => {
     if (!rfp.id) return null;
-    return doc(firestore, 'rfps', rfp.id, 'evaluation_checklist', DEFAULT_CHECKLIST_ID);
+    return doc(firestore, COLLECTION_NAME, rfp.id);
   }, [firestore, rfp.id]);
-
-  const { data: checklistDoc, isLoading: isChecklistLoading } = useDoc<ChecklistDocument>(checklistRef);
-
+  
   useEffect(() => {
-    if (isOpen) {
-        if (checklistDoc) {
-            if (checklistDoc.items && checklistDoc.items.length > 0) {
-                setChecklist(checklistDoc.items);
-            } else {
-                 // If doc exists but is empty, populate it with the default
-                setChecklist(initialChecklistData);
-                if (checklistRef) {
-                    setDoc(checklistRef, { items: initialChecklistData });
+    async function fetchOrCreateChecklist() {
+        if (isOpen && checklistRef) {
+            setIsLoading(true);
+            try {
+                const docSnap = await getDoc(checklistRef);
+                if (docSnap.exists() && docSnap.data()?.items?.length > 0) {
+                    setChecklist(docSnap.data().items);
+                } else {
+                    // Doc doesn't exist or is empty, create it with default data
+                    await setDoc(checklistRef, { items: initialChecklistData });
+                    setChecklist(initialChecklistData);
                 }
+            } catch (error) {
+                console.error("Error fetching or creating checklist:", error);
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Could not load or create the checklist configuration.",
+                });
+            } finally {
+                setIsLoading(false);
             }
-        } else if (!isChecklistLoading && checklistRef) {
-            // If doc doesn't exist, create it with default data
-            setChecklist(initialChecklistData);
-            setDoc(checklistRef, { items: initialChecklistData });
         }
     }
-  }, [isOpen, checklistDoc, isChecklistLoading, checklistRef]);
+
+    fetchOrCreateChecklist();
+  }, [isOpen, checklistRef, toast]);
 
 
   const totalWeight = useMemo(() => {
-    return checklist.reduce((sum, item) => sum + (item.weight || 0), 0);
+    return checklist.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
   }, [checklist]);
 
   const isTotalValid = useMemo(() => Math.abs(totalWeight - 100) < 0.01, [totalWeight]);
 
-  const handleWeightChange = useCallback((index: number, value: string) => {
+  const handleWeightChange = (index: number, value: string) => {
+    const newChecklist = [...checklist];
     const newWeight = parseFloat(value);
-    setChecklist(prevChecklist => {
-      const newChecklist = [...prevChecklist];
-      newChecklist[index] = {
-        ...newChecklist[index],
-        weight: isNaN(newWeight) ? 0 : newWeight,
-      };
-      return newChecklist;
-    });
-  }, []);
+    newChecklist[index] = {
+      ...newChecklist[index],
+      weight: isNaN(newWeight) ? 0 : newWeight,
+    };
+    setChecklist(newChecklist);
+  };
 
   const handleSave = async () => {
     if (!isTotalValid) {
@@ -119,7 +125,7 @@ export function RfpChecklistDialog({ isOpen, onOpenChange, rfp }: RfpChecklistDi
     if (!checklistRef) return;
 
     try {
-      await updateDoc(checklistRef, { items: checklist });
+      await setDoc(checklistRef, { items: checklist }, { merge: true });
       toast({
         title: "Configuration Saved",
         description: "The RFP checklist weighting has been updated.",
@@ -145,7 +151,7 @@ export function RfpChecklistDialog({ isOpen, onOpenChange, rfp }: RfpChecklistDi
           </DialogDescription>
         </DialogHeader>
 
-        {isChecklistLoading ? (
+        {isLoading ? (
              <div className="flex items-center justify-center h-64">
                 <Loader2 className="w-8 h-8 animate-spin" />
             </div>
@@ -195,7 +201,7 @@ export function RfpChecklistDialog({ isOpen, onOpenChange, rfp }: RfpChecklistDi
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!isTotalValid || isChecklistLoading}>Save Configuration</Button>
+          <Button onClick={handleSave} disabled={!isTotalValid || isLoading}>Save Configuration</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
