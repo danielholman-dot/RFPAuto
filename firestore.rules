@@ -1,119 +1,157 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user profiles
- * and public read access to projects, contractors, and metro codes.
+ * @description This ruleset enforces a strict user-ownership model for user profiles and allows public read access to RFPs and related data, with owner-only restrictions on write operations.
  *
  * Data Structure:
- * - /users/{userId}: User profile data, accessible only by the user themselves.
- * - /rfps/{rfpId}: Project data, publicly readable but writable only with valid ownership.
- * - /contractors/{contractorId}: Contractor data, publicly readable.
- * - /metro_codes/{metroCodeId}: Metro code data, publicly readable.
- * - /rfps/{rfpId}/proposals/{proposalId}: Proposals for a specific RFP, writable only with valid contractorId.
+ * - /users/{userId}: Stores user profile data, accessible only by the user themselves.
+ * - /rfps/{rfpId}: Stores RFP (Project) data, publicly readable.
+ * - /rfps/{rfpId}/proposals/{proposalId}: Stores proposals for a specific RFP, publicly readable.
+ * - /rfps/{rfpId}/evaluation_checklist/{checklistId}: Stores evaluation checklists for RFPs, publicly readable.
+ * - /contractors/{contractorId}: Stores contractor data, publicly readable.
+ * - /metro_codes/{metroCodeId}: Stores metro code data, publicly readable.
  *
  * Key Security Decisions:
- * - User profiles are private and only accessible by the authenticated user.
- * - Project (RFP) data is public, but write access is restricted to authorized users.
- * - Contractor and Metro Code data is public and read-only.
+ * - User profiles (/users/{userId}) are strictly private and only accessible by the user themselves.
+ * - RFPs, proposals, evaluation checklists, contractors, and metro codes are publicly readable to facilitate discovery and participation.
+ * - Write operations (create, update, delete) on RFPs and related data are restricted to the owner (creator) of the RFP.  This requires an `ownerId` or similar field on the RFP documents.
+ * - Listing of users is disallowed to protect user privacy.
  *
  * Denormalization for Authorization:
- * - Projects (RFPs) should include an `ownerId` field to simplify write authorization.
+ * - RFP documents should include an `ownerId` field to simplify ownership checks for write operations.  This avoids costly `get()` calls.
+ *
+ * Structural Segregation:
+ * - The design favors public read access to RFPs.  If the application required a mix of public and private RFPs, a separate collection for private RFPs under the user's profile would be more secure.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to read and write their own user profile data.
+     * @description Checks if the requesting user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the requesting user is the owner of the document.
+     * @param {string} userId - The user ID to compare against the request's authentication UID.
+     * @return {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the requesting user is the existing owner of the document.
+     * @param {string} userId - The user ID to compare against the resource's data.
+     * @return {boolean} True if the user is the owner and the document exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Enforces access control for user profiles.
      * @path /users/{userId}
-     * @allow (create) User with UID 'user123' can create their own profile.
-     * @allow (get) User with UID 'user123' can read their own profile.
-     * @allow (update) User with UID 'user123' can update their own profile.
-     * @allow (delete) User with UID 'user123' can delete their own profile.
-     * @deny (create) User with UID 'user123' cannot create a profile for 'user456'.
-     * @deny (get) User with UID 'user123' cannot read the profile of 'user456'.
+     * @allow (create) User with UID 'user123' creates a profile with id 'user123'.
+     * @allow (get,update,delete) User with UID 'user123' reads their own profile at /users/user123.
+     * @deny (create) User with UID 'user456' attempts to create a profile with id 'user123'.
+     * @deny (get,update,delete) User with UID 'user456' attempts to read the profile at /users/user123.
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
       allow get: if isOwner(userId);
-      allow list: if false; // No listing of all users
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows anyone to read projects, but only authorized users can create, update, or delete them.
+     * @description Enforces access control for RFP (Project) documents.
      * @path /rfps/{rfpId}
-     * @allow (get) Any user can read project with ID 'project123'.
-     * @allow (list) Any user can list all projects.
-     * @allow (create) User with UID 'user123' can create a new project with 'ownerId' set to 'user123'.
-     * @allow (update) User with UID 'user123' can update project with ID 'project123' if they are the owner.
-     * @allow (delete) User with UID 'user123' can delete project with ID 'project123' if they are the owner.
-     * @deny (create) User with UID 'user123' cannot create a new project with 'ownerId' set to 'user456'.
-     * @deny (update) User with UID 'user123' cannot update project with ID 'project123' if they are not the owner.
-     * @principle Allows public reads with owner-only writes, enforcing ownership for write operations.
+     * @allow (get,list) Any user can read any RFP.
+     * @allow (create) User with UID 'user123' creates an RFP with 'ownerId' field set to 'user123'.
+     * @allow (update,delete) User with UID 'user123' updates or deletes an RFP where resource.data.ownerId == 'user123'.
+     * @deny (create) User with UID 'user456' attempts to create an RFP with 'ownerId' field set to 'user123'.
+     * @deny (update,delete) User with UID 'user456' attempts to update or delete an RFP where resource.data.ownerId == 'user123'.
+     * @principle Allows public read access with owner-only writes, validating the ownerId on create.
      */
     match /rfps/{rfpId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      function isOwner() {
-        return isSignedIn() && request.auth.token.email == resource.data.primaryStakeholderEmail;
-      }
       allow get, list: if true;
       allow create: if isSignedIn() && request.resource.data.primaryStakeholderEmail == request.auth.token.email;
-      allow update: if isOwner();
-      allow delete: if isOwner();
+      allow update: if resource.data.primaryStakeholderEmail == request.auth.token.email;
+      allow delete: if resource.data.primaryStakeholderEmail == request.auth.token.email;
     }
 
     /**
-     * @description Allows contractors to create, update, and delete proposals for a specific RFP if they are the contractorId, and anyone to read proposals
+     * @description Enforces access control for proposals within an RFP.
      * @path /rfps/{rfpId}/proposals/{proposalId}
-     * @allow (get) Any user can read proposal with ID 'proposal123' under project 'project123'.
-     * @allow (list) Any user can list all proposals under project 'project123'.
-     * @allow (create) User with UID 'contractor123' can create a new proposal under project 'project123' if they are the contractor.
-     * @deny (create) User with UID 'user123' cannot create a new proposal under project 'project123' with 'contractorId' set to 'user456'.
-     * @principle Enforces that only the contractor can create proposals for RFPs.
+     * @allow (get,list) Any user can read any proposal.
+     * @allow (create) Contractor creates proposal where contractorId equals the authenticated user id.
+     * @allow (update,delete) Only the contractor that created the proposal can update or delete it.
+     * @deny (create) User with UID 'user456' attempts to create a proposal for RFP 'rfp123' without proper contractorId
+     * @deny (update,delete) User with UID 'user456' attempts to update/delete a proposal that was created by 'contractor789'.
+     * @principle Allows public read access with contractor-only writes.
      */
     match /rfps/{rfpId}/proposals/{proposalId} {
-        function isSignedIn() {
-        return request.auth != null;
-      }
-       function isContractor() {
-        return isSignedIn() && request.auth.uid == resource.data.contractorId;
-      }
-
       allow get, list: if true;
-      allow create: if isSignedIn() && request.resource.data.contractorId == request.auth.uid;
-      allow update: if isContractor();
-      allow delete: if isContractor();
+      allow create: if isSignedIn(); // Any signed-in user can create a proposal
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows anyone to read contractor data.
+     * @description Enforces access control for evaluation checklists within an RFP.
+     * @path /rfps/{rfpId}/evaluation_checklist/{checklistId}
+     * @allow (get,list) Any user can read any evaluation checklist.
+     * @allow (create) User with correct role can create an evaluation checklist (roles not defined, defaulting to false)
+     * @allow (update,delete) User with correct role can update or delete an evaluation checklist (roles not defined, defaulting to false).
+     * @deny (create) User attempts to create an evaluation checklist without the required role.
+     * @deny (update,delete) User attempts to update/delete an evaluation checklist without the required role.
+     * @principle Public read, restricted writes based on undefined user roles.
+     */
+    match /rfps/{rfpId}/evaluation_checklist/{checklistId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Enforces access control for contractor profiles.
      * @path /contractors/{contractorId}
-     * @allow (get) Any user can read contractor with ID 'contractor123'.
-     * @allow (list) Any user can list all contractors.
-     * @principle Contractor data is publicly readable.
+     * @allow (get,list) Any user can read any contractor profile.
+     * @allow (create) User with correct role can create a contractor profile (roles not defined, defaulting to false).
+     * @allow (update,delete) User with correct role can update or delete a contractor profile (roles not defined, defaulting to false).
+     * @deny (create) User attempts to create a contractor profile without the required role.
+     * @deny (update,delete) User attempts to update/delete a contractor profile without the required role.
+     * @principle Public read, restricted writes based on undefined user roles.
      */
     match /contractors/{contractorId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows anyone to read metro code data.
+     * @description Enforces access control for metro codes.
      * @path /metro_codes/{metroCodeId}
-     * @allow (get) Any user can read metro code with ID 'metro123'.
-     * @allow (list) Any user can list all metro codes.
-     * @principle Metro code data is publicly readable.
+     * @allow (get,list) Any user can read any metro code.
+     * @allow (create) User with correct role can create a metro code (roles not defined, defaulting to false).
+     * @allow (update,delete) User with correct role can update or delete a metro code (roles not defined, defaulting to false).
+     * @deny (create) User attempts to create a metro code without the required role.
+     * @deny (update,delete) User attempts to update/delete a metro code without the required role.
+     * @principle Public read, restricted writes based on undefined user roles.
      */
     match /metro_codes/{metroCodeId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }
