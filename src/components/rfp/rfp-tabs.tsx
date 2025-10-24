@@ -291,10 +291,18 @@ export function RfpTabs({ rfp: rfpProp, isDraft = false }: RfpTabsProps) {
 
       setProposalLinks(prev => {
         const newLinks = { ...prev };
-        newLinks[contractorId] = newLinks[contractorId].filter((_, i) => i !== index);
-        if (newLinks[contractorId].length === 0) {
-            newLinks[contractorId].push('');
+        const updatedContractorLinks = [...newLinks[contractorId]];
+        updatedContractorLinks[index] = ''; // Reset the submitted input field
+        
+        // If it was the last empty input that got submitted, ensure there's still one empty input
+        const nonEmptyLinks = updatedContractorLinks.filter(link => link.trim() !== '');
+        if (nonEmptyLinks.length === updatedContractorLinks.length) {
+            updatedContractorLinks.push('');
         }
+
+        newLinks[contractorId] = updatedContractorLinks.filter((link, i) => link.trim() !== '' || i === updatedContractorLinks.length - 1 || i === index);
+
+
         return newLinks;
       });
 
