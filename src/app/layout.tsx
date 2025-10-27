@@ -1,25 +1,14 @@
-
-'use client';
-
-import './globals.css';
+import '@/app/globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
-import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Header } from '@/components/layout/header';
-import { usePathname } from 'next/navigation';
-import { SidebarInset } from '@/components/ui/sidebar';
-
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isPublicPage = pathname.startsWith('/proposal/submit');
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -29,23 +18,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={cn('font-body antialiased', 'min-h-screen bg-background font-sans')}>
+      <body className={cn('font-body antialiased', 'min-h-screen bg-gray-100 dark:bg-gray-900 font-sans')}>
         <FirebaseClientProvider>
-            <SidebarProvider>
-              {isPublicPage ? (
-                <main>{children}</main>
-              ) : (
-                <>
-                  <AppSidebar />
-                  <SidebarInset>
-                    <Header />
-                    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-                      {children}
-                    </main>
-                  </SidebarInset>
-                </>
-              )}
-            </SidebarProvider>
+          <SidebarProvider>
+            {children}
+          </SidebarProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>
