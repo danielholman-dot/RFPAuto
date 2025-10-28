@@ -1,13 +1,6 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-        // This is required to allow the Next.js dev server to accept requests from the
-        // Firebase Studio environment.
-        allowedDevOrigins: [
-            "https://6000-firebase-rfp-automation-1761668564232.cluster-thle3dudhffpwss7zs5hxaeu2o.cloudworkstations.dev",
-        ],
-    },
+  reactStrictMode: true,
 };
 
 export default nextConfig;
