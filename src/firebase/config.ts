@@ -1,9 +1,9 @@
 export const firebaseConfig = {
-  "projectId": "gpo-procurement-sandbox-563772",
-  "appId": "1:1071160844261:web:30144bf94e97dfb6dad90c",
-  "storageBucket": "gpo-procurement-sandbox-563772.appspot.com",
-  "apiKey": "AIzaSyCvHiAeqP8TGLnkcpxRfo7XAwS8AJxpk2k",
-  "authDomain": "gpo-procurement-sandbox-563772.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "1071160844261"
+  apiKey: "AIzaSyBs5bzkVakKscPXnkvuRO-67Eim0tXO8xE",
+  authDomain: "constructionrfp-sandbox-943476.firebaseapp.com",
+  projectId: "constructionrfp-sandbox-943476",
+  storageBucket: "constructionrfp-sandbox-943476.appspot.com",
+  messagingSenderId: "24350062917",
+  appId: "1:24350062917:web:e62421339d34c35fb8262c",
+  measurementId: "G-WNLYG1EWXL"
 };
