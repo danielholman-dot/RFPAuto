@@ -4,7 +4,6 @@ import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -19,22 +18,6 @@ export function initializeFirebase() {
       firebaseApp = initializeApp(firebaseConfig);
     }
     
-    // Initialize App Check for development
-    if (process.env.NODE_ENV !== 'production') {
-        try {
-            // This property is set by the `self.FIREBASE_APPCHECK_DEBUG_TOKEN` in next.config.js
-            (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-            initializeAppCheck(firebaseApp, {
-                provider: new ReCaptchaV3Provider('6Ld8m5spAAAAAOi-B7s3p-s8iV_u_G_gO4t_uYwF'),
-                isTokenAutoRefreshEnabled: true
-            });
-            console.log("Firebase App Check initialized in development mode.");
-        } catch(e) {
-            console.error("Failed to initialize Firebase App Check", e);
-        }
-    }
-
-
     return getSdks(firebaseApp);
   }
 
