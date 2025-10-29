@@ -4,7 +4,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithGoogle } from '@/firebase/auth/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,7 +39,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard');
+      // The onAuthStateChanged listener in the provider will handle the redirect.
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -51,18 +52,9 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-        await signInWithPopup(auth, provider);
-        router.push('/dashboard');
-    } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Google Login Failed',
-            description: error.message,
-        });
-        setIsGoogleLoading(false);
-    }
+    await signInWithGoogle(auth);
+    setIsGoogleLoading(false);
+    // The onAuthStateChanged listener in the provider will handle the redirect.
   };
 
 
