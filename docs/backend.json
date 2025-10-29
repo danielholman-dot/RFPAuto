@@ -282,7 +282,7 @@
     }
   },
   "auth": {
-    "providers": []
+    "providers": ["google.com", "email-password"]
   },
   "firestore": {
     "/rfps/{rfpId}": {

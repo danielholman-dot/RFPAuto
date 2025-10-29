@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,12 +13,20 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Briefcase } from 'lucide-react';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Separator } from '@/components/ui/separator';
+
+const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.05 1.05-2.36 1.67-4.06 1.67-3.4 0-6.17-2.83-6.17-6.23s2.77-6.23 6.17-6.23c1.87 0 3.13.67 4.06 1.67l2.35-2.35C18.27.46 15.47 0 12.48 0 5.88 0 .81 5.06.81 11.69s5.07 11.69 11.67 11.69c3.34 0 5.78-1.15 7.6-2.98 1.9-1.8 2.54-4.35 2.54-6.83 0-.75-.07-1.45-.18-2.15z" fill="currentColor"/>
+    </svg>
+);
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isGuestLoading, setIsGuestLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -41,26 +49,19 @@ export default function LoginPage() {
     }
   };
 
-  const handleGuestLogin = async () => {
-    setIsGuestLoading(true);
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    const provider = new GoogleAuthProvider();
     try {
-        // Use one of the pre-seeded user emails to sign in as a "guest"
-        // This simulates a guest user with a pre-defined role
-        await signInWithEmailAndPassword(auth, 'bob.w@example.com', 'password123');
+        await signInWithPopup(auth, provider);
         router.push('/dashboard');
     } catch (error: any) {
-        // As a fallback if the seeded user doesn't exist, sign in anonymously
-        try {
-            await signInAnonymously(auth);
-            router.push('/dashboard');
-        } catch (anonError: any) {
-             toast({
-                variant: 'destructive',
-                title: 'Guest Login Failed',
-                description: anonError.message,
-            });
-            setIsGuestLoading(false);
-        }
+        toast({
+            variant: 'destructive',
+            title: 'Google Login Failed',
+            description: error.message,
+        });
+        setIsGoogleLoading(false);
     }
   };
 
@@ -108,12 +109,28 @@ export default function LoginPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
-                        <Button type="submit" className="w-full" disabled={isLoading}>
+                        <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Login
                         </Button>
                     </CardFooter>
                 </form>
+                <div className="relative mb-6">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">
+                        Or continue with
+                        </span>
+                    </div>
+                </div>
+                 <div className="px-6 pb-6">
+                    <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading}>
+                       {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
+                        Google
+                    </Button>
+                </div>
             </Card>
         </div>
       </div>
