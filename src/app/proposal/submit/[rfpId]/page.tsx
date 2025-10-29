@@ -5,37 +5,42 @@ import { Timestamp } from 'firebase/firestore'
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import type { RFP } from '@/lib/types';
-import { getRfpById, getContractors, addProposal } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useFirebase } from '@/firebase';
-import type { FirebaseServicesAndUser } from '@/firebase/provider';
+import { getDoc, doc, getDocs, collection, addDoc } from 'firebase/firestore';
 
 type ProposalSubmitFormProps = {
   rfpId: string;
   router: ReturnType<typeof useRouter>;
-  firebase: FirebaseServicesAndUser;
 };
 
-function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps) {
+function ProposalSubmitForm({ rfpId, router }: ProposalSubmitFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contractorId, setContractorId] = useState('');
   const [rfp, setRfp] = useState<RFP | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const { firestore } = firebase;
+  const { firestore } = useFirebase();
 
   useEffect(() => {
     async function loadData() {
       if (!firestore) return;
-      const rfpData = await getRfpById(rfpId);
-      setRfp(rfpData);
+      
+      const rfpDocRef = doc(firestore, 'rfps', rfpId);
+      const rfpSnap = await getDoc(rfpDocRef);
+      if (rfpSnap.exists()) {
+        setRfp({ id: rfpSnap.id, ...rfpSnap.data() } as RFP);
+      }
 
-      const contractors = await getContractors();
+      const contractorsCol = collection(firestore, 'contractors');
+      const contractorSnapshot = await getDocs(contractorsCol);
+      const contractors = contractorSnapshot.docs.map(d => ({id: d.id, ...d.data()}));
+
       if (contractors.length > 0) {
         const randomContractor = contractors[Math.floor(Math.random() * contractors.length)];
         setContractorId(randomContractor.id);
@@ -53,7 +58,7 @@ function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!file || !rfpId || !contractorId) {
+    if (!file || !rfpId || !contractorId || !firestore) {
       alert('Please select a file and ensure you have a valid RFP link.');
       return;
     }
@@ -63,15 +68,17 @@ function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps
     try {
       const proposalDocumentUrl = `proposals/${rfpId}/${file.name}`;
       const proposalText = `This is a dummy extracted text for the file: ${file.name}. File size: ${file.size} bytes.`;
-
-      await addProposal(rfpId, {
+      
+      const proposalsCol = collection(firestore, `rfps/${rfpId}/proposals`);
+      const newProposalData = {
         contractorId: contractorId,
         rfpId: rfpId,
-        submittedDate: Timestamp.fromDate(new Date()),
+        submittedDate: Timestamp.now(),
         status: 'Submitted',
         proposalDocumentUrl,
         proposalText,
-      });
+      }
+      await addDoc(proposalsCol, newProposalData);
 
       alert('Proposal submitted successfully!');
       router.push(`/proposal/submit/success`);
@@ -120,7 +127,7 @@ function ProposalSubmitForm({ rfpId, router, firebase }: ProposalSubmitFormProps
 export default function ProposalSubmitPage() {
     const params = useParams();
     const router = useRouter();
-    const firebase = useFirebase();
+    const { firestore } = useFirebase();
 
     const rfpId = params.rfpId as string;
 
@@ -128,9 +135,9 @@ export default function ProposalSubmitPage() {
         return <div className="flex justify-center items-center h-screen"><p>Invalid RFP link.</p></div>;
     }
 
-    if (!firebase.firestore) {
+    if (!firestore) {
         return <div className="flex justify-center items-center h-screen"><Loader2 className="w-8 h-8 animate-spin" /></div>;
     }
 
-    return <ProposalSubmitForm rfpId={rfpId} router={router} firebase={firebase} />;
+    return <ProposalSubmitForm rfpId={rfpId} router={router} />;
 }
