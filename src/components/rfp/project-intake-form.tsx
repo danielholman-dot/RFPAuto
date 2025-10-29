@@ -42,7 +42,7 @@ const formSchema = z.object({
   estimatedBudget: z.coerce.number().min(0, "Budget must be a positive number."),
   rfpStartDate: z.date().optional(),
   rfpEndDate: z.date().optional(),
-  projectStartDate: z.date({ required_error: "projectStartDate: z.date()
+  projectStartDate: z.date(),
   projectEndDate: z.date().optional(),
   technicalDocuments: z.array(z.instanceof(File)).optional(),
   technicalDocumentsLinks: z.string().optional(),
