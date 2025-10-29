@@ -14,6 +14,13 @@ export const usersData = [
         role: 'Project Management',
         avatar: 'https://images.unsplash.com/photo-1610655507808-a59293f4e332?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc1ODc1MTMyM3ww&ixlib=rb-4.1.0&q=80&w=1080',
     },
+    {
+        id: 'user-test-1',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'Project Management',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwb3J0cmFpdHxlbnwwfHx8fDE3NTg3NDM5MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    },
 ];
 
 export const MetroCodesData = [
