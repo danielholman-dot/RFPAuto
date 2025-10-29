@@ -10,21 +10,21 @@
           "type": "string",
           "description": "Unique identifier for the Project entity."
         },
-        "projectName": {
+        "name": {
           "type": "string",
           "description": "The name of the project."
         },
         "scopeOfWork": {
           "type": "string",
-          "description": "The scope of work for the project."
+          "description": "A description of the work to be performed for the project."
         },
-        "metroCode": {
+        "metroCodeId": {
           "type": "string",
-          "description": "The metro code for the project's location."
+          "description": "Reference to MetroCode. (Relationship: MetroCode 1:N Project)"
         },
-        "contractorType": {
+        "contractorTypeId": {
           "type": "string",
-          "description": "The type of contractor required for the project."
+          "description": "Reference to ContractorType. (Relationship: ContractorType 1:N Project)"
         },
         "estimatedBudget": {
           "type": "number",
@@ -37,7 +37,7 @@
         },
         "technicalDocumentIds": {
           "type": "array",
-          "description": "References to TechnicalDocuments. (Relationship: Project 1:N TechnicalDocument)",
+          "description": "References to TechnicalDocument. (Relationship: Project 1:N TechnicalDocument)",
           "items": {
             "type": "string"
           }
@@ -45,68 +45,107 @@
       },
       "required": [
         "id",
-        "projectName",
+        "name",
         "scopeOfWork",
-        "metroCode",
-        "contractorType",
+        "metroCodeId",
+        "contractorTypeId",
         "estimatedBudget",
         "startDate"
+      ]
+    },
+    "MetroCode": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MetroCode",
+      "type": "object",
+      "description": "Represents a metro code.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MetroCode entity."
+        },
+        "code": {
+          "type": "string",
+          "description": "The metro code itself."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name or description of the metro area."
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "name"
+      ]
+    },
+    "ContractorType": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContractorType",
+      "type": "object",
+      "description": "Represents a type of contractor.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ContractorType entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the contractor type (e.g., 'Electrical', 'Plumbing')."
+        }
+      },
+      "required": [
+        "id",
+        "name"
       ]
     },
     "Contractor": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Contractor",
       "type": "object",
-      "description": "Represents a contractor available for projects.",
+      "description": "Represents a contractor in the system.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the Contractor entity."
         },
-        "companyName": {
+        "name": {
           "type": "string",
-          "description": "The name of the contractor's company."
+          "description": "The name of the contractor company."
         },
-        "contactName": {
+        "contactInformation": {
           "type": "string",
-          "description": "The name of the contractor's contact person."
+          "description": "Contact details for the contractor."
         },
-        "contactEmail": {
-          "type": "string",
-          "description": "The email address of the contractor's contact person.",
-          "format": "email"
-        },
-        "contactPhone": {
-          "type": "string",
-          "description": "The phone number of the contractor's contact person."
-        },
-        "metroCodes": {
+        "metroCodeIds": {
           "type": "array",
-          "description": "Metro codes the contractor operates in.",
+          "description": "References to MetroCodes served by the contractor. (Relationship: MetroCode N:N Contractor)",
           "items": {
             "type": "string"
           }
         },
-        "contractorType": {
-          "type": "string",
-          "description": "Type of contractor (e.g., electrical, plumbing)."
+        "contractorTypeIds": {
+          "type": "array",
+          "description": "References to ContractorTypes associated with the contractor. (Relationship: ContractorType N:N Contractor)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preferred": {
+          "type": "boolean",
+          "description": "If the contractor is on the preferred list."
         }
       },
       "required": [
         "id",
-        "companyName",
-        "contactName",
-        "contactEmail",
-        "contactPhone",
-        "metroCodes",
-        "contractorType"
+        "name",
+        "contactInformation"
       ]
     },
     "EOIEmail": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "EOIEmail",
       "type": "object",
-      "description": "Represents an Expression of Interest (EOI) email sent to a contractor.",
+      "description": "Represents an Expression of Interest (EOI) email.",
       "properties": {
         "id": {
           "type": "string",
@@ -125,13 +164,9 @@
           "description": "The date the EOI email was sent.",
           "format": "date-time"
         },
-        "emailBody": {
+        "status": {
           "type": "string",
-          "description": "The body of the EOI email."
-        },
-        "emailSubject": {
-          "type": "string",
-          "description": "The subject of the EOI email."
+          "description": "The status of the EOI email (e.g., 'Sent', 'Replied', 'No Response')."
         }
       },
       "required": [
@@ -139,50 +174,43 @@
         "projectId",
         "contractorId",
         "sentDate",
-        "emailBody",
-        "emailSubject"
+        "status"
       ]
     },
-    "RFP": {
+    "RFPEmail": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "RFP",
+      "title": "RFPEmail",
       "type": "object",
-      "description": "Represents a Request for Proposal (RFP) sent to contractors.",
+      "description": "Represents an Request for Proposal (RFP) email.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the RFP entity."
+          "description": "Unique identifier for the RFPEmail entity."
         },
         "projectId": {
           "type": "string",
-          "description": "Reference to Project. (Relationship: Project 1:N RFP)"
+          "description": "Reference to Project. (Relationship: Project 1:N RFPEmail)"
         },
         "contractorId": {
           "type": "string",
-          "description": "Reference to Contractor. (Relationship: Contractor 1:N RFP)"
-        },
-        "rfpInstructions": {
-          "type": "string",
-          "description": "The instructions for the RFP."
+          "description": "Reference to Contractor. (Relationship: Contractor 1:N RFPEmail)"
         },
         "sentDate": {
           "type": "string",
-          "description": "The date the RFP was sent.",
+          "description": "The date the RFP email was sent.",
           "format": "date-time"
         },
-        "dueDate": {
+        "status": {
           "type": "string",
-          "description": "The due date for proposal submissions.",
-          "format": "date-time"
+          "description": "The status of the RFP email (e.g., 'Sent', 'Replied', 'No Response')."
         }
       },
       "required": [
         "id",
         "projectId",
         "contractorId",
-        "rfpInstructions",
         "sentDate",
-        "dueDate"
+        "status"
       ]
     },
     "Proposal": {
@@ -195,9 +223,13 @@
           "type": "string",
           "description": "Unique identifier for the Proposal entity."
         },
-        "rfpId": {
+        "projectId": {
           "type": "string",
-          "description": "Reference to RFP. (Relationship: RFP 1:N Proposal)"
+          "description": "Reference to Project. (Relationship: Project 1:N Proposal)"
+        },
+        "contractorId": {
+          "type": "string",
+          "description": "Reference to Contractor. (Relationship: Contractor 1:N Proposal)"
         },
         "submissionDate": {
           "type": "string",
@@ -206,16 +238,13 @@
         },
         "content": {
           "type": "string",
-          "description": "The content of the proposal."
-        },
-        "scorecardId": {
-          "type": "string",
-          "description": "Reference to Scorecard. (Relationship: Scorecard 1:1 Proposal)"
+          "description": "The content of the proposal (e.g., a link to the document, or the text itself)."
         }
       },
       "required": [
         "id",
-        "rfpId",
+        "projectId",
+        "contractorId",
         "submissionDate",
         "content"
       ]
@@ -224,52 +253,51 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Scorecard",
       "type": "object",
-      "description": "Represents a scorecard for evaluating proposals.",
+      "description": "Represents a scorecard for a proposal.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the Scorecard entity."
         },
-        "safety": {
-          "type": "number",
-          "description": "Score for safety."
+        "proposalId": {
+          "type": "string",
+          "description": "Reference to Proposal. (Relationship: Proposal 1:N Scorecard)"
         },
-        "experience": {
+        "safetyScore": {
           "type": "number",
-          "description": "Score for experience."
+          "description": "The safety score for the proposal."
         },
-        "programmaticApproach": {
+        "experienceScore": {
           "type": "number",
-          "description": "Score for programmatic approach."
+          "description": "The experience score for the proposal."
         },
-        "commercialExcellence": {
+        "programmaticApproachScore": {
           "type": "number",
-          "description": "Score for commercial excellence."
+          "description": "The programmatic approach score for the proposal."
         },
-        "innovativeSolutions": {
+        "commercialExcellenceScore": {
           "type": "number",
-          "description": "Score for innovative solutions."
+          "description": "The commercial excellence score for the proposal."
         },
-        "missionCriticalExperience": {
+        "innovativeSolutionsScore": {
           "type": "number",
-          "description": "Score for mission critical experience."
+          "description": "The innovative solutions score for the proposal."
+        },
+        "missionCriticalExperienceScore": {
+          "type": "number",
+          "description": "The mission critical experience score for the proposal."
         }
       },
       "required": [
         "id",
-        "safety",
-        "experience",
-        "programmaticApproach",
-        "commercialExcellence",
-        "innovativeSolutions",
-        "missionCriticalExperience"
+        "proposalId"
       ]
     },
     "AwardRecommendation": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "AwardRecommendation",
       "type": "object",
-      "description": "Represents the recommendation for awarding a project.",
+      "description": "Represents an award recommendation based on proposal analysis.",
       "properties": {
         "id": {
           "type": "string",
@@ -277,27 +305,22 @@
         },
         "projectId": {
           "type": "string",
-          "description": "Reference to Project. (Relationship: Project 1:N AwardRecommendation)"
+          "description": "Reference to Project. (Relationship: Project 1:1 AwardRecommendation)"
         },
         "contractorId": {
           "type": "string",
-          "description": "Reference to Contractor. (Relationship: Contractor 1:N AwardRecommendation)"
+          "description": "Reference to Contractor.  The recommended contractor. (Relationship: Contractor 1:1 AwardRecommendation)"
         },
-        "recommendationReason": {
+        "justification": {
           "type": "string",
-          "description": "The reason for the award recommendation."
-        },
-        "srmUpdate": {
-          "type": "string",
-          "description": "The update to the Supplier Relationship Management (SRM) system."
+          "description": "The justification for the award recommendation."
         }
       },
       "required": [
         "id",
         "projectId",
         "contractorId",
-        "recommendationReason",
-        "srmUpdate"
+        "justification"
       ]
     },
     "Feedback": {
@@ -316,29 +339,22 @@
         },
         "userId": {
           "type": "string",
-          "description": "The id of the User that submitted the feedback."
+          "description": "Reference to User.  The user providing the feedback. (Relationship: User 1:N Feedback)"
         },
         "feedbackText": {
           "type": "string",
           "description": "The text of the feedback."
         },
-        "feedbackDate": {
-          "type": "string",
-          "description": "The date the feedback was submitted.",
-          "format": "date-time"
-        },
-        "stakeholderType": {
-          "type": "string",
-          "description": "The type of stakeholder providing the feedback (e.g., internal, contractor)."
+        "rating": {
+          "type": "number",
+          "description": "A numerical rating provided in the feedback."
         }
       },
       "required": [
         "id",
         "projectId",
         "userId",
-        "feedbackText",
-        "feedbackDate",
-        "stakeholderType"
+        "feedbackText"
       ]
     },
     "TechnicalDocument": {
@@ -351,30 +367,20 @@
           "type": "string",
           "description": "Unique identifier for the TechnicalDocument entity."
         },
-        "documentName": {
+        "name": {
           "type": "string",
           "description": "The name of the technical document."
         },
-        "documentType": {
+        "url": {
           "type": "string",
-          "description": "The type of technical document (e.g., PDF, DOCX)."
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "The date the technical document was uploaded.",
-          "format": "date-time"
-        },
-        "fileLocation": {
-          "type": "string",
-          "description": "The location where the technical document is stored."
+          "description": "The URL or path to the technical document.",
+          "format": "uri"
         }
       },
       "required": [
         "id",
-        "documentName",
-        "documentType",
-        "uploadDate",
-        "fileLocation"
+        "name",
+        "url"
       ]
     },
     "User": {
@@ -392,25 +398,40 @@
           "description": "The email address of the user.",
           "format": "email"
         },
-        "firstName": {
+        "name": {
           "type": "string",
-          "description": "The first name of the user."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The last name of the user."
+          "description": "The full name of the user."
         },
         "role": {
           "type": "string",
-          "description": "The role of the user (e.g., admin, project manager)."
+          "description": "The role of the user within the system (e.g., 'Stakeholder', 'Admin')."
         }
       },
       "required": [
         "id",
         "email",
-        "firstName",
-        "lastName",
+        "name",
         "role"
+      ]
+    },
+    "AuthorizedDomain": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AuthorizedDomain",
+      "type": "object",
+      "description": "Represents an authorized domain that can access the application",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the AuthorizedDomain entity."
+        },
+        "domain": {
+          "type": "string",
+          "description": "The name of the authorized domain. For example, 'example.com'."
+        }
+      },
+      "required": [
+        "id",
+        "domain"
       ]
     }
   },
@@ -423,181 +444,49 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles. Uses path-based ownership for individual user data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
-      },
-      {
         "path": "/projects/{projectId}",
         "definition": {
           "entityName": "Project",
           "schema": {
             "$ref": "#/backend/entities/Project"
           },
-          "description": "Stores project information.  Acts as the root for all project-related subcollections.",
+          "description": "Stores project details. Project ID is used as the document ID.",
           "params": [
             {
               "name": "projectId",
-              "description": "The unique identifier of the project."
+              "description": "The unique identifier for the project."
             }
           ]
         }
       },
       {
-        "path": "/projects/{projectId}/technical_documents/{technicalDocumentId}",
+        "path": "/metroCodes/{metroCodeId}",
         "definition": {
-          "entityName": "TechnicalDocument",
+          "entityName": "MetroCode",
           "schema": {
-            "$ref": "#/backend/entities/TechnicalDocument"
+            "$ref": "#/backend/entities/MetroCode"
           },
-          "description": "Stores technical documents associated with a project. Access controlled via project ownership.",
+          "description": "Stores metro code information. MetroCode ID is used as the document ID.",
           "params": [
             {
-              "name": "projectId",
-              "description": "The unique identifier of the project."
-            },
-            {
-              "name": "technicalDocumentId",
-              "description": "The unique identifier of the technical document."
+              "name": "metroCodeId",
+              "description": "The unique identifier for the metro code."
             }
           ]
         }
       },
       {
-        "path": "/projects/{projectId}/eoi_emails/{eoiEmailId}",
+        "path": "/contractorTypes/{contractorTypeId}",
         "definition": {
-          "entityName": "EOIEmail",
+          "entityName": "ContractorType",
           "schema": {
-            "$ref": "#/backend/entities/EOIEmail"
+            "$ref": "#/backend/entities/ContractorType"
           },
-          "description": "Stores Expression of Interest (EOI) emails for a project. Access controlled via project ownership.",
+          "description": "Stores contractor types. ContractorType ID is used as the document ID.",
           "params": [
             {
-              "name": "projectId",
-              "description": "The unique identifier of the project."
-            },
-            {
-              "name": "eoiEmailId",
-              "description": "The unique identifier of the EOI email."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/rfps/{rfpId}",
-        "definition": {
-          "entityName": "RFP",
-          "schema": {
-            "$ref": "#/backend/entities/RFP"
-          },
-          "description": "Stores Request for Proposals (RFPs) for a project. Access controlled via project ownership.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "The unique identifier of the project."
-            },
-            {
-              "name": "rfpId",
-              "description": "The unique identifier of the RFP."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}",
-        "definition": {
-          "entityName": "Proposal",
-          "schema": {
-            "$ref": "#/backend/entities/Proposal"
-          },
-          "description": "Stores proposals submitted for an RFP. Access controlled via project ownership.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "The unique identifier of the project."
-            },
-            {
-              "name": "rfpId",
-              "description": "The unique identifier of the RFP."
-            },
-            {
-              "name": "proposalId",
-              "description": "The unique identifier of the proposal."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}/scorecard",
-        "definition": {
-          "entityName": "Scorecard",
-          "schema": {
-            "$ref": "#/backend/entities/Scorecard"
-          },
-          "description": "Stores the scorecard for a proposal. Access controlled via project ownership.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "The unique identifier of the project."
-            },
-            {
-              "name": "rfpId",
-              "description": "The unique identifier of the RFP."
-            },
-            {
-              "name": "proposalId",
-              "description": "The unique identifier of the proposal."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/award_recommendations/{awardRecommendationId}",
-        "definition": {
-          "entityName": "AwardRecommendation",
-          "schema": {
-            "$ref": "#/backend/entities/AwardRecommendation"
-          },
-          "description": "Stores award recommendations for a project. Access controlled via project ownership.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "The unique identifier of the project."
-            },
-            {
-              "name": "awardRecommendationId",
-              "description": "The unique identifier of the award recommendation."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/projects/{projectId}/feedback/{feedbackId}",
-        "definition": {
-          "entityName": "Feedback",
-          "schema": {
-            "$ref": "#/backend/entities/Feedback"
-          },
-          "description": "Stores feedback for a project. Access controlled via project ownership.",
-          "params": [
-            {
-              "name": "projectId",
-              "description": "The unique identifier of the project."
-            },
-            {
-              "name": "feedbackId",
-              "description": "The unique identifier of the feedback."
+              "name": "contractorTypeId",
+              "description": "The unique identifier for the contractor type."
             }
           ]
         }
@@ -609,16 +498,180 @@
           "schema": {
             "$ref": "#/backend/entities/Contractor"
           },
-          "description": "Stores contractor profiles.  Publicly accessible contractor data.",
+          "description": "Stores contractor information. Contractor ID is used as the document ID.",
           "params": [
             {
               "name": "contractorId",
-              "description": "The unique identifier of the contractor."
+              "description": "The unique identifier for the contractor."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/eoiEmails/{eoiEmailId}",
+        "definition": {
+          "entityName": "EOIEmail",
+          "schema": {
+            "$ref": "#/backend/entities/EOIEmail"
+          },
+          "description": "Stores Expression of Interest emails related to a project. Project ID and EOIEmail ID are used in the path.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            },
+            {
+              "name": "eoiEmailId",
+              "description": "The unique identifier for the EOI email."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/rfpEmails/{rfpEmailId}",
+        "definition": {
+          "entityName": "RFPEmail",
+          "schema": {
+            "$ref": "#/backend/entities/RFPEmail"
+          },
+          "description": "Stores Request for Proposal emails related to a project. Project ID and RFPEmail ID are used in the path.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            },
+            {
+              "name": "rfpEmailId",
+              "description": "The unique identifier for the RFP email."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/proposals/{proposalId}",
+        "definition": {
+          "entityName": "Proposal",
+          "schema": {
+            "$ref": "#/backend/entities/Proposal"
+          },
+          "description": "Stores proposals submitted for a project. Project ID and Proposal ID are used in the path.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            },
+            {
+              "name": "proposalId",
+              "description": "The unique identifier for the proposal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/proposals/{proposalId}/scorecards/{scorecardId}",
+        "definition": {
+          "entityName": "Scorecard",
+          "schema": {
+            "$ref": "#/backend/entities/Scorecard"
+          },
+          "description": "Stores scorecards for proposals. Proposal ID and Scorecard ID are used in the path.",
+          "params": [
+            {
+              "name": "proposalId",
+              "description": "The unique identifier for the proposal."
+            },
+            {
+              "name": "scorecardId",
+              "description": "The unique identifier for the scorecard."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/awardRecommendation",
+        "definition": {
+          "entityName": "AwardRecommendation",
+          "schema": {
+            "$ref": "#/backend/entities/AwardRecommendation"
+          },
+          "description": "Stores the award recommendation for a project. Project ID is used as the document ID.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/feedback/{feedbackId}",
+        "definition": {
+          "entityName": "Feedback",
+          "schema": {
+            "$ref": "#/backend/entities/Feedback"
+          },
+          "description": "Stores feedback provided by users for a project.  User ID and Feedback ID are used in the path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "feedbackId",
+              "description": "The unique identifier for the feedback."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/technicalDocuments/{technicalDocumentId}",
+        "definition": {
+          "entityName": "TechnicalDocument",
+          "schema": {
+            "$ref": "#/backend/entities/TechnicalDocument"
+          },
+          "description": "Stores technical documents. TechnicalDocument ID is used as the document ID.",
+          "params": [
+            {
+              "name": "technicalDocumentId",
+              "description": "The unique identifier for the technical document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user information. User ID is used as the document ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/authorizedDomains/{authorizedDomainId}",
+        "definition": {
+          "entityName": "AuthorizedDomain",
+          "schema": {
+            "$ref": "#/backend/entities/AuthorizedDomain"
+          },
+          "description": "Stores information about authorized domains.  AuthorizedDomain ID is used as the document ID.",
+          "params": [
+            {
+              "name": "authorizedDomainId",
+              "description": "The unique identifier for the authorized domain."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to prioritize authorization independence, clarity, and scalability. It leverages denormalization and structural segregation to achieve these goals.\n\n**Authorization Independence:**\nTo eliminate `get()` calls in security rules and enable atomic operations, authorization context is denormalized. For instance, access to `EOIEmails`, `RFPs`, `Proposals`, `Scorecards`, `AwardRecommendations`, `Feedbacks`, and `TechnicalDocuments` is determined by the `Project`. Therefore, these collections are created as subcollections of `Project` (e.g., `/projects/{projectId}/rfps/{rfpId}`). This allows us to check the user's access to the project and, transitively, to the other documents in the Project's subcollections.\n\n**Structural Segregation:**\nThe structure ensures that all documents within a collection share the same security requirements. For example, `Users` are stored in a dedicated `/users/{userId}` collection, separate from projects, contractors or other entities. Each project has its own subcollections (e.g., `rfps`, `proposals`) to maintain a clear security posture.\n\n**Access Modeling:**\nThe structure uses path-based ownership for user-owned data (`/users/{userId}`).  Project-related data utilizes hierarchical paths (e.g., `/projects/{projectId}/rfps/{rfpId}`) to represent the `Project 1:N RFP` relationship.  Collaborative access is implicit via project ownership. If a user has access to a project, they implicitly have access to the project's subcollections.\n\n**QAPs (Rules are not Filters):**\nThe structure enables secure `list` operations by segregating data based on access requirements. Only users with access to a given project can list the subcollections within that project. Because access is defined through the project, there's no need to filter based on user attributes within the rules themselves.\n\n**Invariants:**\nThe structure supports the integrity of ownership by explicitly associating data with projects using hierarchical paths. Timestamps (e.g., `sentDate`, `submissionDate`) are included in relevant entities to track the history of interactions. Denormalized data (e.g., project information in subcollections) helps maintain data consistency and improves query performance.\n\nThe structure efficiently supports the core features of the MARCUS Automation Suite. Project intake, contractor selection, EOI email generation, RFP management, proposal submission, analysis, scoring, award recommendations, feedback collection, and dashboards are all facilitated by the organized and secure data model. The design will prevent the \"auth/operation-not-allowed\" error, which is likely caused by malformed security rules attempting to read data the user doesn't have access to or performing incorrect operations based on role/permission settings."
+    "reasoning": "The Firestore structure is designed to support the MARCUS Automation Suite application, emphasizing security, scalability, and debuggability.  The design adheres to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters).\n\nAuthorization Independence is achieved primarily through denormalization.  For example, if access to `EOIEmails` depends on the `Project`'s attributes, those attributes would be copied into each `EOIEmail` document.  However, given the current schema, direct denormalization of project attributes into subcollections is not immediately necessary. Instead, the path-based ownership `/projects/{projectId}/eoiEmails/{eoiEmailId}` allows simple rules based on the project ID.\n\nStructural Segregation is applied by separating different types of data into distinct collections.  For instance, global entities like `MetroCodes` and `ContractorTypes` reside in root-level collections, while project-specific data is nested under `/projects/{projectId}`.\n\nAccess Modeling utilizes path-based ownership for entities representing `User 1:N Entity` relationships. For example, project-specific data like `EOIEmails`, `RFPEmails`, `Proposals`, and `Feedback` are stored as subcollections of the `/projects/{projectId}` collection, enabling easy management and securing of project-related data. User-specific feedback is stored under `/users/{userId}/feedback/{feedbackId}`. Roles are managed in the `users` collection.\n\nQAPs (Rules are not Filters) are supported through structural segregation and the use of membership maps where necessary. The structure facilitates secure `list` operations by ensuring that each collection has a homogeneous security posture. For instance, listing `EOIEmails` under a specific project requires the user to have access to that project.\n\nInvariants such as ownership, timestamps, and denormalized data integrity are maintained through the use of server-side functions or triggers where necessary. Although the current schema doesn't explicitly define timestamp fields, adding `createdAt` and `updatedAt` timestamp fields will be considered in the future.\n\nThis structure ensures that security rules can be written clearly and efficiently, minimizing the need for complex logic and `get()` calls, thereby promoting a more secure and maintainable application."
   }
 }

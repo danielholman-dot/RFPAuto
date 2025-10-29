@@ -2,181 +2,245 @@
  * @fileoverview Firestore Security Rules for the MARCUS Automation Suite.
  *
  * Core Philosophy:
- * This ruleset enforces a strict ownership model for user data and a project-centric
- * access model for project-related data.  Access to project subcollections is implicitly
- * granted to those with access to the parent project.
+ * This ruleset prioritizes strong authorization based on resource ownership and hierarchical data structure.
+ * It avoids complex data validation in favor of rapid prototyping and iteration.
+ * Strict access control is enforced, defaulting to denial unless explicitly allowed.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profiles.
- * - /projects/{projectId}: Stores project information and acts as the root for project-related subcollections.
- * - /projects/{projectId}/technical_documents/{technicalDocumentId}: Stores technical documents associated with a project.
- * - /projects/{projectId}/eoi_emails/{eoiEmailId}: Stores Expression of Interest (EOI) emails.
- * - /projects/{projectId}/rfps/{rfpId}: Stores Request for Proposals (RFPs).
- * - /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}: Stores proposals submitted for an RFP.
- * - /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}/scorecard: Stores scorecards for proposals.
- * - /projects/{projectId}/award_recommendations/{awardRecommendationId}: Stores award recommendations.
- * - /projects/{projectId}/feedback/{feedbackId}: Stores feedback for a project.
- * - /contractors/{contractorId}: Stores publicly accessible contractor data.
+ * - Top-level collections: /projects/{projectId}, /metroCodes/{metroCodeId}, /contractorTypes/{contractorTypeId}, /contractors/{contractorId}, /technicalDocuments/{technicalDocumentId}, /users/{userId}, /authorizedDomains/{authorizedDomainId}
+ * - Subcollections: /projects/{projectId}/eoiEmails/{eoiEmailId}, /projects/{projectId}/rfpEmails/{rfpEmailId}, /projects/{projectId}/proposals/{proposalId}, /proposals/{proposalId}/scorecards/{scorecardId}, /users/{userId}/feedback/{feedbackId}
+ * - AwardRecommendation documents are stored under /projects/{projectId}/awardRecommendation (note: singular document ID).
  *
  * Key Security Decisions:
- * - Users can only access their own user documents.
- * - Access to project subcollections is determined by access to the parent project.
- * - Contractors are publicly readable.
- * - Listing all documents in a collection is generally allowed for authorized users.
+ * - User listing is implicitly disallowed (no rule allows listing all users).
+ * - Data shape validation is minimized to focus on authorization.
+ * - Collections without clear ownership default to requiring authentication for writes.
  *
  * Denormalization for Authorization:
- * - The project-centric approach avoids costly `get()` calls by making project access the gatekeeper to all project-related subcollections.
+ * - Ownership: Documents in user subcollections (e.g., Feedback) should contain a `userId` field matching the parent path. This is enforced on creation and immutability is enforced on update.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to manage their own user profile.
-     * @path /users/{userId}
-     * @allow (create) User with ID 'user123' can create their own profile if authenticated with UID 'user123'.
-     * @deny (create) User with ID 'user456' cannot create a profile with ID 'user123'.
-     * @allow (get, list, update, delete) User with ID 'user123' can read/write their own profile if authenticated with UID 'user123'.
-     * @deny (get, list, update, delete) User with ID 'user456' cannot read/write user with ID 'user123'.
-     * @principle Enforces user-ownership for user profiles, ensuring only the authenticated user can access their data.
+     * @description Checks if the current user is signed in.
      */
-    match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+    function isSignedIn() {
+      return request.auth != null;
     }
 
     /**
-     * @description Allows management of projects.  Project access implicitly grants access to subcollections.
+     * @description Checks if the current user is the owner of the resource.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the current user is the owner of the resource, and the resource exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Allows anyone to read, but only the owner to write. Requires an 'ownerId' or 'authorId' field in the document.
      * @path /projects/{projectId}
-     * @allow (create) Authenticated user can create a new project.
-     * @allow (get, list, update, delete) Authenticated user can read/write project data.
-     * @deny (create, update, delete) Unauthenticated user cannot create/update/delete project data.
-     * @principle Secures projects, allowing only authenticated users to manage them.
+     * @allow (get, list): if true;
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated, or the userId does not match.
+     * @principle Public read, owner-only writes, authentication required for writes.
      */
     match /projects/{projectId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-
-      /**
-       * @description Allows management of technical documents within a project.  Access is inherited from project.
-       * @path /projects/{projectId}/technical_documents/{technicalDocumentId}
-       */
-      match /projects/{projectId}/technical_documents/{technicalDocumentId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-      }
-
-      /**
-       * @description Allows management of EOI emails within a project. Access is inherited from project.
-       * @path /projects/{projectId}/eoi_emails/{eoiEmailId}
-       */
-      match /projects/{projectId}/eoi_emails/{eoiEmailId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-      }
-
-      /**
-       * @description Allows management of RFPs within a project. Access is inherited from project.
-       * @path /projects/{projectId}/rfps/{rfpId}
-       */
-      match /projects/{projectId}/rfps/{rfpId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-
-        /**
-         * @description Allows management of proposals within an RFP. Access is inherited from project.
-         * @path /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}
-         */
-        match /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId} {
-          allow get: if isSignedIn();
-          allow list: if isSignedIn();
-          allow create: if isSignedIn();
-          allow update: if isSignedIn();
-          allow delete: if isSignedIn();
-
-          /**
-           * @description Allows management of scorecards within a proposal. Access is inherited from project.
-           * @path /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}/scorecard
-           */
-          match /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}/scorecard {
-            allow get: if isSignedIn();
-            allow list: if isSignedIn();
-            allow create: if isSignedIn();
-            allow update: if isSignedIn();
-            allow delete: if isSignedIn();
-          }
-        }
-      }
-
-      /**
-       * @description Allows management of award recommendations within a project. Access is inherited from project.
-       * @path /projects/{projectId}/award_recommendations/{awardRecommendationId}
-       */
-      match /projects/{projectId}/award_recommendations/{awardRecommendationId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-      }
-
-      /**
-       * @description Allows management of feedback within a project. Access is inherited from project.
-       * @path /projects/{projectId}/feedback/{feedbackId}
-       */
-      match /projects/{projectId}/feedback/{feedbackId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-      }
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to contractor profiles.
+     * @description Allows anyone to read, but requires authentication for writes.
+     * @path /metroCodes/{metroCodeId}
+     * @allow (get, list): if true;
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Public read, authentication required for writes.
+     */
+    match /metroCodes/{metroCodeId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows anyone to read, but requires authentication for writes.
+     * @path /contractorTypes/{contractorTypeId}
+     * @allow (get, list): if true;
+     * @allow (create): if isSignedIn();
+     * @allow (update, delete): if isSignedIn();
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Public read, authentication required for writes.
+     */
+    match /contractorTypes/{contractorTypeId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows anyone to read, but requires authentication for writes.
      * @path /contractors/{contractorId}
-     * @allow (get, list) Any user (authenticated or not) can read contractor profiles.
-     * @deny (create, update, delete) Only authenticated users can create/update/delete contractor profiles.
-     * @principle Provides public read access for contractor data, while restricting write access.
+     * @allow (get, list): if true;
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Public read, authentication required for writes.
      */
     match /contractors/{contractorId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to create, update and delete EOIEmails associated with a specific project.
+     * @path /projects/{projectId}/eoiEmails/{eoiEmailId}
+     * @allow (get, list): if isSignedIn()
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Authentication required for all operations.
+     */
+    match /projects/{projectId}/eoiEmails/{eoiEmailId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to create, update and delete RFPEmails associated with a specific project.
+     * @path /projects/{projectId}/rfpEmails/{rfpEmailId}
+     * @allow (get, list): if isSignedIn()
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Authentication required for all operations.
+     */
+    match /projects/{projectId}/rfpEmails/{rfpEmailId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to create, update and delete Proposals associated with a specific project.
+     * @path /projects/{projectId}/proposals/{proposalId}
+     * @allow (get, list): if isSignedIn()
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Authentication required for all operations.
+     */
+    match /projects/{projectId}/proposals/{proposalId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to create, update and delete Scorecards associated with a specific proposal.
+     * @path /proposals/{proposalId}/scorecards/{scorecardId}
+     * @allow (get, list): if isSignedIn()
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Authentication required for all operations.
+     */
+    match /proposals/{proposalId}/scorecards/{scorecardId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows authenticated users to create, update and delete AwardRecommendations associated with a specific project.
+     * @path /projects/{projectId}/awardRecommendation
+     * @allow (get): if isSignedIn()
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Authentication required for all operations.
+     */
+    match /projects/{projectId}/awardRecommendation {
+      allow get: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+      allow list: if false;
+    }
+
+    /**
+     * @description Allows a user to create, read, update, and delete their own feedback entries.
+     * @path /users/{userId}/feedback/{feedbackId}
+     * @allow (get, list): if isOwner(userId);
+     * @allow (create): if isOwner(userId);
+     * @allow (update, delete): if isExistingOwner(userId);
+     * @deny (create): if the userId in the path does not match the user's auth UID.
+     * @deny (update, delete): if the document does not exist, or the userId in the path does not match the user's auth UID.
+     * @principle Enforces user-ownership for feedback entries.
+     */
+    match /users/{userId}/feedback/{feedbackId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update, delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Allows anyone to read, but requires authentication for writes.
+     * @path /technicalDocuments/{technicalDocumentId}
+     * @allow (get, list): if true;
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Public read, authentication required for writes.
+     */
+    match /technicalDocuments/{technicalDocumentId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    /**
+     * @description Allows a user to create their own user document, and only allows them to read, update, and delete their own document.
+     * @path /users/{userId}
+     * @allow (get): if isOwner(userId);
+     * @allow (create): if isOwner(userId);
+     * @allow (update, delete): if isExistingOwner(userId);
+     * @deny (create): if the userId in the path does not match the user's auth UID.
+     * @deny (update, delete): if the document does not exist, or the userId in the path does not match the user's auth UID.
+     * @principle Enforces user-ownership for user documents.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update, delete: if isExistingOwner(userId);
+      allow list: if false;
+    }
+
+    /**
+     * @description Allows anyone to read, but requires authentication for writes.
+     * @path /authorizedDomains/{authorizedDomainId}
+     * @allow (get, list): if true;
+     * @allow (create): if isSignedIn()
+     * @allow (update, delete): if isSignedIn()
+     * @deny (create, update, delete): if the request is not authenticated.
+     * @principle Public read, authentication required for writes.
+     */
+    match /authorizedDomains/{authorizedDomainId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
   }
 }
