@@ -1,5 +1,6 @@
 
 import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, writeBatch, doc, getDocs, Timestamp } from 'firebase/firestore';
 import { firebaseConfig } from '../src/firebase/config';
 import { ContractorsData, MetroCodesData, RFPData as seedRFPData, usersData } from '../src/lib/data';
@@ -7,13 +8,34 @@ import { ContractorsData, MetroCodesData, RFPData as seedRFPData, usersData } fr
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
+async function seedAuthUsers() {
+    console.log('Seeding authentication users...');
+    let count = 0;
+    for (const user of usersData) {
+        try {
+            await createUserWithEmailAndPassword(auth, user.email, 'password');
+            console.log(`Created auth user: ${user.email}`);
+            count++;
+        } catch (error: any) {
+            if (error.code === 'auth/email-already-in-use') {
+                console.log(`Auth user ${user.email} already exists. Skipping.`);
+            } else {
+                console.error(`Error creating auth user ${user.email}:`, error);
+            }
+        }
+    }
+    console.log(`Seeded ${count} new authentication users.`);
+}
+
 
 async function seedCollection(collectionName: string, data: any[], idField?: string) {
     const collectionRef = collection(db, collectionName);
     
     // Check if collection is empty
     const snapshot = await getDocs(collectionRef);
-    if (!snapshot.empty) {
+    if (!snapshot.empty && collectionName !== 'users') { // Always check users for updates
         console.log(`Collection "${collectionName}" already contains data. Skipping seeding.`);
         return;
     }
@@ -23,21 +45,11 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
     let count = 0;
 
     data.forEach((item, index) => {
-        let id;
-        if (idField && item[idField]) {
-            id = item[idField];
-        } else if (item.id) {
-            id = item.id;
-        } else if (collectionName === 'users' && item.email) {
-            // Use a deterministic ID for users based on email for claim purposes
-            id = item.email.replace(/[^a-zA-Z0-9]/g, '_');
-        } else {
-            id = `${collectionName.slice(0, -1)}-${index + 1}`;
-        }
+        let docId = item.id;
         
-        const docRef = doc(db, collectionName, id);
+        const docRef = doc(db, collectionName, docId);
         
-        const dataToSet = { ...item, id: id };
+        const dataToSet = { ...item };
 
         // Convert JS Dates to Firestore Timestamps
         Object.keys(dataToSet).forEach(key => {
@@ -57,18 +69,19 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
             (dataToSet as any).customClaims = { admin: true };
         }
 
-        batch.set(docRef, dataToSet);
+        batch.set(docRef, dataToSet, { merge: true });
         count++;
     });
 
     await batch.commit();
-    console.log(`Seeded ${count} documents into "${collectionName}".`);
+    console.log(`Seeded/Updated ${count} documents in "${collectionName}".`);
 }
 
 async function seedDatabase() {
     try {
         console.log('Starting database seed...');
         
+        await seedAuthUsers();
         await seedCollection('users', usersData, 'id');
         await seedCollection('contractors', ContractorsData, 'id');
         await seedCollection('metro_codes', MetroCodesData, 'id');
