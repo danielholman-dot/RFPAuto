@@ -2,164 +2,181 @@
  * @fileoverview Firestore Security Rules for the MARCUS Automation Suite.
  *
  * Core Philosophy:
- * This ruleset enforces a role-based access control model.  Access to projects and related
- * subcollections is governed by roles defined at the project level. Public read access is
- * granted to contractors, metro codes, and technical documents.
+ * This ruleset enforces a strict ownership model for user data and a project-centric
+ * access model for project-related data.  Access to project subcollections is implicitly
+ * granted to those with access to the parent project.
  *
  * Data Structure:
- * - /projects/{projectId}: Top-level collection for projects.
- * - /projects/{projectId}/emails_eoi/{eoiEmailId}: Subcollection for EOI emails.
- * - /projects/{projectId}/emails_rfp/{rfpEmailId}: Subcollection for RFP emails.
- * - /projects/{projectId}/proposals/{proposalId}: Subcollection for proposals.
- * - /projects/{projectId}/award_recommendations/{awardRecommendationId}: Subcollection for award recommendations.
- * - /projects/{projectId}/feedback/{feedbackId}: Subcollection for feedback.
- * - /contractors/{contractorId}: Top-level collection for contractors.
- * - /metro_codes/{metroCodeId}: Top-level collection for metro codes.
- * - /technical_documents/{technicalDocumentId}: Top-level collection for technical documents.
+ * - /users/{userId}: Stores individual user profiles.
+ * - /projects/{projectId}: Stores project information and acts as the root for project-related subcollections.
+ * - /projects/{projectId}/technical_documents/{technicalDocumentId}: Stores technical documents associated with a project.
+ * - /projects/{projectId}/eoi_emails/{eoiEmailId}: Stores Expression of Interest (EOI) emails.
+ * - /projects/{projectId}/rfps/{rfpId}: Stores Request for Proposals (RFPs).
+ * - /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}: Stores proposals submitted for an RFP.
+ * - /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}/scorecard: Stores scorecards for proposals.
+ * - /projects/{projectId}/award_recommendations/{awardRecommendationId}: Stores award recommendations.
+ * - /projects/{projectId}/feedback/{feedbackId}: Stores feedback for a project.
+ * - /contractors/{contractorId}: Stores publicly accessible contractor data.
  *
  * Key Security Decisions:
- * - All top-level collections are readable by anyone, including unauthenticated users.
- * - Write access to projects and all subcollections is denied (TODO: should be updated to role-based access).
+ * - Users can only access their own user documents.
+ * - Access to project subcollections is determined by access to the parent project.
+ * - Contractors are publicly readable.
+ * - Listing all documents in a collection is generally allowed for authorized users.
+ *
+ * Denormalization for Authorization:
+ * - The project-centric approach avoids costly `get()` calls by making project access the gatekeeper to all project-related subcollections.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
+    /**
+     * @description Allows users to manage their own user profile.
+     * @path /users/{userId}
+     * @allow (create) User with ID 'user123' can create their own profile if authenticated with UID 'user123'.
+     * @deny (create) User with ID 'user456' cannot create a profile with ID 'user123'.
+     * @allow (get, list, update, delete) User with ID 'user123' can read/write their own profile if authenticated with UID 'user123'.
+     * @deny (get, list, update, delete) User with ID 'user456' cannot read/write user with ID 'user123'.
+     * @principle Enforces user-ownership for user profiles, ensuring only the authenticated user can access their data.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
 
-    // Helper function to check if the authenticated user is the owner of a document.
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
 
-    // Helper function to check if the authenticated user is the owner of an existing document.
-    function isExistingOwner(userId) {
-      return (isOwner(userId) && resource != null);
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to project documents.
+     * @description Allows management of projects.  Project access implicitly grants access to subcollections.
      * @path /projects/{projectId}
-     * @allow (get, list): Any user can read project data.
-     * @allow (create, update, delete): No one can modify or delete projects. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the project collection. (TODO: should be updated to role-based access)
+     * @allow (create) Authenticated user can create a new project.
+     * @allow (get, list, update, delete) Authenticated user can read/write project data.
+     * @deny (create, update, delete) Unauthenticated user cannot create/update/delete project data.
+     * @principle Secures projects, allowing only authenticated users to manage them.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+
+      /**
+       * @description Allows management of technical documents within a project.  Access is inherited from project.
+       * @path /projects/{projectId}/technical_documents/{technicalDocumentId}
+       */
+      match /projects/{projectId}/technical_documents/{technicalDocumentId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+      }
+
+      /**
+       * @description Allows management of EOI emails within a project. Access is inherited from project.
+       * @path /projects/{projectId}/eoi_emails/{eoiEmailId}
+       */
+      match /projects/{projectId}/eoi_emails/{eoiEmailId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+      }
+
+      /**
+       * @description Allows management of RFPs within a project. Access is inherited from project.
+       * @path /projects/{projectId}/rfps/{rfpId}
+       */
+      match /projects/{projectId}/rfps/{rfpId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+
+        /**
+         * @description Allows management of proposals within an RFP. Access is inherited from project.
+         * @path /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}
+         */
+        match /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId} {
+          allow get: if isSignedIn();
+          allow list: if isSignedIn();
+          allow create: if isSignedIn();
+          allow update: if isSignedIn();
+          allow delete: if isSignedIn();
+
+          /**
+           * @description Allows management of scorecards within a proposal. Access is inherited from project.
+           * @path /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}/scorecard
+           */
+          match /projects/{projectId}/rfps/{rfpId}/proposals/{proposalId}/scorecard {
+            allow get: if isSignedIn();
+            allow list: if isSignedIn();
+            allow create: if isSignedIn();
+            allow update: if isSignedIn();
+            allow delete: if isSignedIn();
+          }
+        }
+      }
+
+      /**
+       * @description Allows management of award recommendations within a project. Access is inherited from project.
+       * @path /projects/{projectId}/award_recommendations/{awardRecommendationId}
+       */
+      match /projects/{projectId}/award_recommendations/{awardRecommendationId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+      }
+
+      /**
+       * @description Allows management of feedback within a project. Access is inherited from project.
+       * @path /projects/{projectId}/feedback/{feedbackId}
+       */
+      match /projects/{projectId}/feedback/{feedbackId} {
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+      }
     }
 
     /**
-     * @description Controls access to EOI email documents within a project.
-     * @path /projects/{projectId}/emails_eoi/{eoiEmailId}
-     * @allow (get, list): Any user can read EOI email data.
-     * @allow (create, update, delete): No one can modify or delete EOI emails. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the EOI email subcollection. (TODO: should be updated to role-based access)
-     */
-    match /projects/{projectId}/emails_eoi/{eoiEmailId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Controls access to RFP email documents within a project.
-     * @path /projects/{projectId}/emails_rfp/{rfpEmailId}
-     * @allow (get, list): Any user can read RFP email data.
-     * @allow (create, update, delete): No one can modify or delete RFP emails. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the RFP email subcollection. (TODO: should be updated to role-based access)
-     */
-    match /projects/{projectId}/emails_rfp/{rfpEmailId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Controls access to proposal documents within a project.
-     * @path /projects/{projectId}/proposals/{proposalId}
-     * @allow (get, list): Any user can read proposal data.
-     * @allow (create, update, delete): No one can modify or delete proposals. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the proposal subcollection. (TODO: should be updated to role-based access)
-     */
-    match /projects/{projectId}/proposals/{proposalId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Controls access to award recommendation documents within a project.
-     * @path /projects/{projectId}/award_recommendations/{awardRecommendationId}
-     * @allow (get, list): Any user can read award recommendation data.
-     * @allow (create, update, delete): No one can modify or delete award recommendations. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the award recommendation subcollection. (TODO: should be updated to role-based access)
-     */
-    match /projects/{projectId}/award_recommendations/{awardRecommendationId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Controls access to feedback documents within a project.
-     * @path /projects/{projectId}/feedback/{feedbackId}
-     * @allow (get, list): Any user can read feedback data.
-     * @allow (create, update, delete): No one can modify or delete feedback. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the feedback subcollection. (TODO: should be updated to role-based access)
-     */
-    match /projects/{projectId}/feedback/{feedbackId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Controls access to contractor documents.
+     * @description Allows public read access to contractor profiles.
      * @path /contractors/{contractorId}
-     * @allow (get, list): Any user can read contractor data.
-     * @allow (create, update, delete): No one can modify or delete contractors. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the contractor collection. (TODO: should be updated to role-based access)
+     * @allow (get, list) Any user (authenticated or not) can read contractor profiles.
+     * @deny (create, update, delete) Only authenticated users can create/update/delete contractor profiles.
+     * @principle Provides public read access for contractor data, while restricting write access.
      */
     match /contractors/{contractorId} {
-      allow get, list: if true;
-       allow create: if false;
-            allow update: if false;
-                 allow delete: if false;
-    }
+      function isSignedIn() {
+        return request.auth != null;
+      }
 
-    /**
-     * @description Controls access to metro code documents.
-     * @path /metro_codes/{metroCodeId}
-     * @allow (get, list): Any user can read metro code data.
-     * @allow (create, update, delete): No one can modify or delete metro codes. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the metro code collection. (TODO: should be updated to role-based access)
-     */
-    match /metro_codes/{metroCodeId} {
-      allow get, list: if true;
-       allow create: if false;
-            allow update: if false;
-                 allow delete: if false;
-    }
-
-    /**
-     * @description Controls access to technical document documents.
-     * @path /technical_documents/{technicalDocumentId}
-     * @allow (get, list): Any user can read technical document data.
-     * @allow (create, update, delete): No one can modify or delete technical documents. (TODO: should be updated to role-based access)
-     * @deny (create, update, delete): Always deny these operations.
-     * @principle No writes are allowed on the technical document collection. (TODO: should be updated to role-based access)
-     */
-    match /technical_documents/{technicalDocumentId} {
-      allow get, list: if true;
-       allow create: if false;
-            allow update: if false;
-                 allow delete: if false;
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
   }
 }
