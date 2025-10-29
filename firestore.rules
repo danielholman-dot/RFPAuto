@@ -2,176 +2,277 @@
  * @fileoverview Firestore Security Rules for the MARCUS Automation Suite.
  *
  * Core Philosophy:
- * This ruleset prioritizes a secure, owner-based access control model for user data
- * and public read access with owner-controlled writes for certain top-level collections.
- * It uses denormalization for authorization to avoid costly `get()` calls.
+ * This ruleset enforces a role-based access control model combined with
+ * resource-based authorization achieved through data denormalization.
+ * Users with specific roles (e.g., project creator, administrator)
+ * gain elevated privileges.  Access to project-related data is governed
+ * by a denormalized 'members' map (not explicitly implemented in the schema,
+ * but assumed for subcollections) that determines user roles within a project.
  *
  * Data Structure:
- * - /users/{userId}: User profiles, accessible only to the user themselves.
- * - /projects/{projectId}: Project data.
- * - /projects/{projectId}/proposals/{proposalId}: Proposals associated with projects.
- * - /contractors/{contractorId}: Contractor profiles.
- * - /metro_codes/{metroCodeId}, /contractor_types/{contractorTypeId}, /technical_documents/{technicalDocumentId}:
- *   Master data collections intended for public read access with restricted write access.
- * - /projects/{projectId}/rfp_emails/{rfpEmailId}: RFP emails associated with a project.
- * - /proposals/{proposalId}/scorecard: Scorecards for proposals
+ * - /projects/{projectId}: Stores project details.
+ * - /projects/{projectId}/technicalDocuments/{technicalDocumentId}: Stores technical documents for a project.
+ * - /projects/{projectId}/eoiEmails/{eoiEmailId}: Stores Expression of Interest emails for a project.
+ * - /projects/{projectId}/rfpEmails/{rfpEmailId}: Stores RFP invitation emails for a project.
+ * - /rfps/{rfpId}: Stores Requests for Proposals.
+ * - /proposals/{proposalId}: Stores proposals submitted by contractors.
+ * - /scorecards/{scorecardId}: Stores scorecards for evaluating proposals.
+ * - /projects/{projectId}/awardRecommendations/{awardRecommendationId}: Stores award recommendations for projects.
+ * - /projects/{projectId}/feedback/{feedbackId}: Stores feedback for projects.
+ * - /metroCodes/{metroCodeId}: Stores metro codes.
+ * - /contractors/{contractorId}: Stores contractor information.
+ * - /roles_admin/{userId}: Indicates a user with admin privileges.
+ * - /roles_project_creator/{userId}: Indicates a user who can create projects.
  *
  * Key Security Decisions:
- * - User data is strictly private and accessible only to the authenticated user.
- * - Master data collections (metro_codes, contractor_types, technical_documents) are
- *   publicly readable but require specific authorization to write (not yet defined in the rules).
- * - Listing of user documents is disabled for security.
+ * - Users can only create projects if they have the 'project_creator' role.
+ * - Access to project subcollections (technicalDocuments, eoiEmails, rfpEmails, awardRecommendations, feedback)
+ *   is based on a denormalized 'members' map within the project (not explicitly defined, so rules will be permissive).
+ * - Listing of most collections is restricted for security.
  *
  * Denormalization for Authorization:
- * - Proposals denormalize projectId and contractorId to enable independent authorization
- *   without requiring `get()` calls to the parent Project or Contractor documents.
- *
- * Structural Segregation:
- * - Uses separate collections to segregate public (master data) from private (user data).
+ * The rules rely on the assumed denormalization of a 'members' map from the parent
+ * /projects/{projectId} document into its subcollections (e.g., /projects/{projectId}/eoiEmails/{eoiEmailId}).
+ * This map (if implemented in the data) would contain user IDs and their roles within the project,
+ * enabling efficient access control without costly `get()` operations.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile data.
-     * @path /users/{userId}
-     * @allow (create) User with ID 'user123' can create their own profile.
-     * @deny (create) User with ID 'user123' cannot create a profile with a different ID 'user456'.
-     * @allow (get, list) User with ID 'user123' can read their own profile.
-     * @deny (get, list) User with ID 'user123' cannot read another user's profile.
-     * @allow (update, delete) User with ID 'user123' can update their own profile.
-     * @deny (update, delete) User with ID 'user123' cannot update another user's profile.
-     * @principle Enforces document ownership for writes and reads, restricting access to a user's own data tree.
+     * @description Checks if the user is signed in.
+     * @principle Authentication is required for most operations.
      */
-    match /users/{userId} {
-      // Verified user can create their own profile.
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
-      allow get: if isSignedIn() && isOwner(userId);
-      // Owner can list their own user document.
-      allow list: if false;
-      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+    function isSignedIn() {
+      return request.auth != null;
     }
 
     /**
-     * @description Controls access to project data.
+     * @description Checks if the user's ID matches the given userId.
+     * @principle Enforces user-specific data access.
+     * @param {string} userId - The user ID to compare against the authenticated user's ID.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if a document exists and the user is the owner.
+     * @principle Ensures a document exists before allowing updates or deletes.
+     * @param {string} userId - The user ID to compare against the authenticated user's ID.
+     */
+    function isExistingOwner() {
+        return isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+    
+    /**
+     * @description Checks if the user has the 'project_creator' role.
+     * @principle Limits project creation to authorized users.
+     */
+    function hasProjectCreatorRole() {
+        return exists(/databases/$(database)/documents/roles_project_creator/$(request.auth.uid));
+    }
+
+    /**
+     * @description Checks if the user has the 'admin' role.
+     * @principle Limits admin operations to authorized users.
+     */
+     function hasAdminRole() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * @description Rules for the /projects/{projectId} collection.
      * @path /projects/{projectId}
-     * @allow (get, list) Any user can read project data.
-     * @deny (create, update, delete) Only authenticated users can create, update, or delete project data. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access.
+     * @allow (create) User with 'project_creator' role creates a new project.
+     * @deny (create) User without 'project_creator' role attempts to create a project.
+     * @allow (get) Any signed-in user can read a project.
+     * @deny (list) No one can list projects.
+     * @principle Requires 'project_creator' role for creation. Allows public read access for signed in users.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+        allow create: if isSignedIn() && hasProjectCreatorRole();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && isExistingOwner();
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
     }
 
     /**
-     * @description Controls access to proposals associated with a specific project.
-     * @path /projects/{projectId}/proposals/{proposalId}
-     * @allow (create) Authenticated user can create a proposal for a project.
-     * @deny (create) Authenticated user cannot create a proposal for a project if they are not associated.
-     * @allow (get, list) Any user can read proposals for a project.
-     * @deny (update, delete) Only associated users can update or delete proposals. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access to project members.
+     * @description Rules for the /projects/{projectId}/technicalDocuments/{technicalDocumentId} collection.
+     * @path /projects/{projectId}/technicalDocuments/{technicalDocumentId}
+     * @allow (create) Any signed-in user can create a technical document.
+     * @deny (list) No one can list technical documents.
+     * @principle Allows any signed-in user to create, but restricts listing.
      */
-    match /projects/{projectId}/proposals/{proposalId} {
-      allow create: if isSignedIn();
-      allow get, list: if true;
-      allow update, delete: if false;  // TODO: Add owner validation once the schema is updated with an ownership field.
+    match /projects/{projectId}/technicalDocuments/{technicalDocumentId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId == request.auth.uid;
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
     }
 
     /**
-     * @description Controls access to contractor profiles.
+     * @description Rules for the /projects/{projectId}/eoiEmails/{eoiEmailId} collection.
+     * @path /projects/{projectId}/eoiEmails/{eoiEmailId}
+     * @allow (create) Any signed-in user can create an EOI email.
+     * @deny (list) No one can list EOI emails.
+     * @principle Allows any signed-in user to create, but restricts listing.
+     */
+    match /projects/{projectId}/eoiEmails/{eoiEmailId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId == request.auth.uid;
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
+    }
+
+    /**
+     * @description Rules for the /projects/{projectId}/rfpEmails/{rfpEmailId} collection.
+     * @path /projects/{projectId}/rfpEmails/{rfpEmailId}
+     * @allow (create) Any signed-in user can create an RFP email.
+     * @deny (list) No one can list RFP emails.
+     * @principle Allows any signed-in user to create, but restricts listing.
+     */
+    match /projects/{projectId}/rfpEmails/{rfpEmailId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId == request.auth.uid;
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
+    }
+
+    /**
+     * @description Rules for the /rfps/{rfpId} collection.
+     * @path /rfps/{rfpId}
+     * @allow (create) Any signed-in user can create an RFP.
+     * @deny (list) No one can list RFPs.
+     * @principle Allows any signed-in user to create, but restricts listing.
+     */
+    match /rfps/{rfpId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && isExistingOwner();
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
+    }
+
+    /**
+     * @description Rules for the /proposals/{proposalId} collection.
+     * @path /proposals/{proposalId}
+     * @allow (create) Any signed-in user can create a proposal.
+     * @deny (list) No one can list proposals.
+     * @principle Allows any signed-in user to create, but restricts listing.
+     */
+    match /proposals/{proposalId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && isExistingOwner();
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
+    }
+
+    /**
+     * @description Rules for the /scorecards/{scorecardId} collection.
+     * @path /scorecards/{scorecardId}
+     * @allow (create) Any signed-in user can create a scorecard.
+     * @deny (list) No one can list scorecards.
+     * @principle Allows any signed-in user to create, but restricts listing.
+     */
+    match /scorecards/{scorecardId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && isExistingOwner();
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
+    }
+
+    /**
+     * @description Rules for the /projects/{projectId}/awardRecommendations/{awardRecommendationId} collection.
+     * @path /projects/{projectId}/awardRecommendations/{awardRecommendationId}
+     * @allow (create) Any signed-in user can create an award recommendation.
+     * @deny (list) No one can list award recommendations.
+     * @principle Allows any signed-in user to create, but restricts listing.
+     */
+    match /projects/{projectId}/awardRecommendations/{awardRecommendationId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId == request.auth.uid;
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
+    }
+
+    /**
+     * @description Rules for the /projects/{projectId}/feedback/{feedbackId} collection.
+     * @path /projects/{projectId}/feedback/{feedbackId}
+     * @allow (create) Any signed-in user can create feedback.
+     * @deny (list) No one can list feedback.
+     * @principle Allows any signed-in user to create, but restricts listing.
+     */
+    match /projects/{projectId}/feedback/{feedbackId} {
+        allow create: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if false;
+        allow update: if isSignedIn() && get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId == request.auth.uid;
+        allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
+    }
+
+    /**
+     * @description Rules for the /metroCodes/{metroCodeId} collection.
+     * @path /metroCodes/{metroCodeId}
+     * @allow (get, list) Public read access for all users.
+     * @deny (create, update, delete) No write access.
+     * @principle Public read-only collection.
+     */
+    match /metroCodes/{metroCodeId} {
+        allow read: if true;
+        allow write: if false;
+    }
+
+    /**
+     * @description Rules for the /contractors/{contractorId} collection.
      * @path /contractors/{contractorId}
-     * @allow (get, list) Any user can read contractor profiles.
-     * @deny (create, update, delete) Only authenticated users can create, update, or delete contractor profiles. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access.
+     * @allow (get, list) Public read access for all users.
+     * @deny (create, update, delete) No write access.
+     * @principle Public read-only collection.
      */
     match /contractors/{contractorId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+        allow read: if true;
+        allow write: if false;
+    }
+
+     /**
+      * @description Rules for the /roles_admin/{userId} collection.
+      * @path /roles_admin/{userId}
+      * @allow (get) Any signed-in user can check for the admin role.
+      * @allow (create) Only an admin can grant admin roles.
+      * @deny (list) No one can list the admin roles.
+      * @principle Restricts role management to existing admins.
+      */
+    match /roles_admin/{userId} {
+      allow get: if isSignedIn();
+      allow create: if hasAdminRole();
+      allow update: if false;
+      allow delete: if false;
+      allow list: if false;
     }
 
     /**
-     * @description Controls access to metro code data.
-     * @path /metro_codes/{metroCodeId}
-     * @allow (get, list) Any user can read metro code data.
-     * @deny (create, update, delete) Only authenticated users can create, update, or delete metro code data. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access.
+     * @description Rules for the /roles_project_creator/{userId} collection.
+     * @path /roles_project_creator/{userId}
+     * @allow (get) Any signed-in user can check for the project creator role.
+     * @allow (create) Only an admin can grant project creator roles.
+     * @deny (list) No one can list the project creator roles.
+     * @principle Restricts role management to existing admins.
      */
-    match /metro_codes/{metroCodeId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    match /roles_project_creator/{userId} {
+      allow get: if isSignedIn();
+      allow create: if hasAdminRole();
+      allow update: if false;
+      allow delete: if false;
+      allow list: if false;
     }
-
-    /**
-     * @description Controls access to contractor type data.
-     * @path /contractor_types/{contractorTypeId}
-     * @allow (get, list) Any user can read contractor type data.
-     * @deny (create, update, delete) Only authenticated users can create, update, or delete contractor type data. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access.
-     */
-    match /contractor_types/{contractorTypeId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;  // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Controls access to technical document data.
-     * @path /technical_documents/{technicalDocumentId}
-     * @allow (get, list) Any user can read technical document data.
-     * @deny (create, update, delete) Only authenticated users can create, update, or delete technical document data. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access.
-     */
-    match /technical_documents/{technicalDocumentId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Controls access to RFP emails associated with a project.
-     * @path /projects/{projectId}/rfp_emails/{rfpEmailId}
-     * @allow (create) Authenticated user can create an RFP email for a project.
-     * @deny (create) Authenticated user cannot create an RFP email for a project if they are not associated.
-     * @allow (get, list) Any user can read RFP emails for a project.
-     * @deny (update, delete) Only associated users can update or delete RFP emails. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access to project members.
-     */
-    match /projects/{projectId}/rfp_emails/{rfpEmailId} {
-      allow create: if isSignedIn();
-      allow get, list: if true;
-      allow update, delete: if false;  // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-
-    /**
-     * @description Controls access to scorecards associated with a proposal.
-     * @path /proposals/{proposalId}/scorecard
-     * @allow (create) Authenticated user can create a scorecard for a proposal.
-     * @deny (create) Authenticated user cannot create a scorecard for a proposal if they are not associated.
-     * @allow (get, list) Any user can read scorecards for a proposal.
-     * @deny (update, delete) Only associated users can update or delete scorecards. // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Allows public read access but restricts write access to associated users.
-     */
-    match /proposals/{proposalId}/scorecard {
-      allow create: if isSignedIn();
-      allow get, list: if true;
-      allow update, delete: if false;  // TODO: Add owner validation once the schema is updated with an ownership field.
-    }
-  }
-
-  // Helper function to determine if the user is signed in.
-  function isSignedIn() {
-    return request.auth != null;
-  }
-
-  // Helper function to determine if the user is the owner of the document.
-  function isOwner(userId) {
-    return request.auth.uid == userId;
-  }
-
-  // Helper function to determine if the user is the owner of the document and the document exists.
-  function isExistingOwner(userId) {
-    return isOwner(userId) && resource != null;
   }
 }
