@@ -1,6 +1,6 @@
 
 import { collection, getDocs, doc, getDoc, addDoc, query, where, Timestamp } from 'firebase/firestore';
-import { firestore } from '@/firebase/firestore-instance';
+import { firestore } from '@/firebase';
 import type { MetroCode, RFP, Contractor, Proposal } from './types';
 
 export const usersData = [
@@ -24,6 +24,13 @@ export const usersData = [
         email: 'charlie.b@example.com',
         role: 'Project Management',
         avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=1080',
+    },
+    {
+        id: 'usr_4',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'Google Procurement Office',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1080',
     }
 ];
 
