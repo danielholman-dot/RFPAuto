@@ -3,32 +3,41 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
   if (!getApps().length) {
-    // Important! initializeApp() is called without any arguments because Firebase App Hosting
-    // integrates with the initializeApp() function to provide the environment variables needed to
-    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
-    // without arguments.
     let firebaseApp;
     try {
-      // Attempt to initialize via Firebase App Hosting environment variables
       firebaseApp = initializeApp();
     } catch (e) {
-      // Only warn in production because it's normal to use the firebaseConfig to initialize
-      // during development
       if (process.env.NODE_ENV === "production") {
         console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
       }
       firebaseApp = initializeApp(firebaseConfig);
     }
+    
+    // Initialize App Check for development
+    if (process.env.NODE_ENV !== 'production') {
+        try {
+            // This property is set by the `self.FIREBASE_APPCHECK_DEBUG_TOKEN` in next.config.js
+            (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+            initializeAppCheck(firebaseApp, {
+                provider: new ReCaptchaV3Provider('6Ld8m5spAAAAAOi-B7s3p-s8iV_u_G_gO4t_uYwF'),
+                isTokenAutoRefreshEnabled: true
+            });
+            console.log("Firebase App Check initialized in development mode.");
+        } catch(e) {
+            console.error("Failed to initialize Firebase App Check", e);
+        }
+    }
+
 
     return getSdks(firebaseApp);
   }
 
-  // If already initialized, return the SDKs with the already initialized App
   return getSdks(getApp());
 }
 
