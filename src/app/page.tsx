@@ -112,10 +112,6 @@ export default function LoginPage() {
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Login
                         </Button>
-                         <Button variant="outline" className="w-full" onClick={handleGuestLogin} disabled={isGuestLoading}>
-                            {isGuestLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Continue as Guest
-                        </Button>
                     </CardFooter>
                 </form>
             </Card>
