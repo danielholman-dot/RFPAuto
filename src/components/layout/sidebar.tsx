@@ -21,16 +21,26 @@ import {
   Briefcase,
   HelpCircle,
   ClipboardList,
+  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
+  };
 
   const isActive = (path: string) => {
-    if (path === '/' && pathname === '/') return true;
-    if (path !== '/' && pathname.startsWith(path)) return true;
+    if (path === '/dashboard' && pathname === '/dashboard') return true;
+    if (path !== '/dashboard' && pathname.startsWith(path)) return true;
     return false;
   };
 
@@ -45,10 +55,10 @@ export function AppSidebar() {
       <SidebarMenu>
         <SidebarGroup>
           <SidebarMenuItem>
-            <Link href="/" passHref>
+            <Link href="/dashboard" passHref>
               <SidebarMenuButton
                 asChild
-                isActive={isActive('/')}
+                isActive={isActive('/dashboard')}
                 tooltip={{ children: 'Dashboard' }}
               >
                 <span>
@@ -76,7 +86,7 @@ export function AppSidebar() {
             <Link href="/rfp" passHref>
               <SidebarMenuButton
                 asChild
-                isActive={isActive('/rfp')}
+                isActive={isActive('/rfp') && !isActive('/rfp/new')}
                 tooltip={{ children: 'RFP Registry' }}
               >
                 <span>
@@ -174,6 +184,17 @@ export function AppSidebar() {
                     </span>
                 </SidebarMenuButton>
                 </Link>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                    onClick={handleLogout}
+                    tooltip={{ children: 'Logout' }}
+                >
+                    <span>
+                    <LogOut />
+                    <span>Logout</span>
+                    </span>
+                </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
