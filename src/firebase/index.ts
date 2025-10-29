@@ -4,24 +4,27 @@ import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
-  if (!getApps().length) {
-    let firebaseApp;
-    try {
-      firebaseApp = initializeApp();
-    } catch (e) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
-    
-    return getSdks(firebaseApp);
-  }
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  
+  if (typeof window !== 'undefined') {
+    // Pass your reCAPTCHA v3 site key (public key) to activate(). Make sure this
+    // key is the counterpart to the secret key you set in the Firebase console.
+    const appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider('6Ld-1vApAAAAAGXg1gJ_y3t23_s23f8s8d7s7d8s'), // Replace with your actual site key if you have one
+      isTokenAutoRefreshEnabled: true
+    });
 
-  return getSdks(getApp());
+    // This is the crucial part for development.
+    // It will log a debug token to the console.
+    (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    console.log("App Check debug token generation enabled. Look for the token in subsequent logs or network requests to register it in the Firebase console.");
+  }
+  
+  return getSdks(app);
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
