@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -41,7 +42,7 @@ const formSchema = z.object({
   estimatedBudget: z.coerce.number().min(0, "Budget must be a positive number."),
   rfpStartDate: z.date().optional(),
   rfpEndDate: z.date().optional(),
-  projectStartDate: z.date(),
+  projectStartDate: z.date({ required_error: "A project start date is required." }),
   projectEndDate: z.date().optional(),
   technicalDocuments: z.array(z.instanceof(File)).optional(),
   technicalDocumentsLinks: z.string().optional(),
@@ -69,7 +70,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       additionalStakeholderEmails: "",
       metroCode: "",
       contractorType: "",
-      estimatedBudget: undefined,
+      estimatedBudget: 0,
       technicalDocumentsLinks: "",
       technicalDocuments: [],
     },
