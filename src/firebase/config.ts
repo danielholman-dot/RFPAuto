@@ -5,6 +5,7 @@ export const firebaseConfig = {
   "storageBucket": "constructionrfp-sandbox-943476.appspot.com",
   "apiKey": "AIzaSyBs5bzkVakKscPXnkvuRO-67Eim0tXO8xE",
   "authDomain": "constructionrfp-sandbox-943476.firebaseapp.com",
-  "measurementId": "",
-  "messagingSenderId": "24350062917"
+  "measurementId": "G-5G3W9Q0207",
+  "messagingSenderId": "24350062917",
+  "webClientId": "24350062917-5tqbd9etf906c0g97b5bi9ft1v6v854p.apps.googleusercontent.com"
 };
