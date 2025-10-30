@@ -75,23 +75,24 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
-    // Set loading state at the beginning
-    setUserAuthState(prev => ({ ...prev, isUserLoading: true, userError: null }));
+    // This function will handle both the initial redirect result and set up the state listener.
+    const handleAuthFlow = async () => {
+      // Set loading state at the beginning
+      setUserAuthState(prev => ({ ...prev, isUserLoading: true, userError: null }));
 
-    // Handle the redirect result from Google Sign-In
-    getRedirectResult(auth)
-      .then((result) => {
+      try {
+        // Handle the redirect result from Google Sign-In first.
+        const result = await getRedirectResult(auth);
         if (result) {
           // User successfully signed in via redirect.
-          // onAuthStateChanged will handle setting the user state.
+          // The onAuthStateChanged listener below will handle setting the user state.
           toast({
             title: "Sign-in Successful",
             description: `Welcome, ${result.user.displayName || result.user.email}!`,
           });
         }
         // If result is null, it means the page loaded without a redirect operation.
-      })
-      .catch((error) => {
+      } catch (error: any) {
         // Handle errors from getRedirectResult
         console.error("FirebaseProvider: getRedirectResult error:", error);
         toast({
@@ -99,24 +100,32 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
           title: "Sign-in Failed",
           description: `There was an error during sign-in: ${error.message}`,
         });
-      })
-      .finally(() => {
-        // After handling redirect, set up the auth state listener.
-        // This runs regardless of whether there was a redirect result.
-        const unsubscribe = onAuthStateChanged(
-          auth,
-          (firebaseUser) => { // Auth state determined
-            setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
-          },
-          (error) => { // Auth listener error
-            console.error("FirebaseProvider: onAuthStateChanged error:", error);
-            setUserAuthState({ user: null, isUserLoading: false, userError: error });
-          }
-        );
-        return () => unsubscribe(); // Cleanup
-      });
+      }
 
+      // After handling redirect, set up the auth state listener.
+      // This runs regardless of whether there was a redirect result.
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (firebaseUser) => { // Auth state determined
+          setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
+        },
+        (error) => { // Auth listener error
+          console.error("FirebaseProvider: onAuthStateChanged error:", error);
+          setUserAuthState({ user: null, isUserLoading: false, userError: error });
+        }
+      );
+      return unsubscribe;
+    };
+
+    const unsubscribePromise = handleAuthFlow();
+
+    return () => {
+      unsubscribePromise.then(unsubscribe => {
+        if (unsubscribe) unsubscribe();
+      });
+    };
   }, [auth]); // Depends on the auth instance
+
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
