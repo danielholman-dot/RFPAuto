@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, SubmitHandler } from "react-hook-form" // Import SubmitHandler
 import { z } from "zod"
 import { Loader2, CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import Textarea from "@/components/ui/textarea"
+import Textarea from "@/components/ui/textarea" // Assuming this is a custom component
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -43,23 +43,11 @@ const formSchema = z.object({
   additionalStakeholderEmails: z.string().optional(),
   metroCode: z.string().min(1, "Metro code is required."),
   contractorType: z.string().min(1, "Contractor type is required."),
-  estimatedBudget: z.preprocess(
-    (val: unknown) => {
-      if (val === null || val === undefined || (typeof val === 'string' && val.trim() === "")) {
-        return undefined;
-      }
-      const num = Number(val);
-      return isNaN(num) ? undefined : num;
-    },
-    z.number({
-      invalid_type_error: "Budget must be a valid number.",
-    })
-    .min(0, "Budget must be a non-negative number.")
-    .optional()
-  ) as z.ZodType<number | undefined>,
+  // SIMPLIFIED estimatedBudget
+  estimatedBudget: z.number().min(0, "Budget must be a non-negative number.").optional(),
   rfpStartDate: z.date().optional(),
   rfpEndDate: z.date().optional(),
-  projectStartDate: z.date(),
+  projectStartDate: z.date({ message: "Project start date is required and must be a valid date." }),
   projectEndDate: z.date().optional(),
   technicalDocuments: z.array(z.instanceof(File)).optional(),
   technicalDocumentsLinks: z.string().optional(),
@@ -87,13 +75,13 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       estimatedBudget: undefined,
       rfpStartDate: undefined,
       rfpEndDate: undefined,
-      projectStartDate: new Date(),
       projectEndDate: undefined,
       technicalDocumentsLinks: "",
       technicalDocuments: [],
     },
-  })
+  });
 
+  // onSubmit is already correctly typed to accept FormSchemaType
   async function onSubmit(values: FormSchemaType) {
     setIsSubmitting(true);
     let rfpId = '';
@@ -184,24 +172,33 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     }
   }
 
+  // Updated handleBudgetChange to work with the simplified schema
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/[^0-9]/g, '');
-    const numericValue = Number(rawValue);
+    const rawValue = e.target.value;
+    const cleanedValue = rawValue.replace(/[^0-9.]/g, '');
 
-    if (!isNaN(numericValue)) {
-      form.setValue('estimatedBudget', numericValue, { shouldValidate: true });
-      setFormattedBudget(new Intl.NumberFormat('de-DE').format(numericValue));
-    } else {
+    if (cleanedValue === "") {
       form.setValue('estimatedBudget', undefined, { shouldValidate: true });
       setFormattedBudget("");
+      return;
+    }
+
+    const numericValue = Number(cleanedValue);
+
+    if (!isNaN(numericValue) && numericValue >= 0) {
+      form.setValue('estimatedBudget', numericValue, { shouldValidate: true });
+      setFormattedBudget(new Intl.NumberFormat('en-US').format(numericValue));
+    } else {
+      // If not a valid non-negative number, set form value to undefined to trigger validation
+      form.setValue('estimatedBudget', undefined, { shouldValidate: true });
+      setFormattedBudget(rawValue); // Keep the user's input in the display
     }
   };
-
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit)} // This line should now be type-safe
         className="space-y-8"
         onKeyDown={(e) => {
             if (e.key === 'Enter' && !(e.target instanceof HTMLTextAreaElement)) {
@@ -209,6 +206,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
             }
         }}
     >
+        {/* ... Rest of the form fields ... */}
         <FormField
           control={form.control}
           name="projectName"
@@ -336,9 +334,21 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
                     <Input
                       type="text"
-                      placeholder="5,000,000"
+                      placeholder="e.g., 5,000,000"
                       value={formattedBudget}
                       onChange={handleBudgetChange}
+                      onBlur={() => {
+                        const numericValue = form.getValues("estimatedBudget");
+                        if (numericValue !== undefined) {
+                           setFormattedBudget(new Intl.NumberFormat('en-US').format(numericValue));
+                        } else {
+                           setFormattedBudget("");
+                           // Optionally re-trigger validation on blur if the value is invalid
+                           if (form.getFieldState("estimatedBudget").invalid) {
+                             form.trigger("estimatedBudget");
+                           }
+                        }
+                      }}
                       className="pl-7"
                     />
                   </div>

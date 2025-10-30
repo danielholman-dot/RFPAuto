@@ -159,14 +159,18 @@ export function RfpDrafting({ rfp, onRfpUpdate }: RfpDraftingProps) {
                         </div>
                     )}
                 </CardContent>
+                // ... some code above ...
             </Card>
-            <RfpClarificationDialog
-                isOpen={isClarificationDialogOpen}
-                onOpenChange={setIsClarificationDialogOpen}
+            // ... inside rfp-drafting.tsx
+<RfpClarificationDialog
+    open={isClarificationDialogOpen} // CORRECTED
+    onOpenChange={setIsClarificationDialogOpen}
+                rfpId={rfp.id} // Ensure rfpId is passed
                 rfp={rfp}
                 missingFields={getMissingFields(rfp)}
-                onSubmit={handleClarificationSubmit}
+    // Any other props being passed
             />
+            // ... some code below ...
         </>
     );
 }
