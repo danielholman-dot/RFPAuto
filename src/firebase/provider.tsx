@@ -3,8 +3,9 @@
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { toast } from '@/hooks/use-toast';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -67,26 +68,54 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     userError: null,
   });
 
-  // Effect to subscribe to Firebase auth state changes
+  // Effect to subscribe to Firebase auth state changes and handle redirect results
   useEffect(() => {
     if (!auth) { // If no Auth service instance, cannot determine user state
       setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
       return;
     }
 
-    setUserAuthState({ user: null, isUserLoading: true, userError: null }); // Reset on auth instance change
+    // Set loading state at the beginning
+    setUserAuthState(prev => ({ ...prev, isUserLoading: true, userError: null }));
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (firebaseUser) => { // Auth state determined
-        setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
-      },
-      (error) => { // Auth listener error
-        console.error("FirebaseProvider: onAuthStateChanged error:", error);
-        setUserAuthState({ user: null, isUserLoading: false, userError: error });
-      }
-    );
-    return () => unsubscribe(); // Cleanup
+    // Handle the redirect result from Google Sign-In
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // User successfully signed in via redirect.
+          // onAuthStateChanged will handle setting the user state.
+          toast({
+            title: "Sign-in Successful",
+            description: `Welcome, ${result.user.displayName || result.user.email}!`,
+          });
+        }
+        // If result is null, it means the page loaded without a redirect operation.
+      })
+      .catch((error) => {
+        // Handle errors from getRedirectResult
+        console.error("FirebaseProvider: getRedirectResult error:", error);
+        toast({
+          variant: "destructive",
+          title: "Sign-in Failed",
+          description: `There was an error during sign-in: ${error.message}`,
+        });
+      })
+      .finally(() => {
+        // After handling redirect, set up the auth state listener.
+        // This runs regardless of whether there was a redirect result.
+        const unsubscribe = onAuthStateChanged(
+          auth,
+          (firebaseUser) => { // Auth state determined
+            setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
+          },
+          (error) => { // Auth listener error
+            console.error("FirebaseProvider: onAuthStateChanged error:", error);
+            setUserAuthState({ user: null, isUserLoading: false, userError: error });
+          }
+        );
+        return () => unsubscribe(); // Cleanup
+      });
+
   }, [auth]); // Depends on the auth instance
 
   // Memoize the context value
