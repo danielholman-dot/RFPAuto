@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -31,6 +30,11 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/
 import type { RFP, MetroCode } from "@/lib/types"
 import { FileInput } from "../ui/file-input"
 
+type ProjectIntakeFormProps = {
+    metroCodes: MetroCode[];
+    contractorTypes: string[];
+}
+
 const formSchema = z.object({
   projectName: z.string().min(1, "Project name is required."),
   scopeOfWork: z.string().min(1, "Scope of work is required."),
@@ -39,19 +43,29 @@ const formSchema = z.object({
   additionalStakeholderEmails: z.string().optional(),
   metroCode: z.string().min(1, "Metro code is required."),
   contractorType: z.string().min(1, "Contractor type is required."),
-  estimatedBudget: z.coerce.number().min(0, "Budget must be a positive number."),
+  estimatedBudget: z.preprocess(
+    (val: unknown) => {
+      if (val === null || val === undefined || (typeof val === 'string' && val.trim() === "")) {
+        return undefined;
+      }
+      const num = Number(val);
+      return isNaN(num) ? undefined : num;
+    },
+    z.number({
+      invalid_type_error: "Budget must be a valid number.",
+    })
+    .min(0, "Budget must be a non-negative number.")
+    .optional()
+  ) as z.ZodType<number | undefined>,
   rfpStartDate: z.date().optional(),
   rfpEndDate: z.date().optional(),
   projectStartDate: z.date(),
   projectEndDate: z.date().optional(),
   technicalDocuments: z.array(z.instanceof(File)).optional(),
   technicalDocumentsLinks: z.string().optional(),
-})
+});
 
-type ProjectIntakeFormProps = {
-    metroCodes: MetroCode[];
-    contractorTypes: string[];
-}
+type FormSchemaType = z.infer<typeof formSchema>;
 
 export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntakeFormProps) {
   const { toast } = useToast();
@@ -60,7 +74,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedBudget, setFormattedBudget] = useState("");
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: "",
@@ -70,7 +84,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       additionalStakeholderEmails: "",
       metroCode: "",
       contractorType: "",
-      estimatedBudget: 0,
+      estimatedBudget: undefined,
       rfpStartDate: undefined,
       rfpEndDate: undefined,
       projectStartDate: new Date(),
@@ -80,7 +94,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     },
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormSchemaType) {
     setIsSubmitting(true);
     let rfpId = '';
 
@@ -88,14 +102,14 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       const rfpsCol = collection(firestore, 'rfps');
 
       const newRfpData: Omit<RFP, 'id'> = {
-        projectName: values.projectName || "Untitled RFP",
-        scopeOfWork: values.scopeOfWork || "",
-        metroCode: values.metroCode || "",
-        contractorType: values.contractorType || "",
-        estimatedBudget: values.estimatedBudget || 0,
+        projectName: values.projectName,
+        scopeOfWork: values.scopeOfWork,
+        metroCode: values.metroCode,
+        contractorType: values.contractorType,
+        estimatedBudget: values.estimatedBudget ?? 0,
         rfpStartDate: values.rfpStartDate ? Timestamp.fromDate(values.rfpStartDate) : undefined,
         rfpEndDate: values.rfpEndDate ? Timestamp.fromDate(values.rfpEndDate) : undefined,
-        projectStartDate: values.projectStartDate ? Timestamp.fromDate(values.projectStartDate) : undefined,
+        projectStartDate: Timestamp.fromDate(values.projectStartDate),
         projectEndDate: values.projectEndDate ? Timestamp.fromDate(values.projectEndDate) : undefined,
         primaryStakeholderName: values.primaryStakeholderName,
         primaryStakeholderEmail: values.primaryStakeholderEmail,
@@ -111,7 +125,6 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       const docRef = await addDoc(rfpsCol, newRfpData);
       rfpId = docRef.id;
 
-      // Handle file uploads
       if (values.technicalDocuments && values.technicalDocuments.length > 0) {
         toast({
             title: "Uploading files...",
@@ -126,7 +139,6 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
 
             uploadTask.on('state_changed',
               (snapshot) => {
-                // Optional: handle progress
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 console.log('Upload is ' + progress + '% done');
               },
@@ -148,17 +160,15 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
 
         const downloadUrls = await Promise.all(uploadPromises);
 
-        // Update Firestore document with storage URLs
         const rfpDoc = doc(firestore, 'rfps', rfpId);
         await updateDoc(rfpDoc, {
             technicalDocumentUrls: downloadUrls
         });
       }
 
-
       toast({
         title: "RFP Draft Created",
-        description: `Project "${values.projectName || "Untitled RFP"}" has been saved as a draft.`,
+        description: `Project "${values.projectName}" has been saved as a draft.`,
       });
       router.push(`/rfp/${rfpId}`);
 
@@ -169,6 +179,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         title: "Error Creating RFP",
         description: error.message || "Failed to create RFP draft. Please check the console for details.",
       });
+    } finally {
       setIsSubmitting(false);
     }
   }
@@ -178,10 +189,10 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     const numericValue = Number(rawValue);
 
     if (!isNaN(numericValue)) {
-      form.setValue('estimatedBudget', numericValue);
+      form.setValue('estimatedBudget', numericValue, { shouldValidate: true });
       setFormattedBudget(new Intl.NumberFormat('de-DE').format(numericValue));
     } else {
-      form.setValue('estimatedBudget', 0);
+      form.setValue('estimatedBudget', undefined, { shouldValidate: true });
       setFormattedBudget("");
     }
   };
@@ -281,7 +292,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {metroCodes && metroCodes.map(metro => (
+                    {metroCodes && metroCodes.map((metro: MetroCode) => (
                       <SelectItem key={metro.code} value={metro.code}>{metro.code} - {metro.city}</SelectItem>
                     ))}
                   </SelectContent>
@@ -303,7 +314,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {contractorTypes && contractorTypes.map(type => (
+                    {contractorTypes && contractorTypes.map((type: string) => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
                   </SelectContent>
