@@ -75,7 +75,11 @@ export default function LoginPage() {
 
   // If user is already logged in, this component will be redirecting, so we can return null or a loader.
   if (user) {
-    return null;
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
