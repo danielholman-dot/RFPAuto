@@ -42,7 +42,7 @@ const formSchema = z.object({
   estimatedBudget: z.coerce.number().min(0, "Budget must be a positive number."),
   rfpStartDate: z.date().optional(),
   rfpEndDate: z.date().optional(),
-  projectStartDate: z.date({ required_error: "A project start date is required." }),
+  projectStartDate: z.date(),
   projectEndDate: z.date().optional(),
   technicalDocuments: z.array(z.instanceof(File)).optional(),
   technicalDocumentsLinks: z.string().optional(),
@@ -71,6 +71,10 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       metroCode: "",
       contractorType: "",
       estimatedBudget: 0,
+      rfpStartDate: undefined,
+      rfpEndDate: undefined,
+      projectStartDate: new Date(),
+      projectEndDate: undefined,
       technicalDocumentsLinks: "",
       technicalDocuments: [],
     },
@@ -79,10 +83,10 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     let rfpId = '';
-    
+
     try {
       const rfpsCol = collection(firestore, 'rfps');
-      
+
       const newRfpData: Omit<RFP, 'id'> = {
         projectName: values.projectName || "Untitled RFP",
         scopeOfWork: values.scopeOfWork || "",
@@ -103,7 +107,7 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
         invitedContractors: [],
         completedStages: [],
       };
-      
+
       const docRef = await addDoc(rfpsCol, newRfpData);
       rfpId = docRef.id;
 
@@ -168,11 +172,11 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
       setIsSubmitting(false);
     }
   }
-  
+
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');
     const numericValue = Number(rawValue);
-    
+
     if (!isNaN(numericValue)) {
       form.setValue('estimatedBudget', numericValue);
       setFormattedBudget(new Intl.NumberFormat('de-DE').format(numericValue));
@@ -185,8 +189,8 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
 
   return (
     <Form {...form}>
-      <form 
-        onSubmit={form.handleSubmit(onSubmit)} 
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-8"
         onKeyDown={(e) => {
             if (e.key === 'Enter' && !(e.target instanceof HTMLTextAreaElement)) {
@@ -319,9 +323,9 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
                 <FormControl>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">$</span>
-                    <Input 
+                    <Input
                       type="text"
-                      placeholder="5,000,000" 
+                      placeholder="5,000,000"
                       value={formattedBudget}
                       onChange={handleBudgetChange}
                       className="pl-7"
@@ -548,5 +552,3 @@ export function ProjectIntakeForm({ metroCodes, contractorTypes }: ProjectIntake
     </Form>
   )
 }
-
-    
