@@ -1,8 +1,7 @@
-
 'use client';
 
-import { useState } from 'react';
-import { useAuth } from '@/firebase';
+import { useState, useEffect } from 'react';
+import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { signInWithGoogle } from '@/firebase/auth/utils';
@@ -31,8 +30,17 @@ export default function LoginPage() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
 
   const landingImage = PlaceHolderImages.find(img => img.id === 'procurement-landing');
+
+  useEffect(() => {
+    // If user is logged in, redirect to the main application.
+    if (!isUserLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,10 +61,22 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     await signInWithGoogle(auth);
-    setIsGoogleLoading(false);
-    // The onAuthStateChanged listener in the provider will handle the redirect.
+    // The redirect result will be handled by the FirebaseProvider, and the useEffect above will trigger the navigation.
   };
 
+  // While checking for user, show a loading state on the page
+  if (isUserLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // If user is already logged in, this component will be redirecting, so we can return null or a loader.
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
