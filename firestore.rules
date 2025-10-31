@@ -220,10 +220,10 @@ service cloud.firestore {
     }
 
     /**
-     * @description Rules for the /metroCodes/{metroCodeId} collection.
-     * @path /metroCodes/{metroCodeId}
-     * @allow (get, list) Public read access for all users.
-     * @deny (create, update, delete) No write access.
+     * @description Rules for the /metro_codes/{metroCodeId} collection.
+     * @path /metro_codes/{metroCodeId}
+     * @allow (read) Public read access for all users.
+     * @deny (write) No write access.
      * @principle Public read-only collection.
      */
     match /metro_codes/{metroCodeId} {
@@ -234,8 +234,8 @@ service cloud.firestore {
     /**
      * @description Rules for the /contractors/{contractorId} collection.
      * @path /contractors/{contractorId}
-     * @allow (get, list) Public read access for all users.
-     * @deny (create, update, delete) No write access.
+     * @allow (read) Public read access for all users.
+     * @deny (write) No write access.
      * @principle Public read-only collection.
      */
     match /contractors/{contractorId} {
