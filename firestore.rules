@@ -60,10 +60,16 @@ service cloud.firestore {
     /**
      * @description Checks if a document exists and the user is the owner.
      * @principle Ensures a document exists before allowing updates or deletes.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
      */
     function isExistingOwner() {
-        return isSignedIn() && resource.data.ownerId == request.auth.uid;
+      return isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    /**
+     * @description Checks if a document being created has the correct owner.
+     */
+    function isNewOwner() {
+        return isSignedIn() && request.resource.data.ownerId == request.auth.uid;
     }
     
     /**
@@ -92,7 +98,7 @@ service cloud.firestore {
      * @principle Requires 'project_creator' role for creation. Allows public read access for signed in users.
      */
     match /projects/{projectId} {
-        allow create: if isSignedIn() && hasProjectCreatorRole();
+        allow create: if isSignedIn() && hasProjectCreatorRole() && isNewOwner();
         allow get: if isSignedIn();
         allow list: if false;
         allow update: if isSignedIn() && isExistingOwner();
@@ -242,7 +248,7 @@ service cloud.firestore {
     match /contractors/{contractorId} {
         allow get: if isSignedIn();
         allow list: if isSignedIn();
-        allow write: if false;
+        allow write: if hasAdminRole();
     }
 
      /**
@@ -278,3 +284,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
