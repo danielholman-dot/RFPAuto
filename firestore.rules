@@ -227,7 +227,8 @@ service cloud.firestore {
      * @principle Public read-only collection.
      */
     match /metro_codes/{metroCodeId} {
-        allow read: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
         allow write: if false;
     }
 
