@@ -226,8 +226,8 @@ service cloud.firestore {
      * @deny (create, update, delete) No write access.
      * @principle Public read-only collection.
      */
-    match /metroCodes/{metroCodeId} {
-        allow read: if true;
+    match /metro_codes/{metroCodeId} {
+        allow read: if isSignedIn();
         allow write: if false;
     }
 
@@ -239,7 +239,7 @@ service cloud.firestore {
      * @principle Public read-only collection.
      */
     match /contractors/{contractorId} {
-        allow read: if true;
+        allow read: if isSignedIn();
         allow write: if false;
     }
 
