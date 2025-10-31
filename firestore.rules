@@ -19,7 +19,7 @@
  * - /scorecards/{scorecardId}: Stores scorecards for evaluating proposals.
  * - /projects/{projectId}/awardRecommendations/{awardRecommendationId}: Stores award recommendations for projects.
  * - /projects/{projectId}/feedback/{feedbackId}: Stores feedback for projects.
- * - /metroCodes/{metroCodeId}: Stores metro codes.
+ * - /metro_codes/{metroCodeId}: Stores metro codes.
  * - /contractors/{contractorId}: Stores contractor information.
  * - /roles_admin/{userId}: Indicates a user with admin privileges.
  * - /roles_project_creator/{userId}: Indicates a user who can create projects.
@@ -153,7 +153,7 @@ service cloud.firestore {
      */
     match /rfps/{rfpId} {
         allow create: if isSignedIn();
-        allow read: if isSignedIn();
+        allow read: if request.auth != null;
         allow update: if isSignedIn() && isExistingOwner();
         allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
     }
@@ -226,7 +226,7 @@ service cloud.firestore {
      * @principle Public read-only collection.
      */
     match /metro_codes/{metroCodeId} {
-        allow read: if isSignedIn();
+        allow read: if request.auth != null;
         allow write: if false;
     }
 
