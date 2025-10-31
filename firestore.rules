@@ -148,13 +148,13 @@ service cloud.firestore {
      * @description Rules for the /rfps/{rfpId} collection.
      * @path /rfps/{rfpId}
      * @allow (create) Any signed-in user can create an RFP.
-     * @deny (list) No one can list RFPs.
-     * @principle Allows any signed-in user to create, but restricts listing.
+     * @allow (list) Any signed-in user can list RFPs.
+     * @principle Allows signed-in users to create and list RFPs.
      */
     match /rfps/{rfpId} {
         allow create: if isSignedIn();
         allow get: if isSignedIn();
-        allow list: if false;
+        allow list: if isSignedIn();
         allow update: if isSignedIn() && isExistingOwner();
         allow delete: if isSignedIn() && hasAdminRole(); // Or add owner delete if appropriate
     }
