@@ -221,7 +221,7 @@ service cloud.firestore {
     /**
      * @description Rules for the /metro_codes/{metroCodeId} collection.
      * @path /metro_codes/{metroCodeId}
-     * @allow (read) Public read access for all users.
+     * @allow (read) Public read access for all signed-in users.
      * @deny (write) No write access.
      * @principle Public read-only collection.
      */
@@ -233,7 +233,7 @@ service cloud.firestore {
     /**
      * @description Rules for the /contractors/{contractorId} collection.
      * @path /contractors/{contractorId}
-     * @allow (read) Public read access for all users.
+     * @allow (read) Public read access for all signed-in users.
      * @deny (write) No write access.
      * @principle Public read-only collection.
      */
