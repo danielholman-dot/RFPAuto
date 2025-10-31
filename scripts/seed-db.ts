@@ -1,6 +1,6 @@
 
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, writeBatch, doc, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, writeBatch, doc, getDocs, Timestamp, setDoc } from 'firebase/firestore';
 import { auth, firestore as db } from '../src/firebase';
 import { ContractorsData, MetroCodesData, RFPData as seedRFPData, usersData } from '../src/lib/data';
 
@@ -24,12 +24,11 @@ async function seedAuthUsers() {
 }
 
 
-async function seedCollection(collectionName: string, data: any[], idField?: string) {
+async function seedCollection(collectionName: string, data: any[], idField?: keyof any) {
     const collectionRef = collection(db, collectionName);
     
-    // Check if collection is empty
     const snapshot = await getDocs(collectionRef);
-    if (!snapshot.empty && collectionName !== 'users') { // Always check users for updates
+    if (!snapshot.empty) {
         console.log(`Collection "${collectionName}" already contains data. Skipping seeding.`);
         return;
     }
@@ -38,12 +37,14 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
     const batch = writeBatch(db);
     let count = 0;
 
-    data.forEach((item, index) => {
-        let docId = item.id;
-        
+    data.forEach((item) => {
+        const docId = idField ? String(item[idField]) : doc(collectionRef).id;
         const docRef = doc(db, collectionName, docId);
         
         const dataToSet = { ...item };
+        if (idField) {
+            dataToSet.id = docId;
+        }
 
         // Convert JS Dates to Firestore Timestamps
         Object.keys(dataToSet).forEach(key => {
@@ -52,23 +53,12 @@ async function seedCollection(collectionName: string, data: any[], idField?: str
             }
         });
         
-        // Ensure preferredStatus is a string
-        if (typeof dataToSet.preferred === 'boolean') {
-            dataToSet.preferredStatus = dataToSet.preferred ? 'Preferred' : 'Not Evaluated';
-            delete dataToSet.preferred;
-        }
-
-        // Add admin claim for the first user for demo purposes
-        if (collectionName === 'users' && index === 0) {
-            (dataToSet as any).customClaims = { admin: true };
-        }
-
         batch.set(docRef, dataToSet, { merge: true });
         count++;
     });
 
     await batch.commit();
-    console.log(`Seeded/Updated ${count} documents in "${collectionName}".`);
+    console.log(`Seeded ${count} documents in "${collectionName}".`);
 }
 
 async function seedDatabase() {
@@ -79,39 +69,7 @@ async function seedDatabase() {
         await seedCollection('users', usersData, 'id');
         await seedCollection('contractors', ContractorsData, 'id');
         await seedCollection('metro_codes', MetroCodesData, 'id');
-        
-        // Custom seeding for RFPs to generate IDs and add createdAt
-        const rfpsRef = collection(db, 'rfps');
-        const rfpsSnapshot = await getDocs(rfpsRef);
-        if (rfpsSnapshot.empty) {
-            console.log('Seeding "rfps"...');
-            const batch = writeBatch(db);
-            seedRFPData.forEach((rfp, index) => {
-                const id = `rfp-${index + 1}`;
-                const docRef = doc(db, "rfps", id);
-                
-                const dataWithId = { 
-                    ...rfp, 
-                    id, 
-                    createdAt: Timestamp.now(),
-                    invitedContractors: [],
-                    completedStages: [], // Ensure this is initialized as empty
-                };
-                 // Convert JS Dates to Firestore Timestamps
-                Object.keys(dataWithId).forEach(key => {
-                    if ((dataWithId as any)[key] instanceof Date) {
-                        (dataWithId as any)[key] = Timestamp.fromDate((dataWithId as any)[key]);
-                    }
-                });
-
-                batch.set(docRef, dataWithId);
-            });
-            await batch.commit();
-            console.log(`Seeded ${seedRFPData.length} documents into "rfps".`);
-        } else {
-             console.log(`Collection "rfps" already contains data. Skipping seeding.`);
-        }
-
+        await seedCollection('rfps', seedRFPData);
 
         console.log('Database seeding completed successfully. Run "npm run dev" to start the app.');
         process.exit(0);
