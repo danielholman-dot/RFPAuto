@@ -240,7 +240,8 @@ service cloud.firestore {
      * @principle Public read-only collection.
      */
     match /contractors/{contractorId} {
-        allow read: if isSignedIn();
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
         allow write: if false;
     }
 
