@@ -41,7 +41,7 @@ async function seedCollection(collectionName: string, data: any[], idField?: key
         const docId = idField ? String(item[idField]) : doc(collectionRef).id;
         const docRef = doc(db, collectionName, docId);
         
-        const dataToSet = { ...item };
+        const dataToSet: { [key: string]: any } = { ...item };
         if (idField) {
             dataToSet.id = docId;
         }
@@ -50,6 +50,9 @@ async function seedCollection(collectionName: string, data: any[], idField?: key
         Object.keys(dataToSet).forEach(key => {
             if (dataToSet[key] instanceof Date) {
                 dataToSet[key] = Timestamp.fromDate(dataToSet[key]);
+            }
+            if(key === 'createdAt' && !dataToSet[key]) {
+                dataToSet[key] = Timestamp.now();
             }
         });
         
@@ -69,7 +72,7 @@ async function seedDatabase() {
         await seedCollection('users', usersData, 'id');
         await seedCollection('contractors', ContractorsData, 'id');
         await seedCollection('metro_codes', MetroCodesData, 'id');
-        await seedCollection('rfps', seedRFPData);
+        await seedCollection('rfps', seedRFPData, 'id');
 
         console.log('Database seeding completed successfully. Run "npm run dev" to start the app.');
         process.exit(0);
