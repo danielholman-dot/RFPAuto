@@ -1,41 +1,9 @@
 
-'use client';
-
 import '@/app/globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/layout/sidebar';
-import { Header } from '@/components/layout/header';
-import { SidebarInset } from '@/components/ui/sidebar';
-import { usePathname } from 'next/navigation';
-
-function AppContent({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  
-  // Public pages like the proposal submission link should not have the main app layout.
-  const isPublicPage = pathname.startsWith('/proposal/submit');
-  const isHomepage = pathname === '/';
-
-  if (isPublicPage || isHomepage) {
-    return <>{children}</>;
-  }
-
-  // All other pages get the full app layout with sidebar and header.
-  return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="bg-background">
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
-}
-
 
 export default function RootLayout({
   children,
@@ -53,7 +21,9 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased', 'min-h-screen bg-background font-sans')}>
         <FirebaseClientProvider>
-           <AppContent>{children}</AppContent>
+          <SidebarProvider>
+            {children}
+          </SidebarProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>

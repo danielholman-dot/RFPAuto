@@ -1,6 +1,7 @@
 
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { SidebarInset } from '@/components/ui/sidebar';
@@ -10,12 +11,25 @@ function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // The main layout logic is now handled in the root layout (src/app/layout.tsx).
-  // This layout file remains for structure but can be simplified as the parent handles the shell.
+  const pathname = usePathname();
+  
+  // This check is a safeguard, but in practice, pages outside this layout are handled at the root.
+  const isPublicPage = pathname.startsWith('/proposal/submit');
+  const isHomepage = pathname === '/';
+
+  if (isPublicPage || isHomepage) {
+    return <main>{children}</main>;
+  }
+
   return (
     <>
-      {/* The AppSidebar and Header are now rendered by the AppContent component in the root layout */}
-      {children}
+      <AppSidebar />
+      <SidebarInset className='bg-background'>
+        <Header />
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+          {children}
+        </main>
+      </SidebarInset>
     </>
   );
 }
