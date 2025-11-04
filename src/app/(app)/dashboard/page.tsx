@@ -39,6 +39,7 @@ import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
 import { Loader2 } from 'lucide-react';
 import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
+import { Progress } from '@/components/ui/progress';
 
 
 type MetroOption = {
@@ -101,6 +102,15 @@ export default function Dashboard() {
     });
   }, [allContractors, regionFilter, metroFilter, allMetroInfo]);
 
+  const completedRfps = useMemo(() => {
+    if (!filteredRfps) return 0;
+    return filteredRfps.filter(r => r.status === 'Completed').length;
+  }, [filteredRfps]);
+
+  const completionPercentage = useMemo(() => {
+    if (!filteredRfps || filteredRfps.length === 0) return 0;
+    return (completedRfps / filteredRfps.length) * 100;
+  }, [completedRfps, filteredRfps]);
 
   if (isUserLoading || rfpsLoading || contractorsLoading || metrosLoading) {
     return (
@@ -226,6 +236,20 @@ export default function Dashboard() {
       
       <div className="grid grid-cols-1 items-start gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Projects Completion</CardTitle>
+              <CardDescription>
+                Percentage of projects marked as &quot;Completed&quot;.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <span className="text-4xl font-bold">{Math.round(completionPercentage)}%</span>
+                <Progress value={completionPercentage} className="flex-1" />
+              </div>
+            </CardContent>
+          </Card>
           <Card>
               <CardHeader>
               <CardTitle>RFP & Project Timelines</CardTitle>
