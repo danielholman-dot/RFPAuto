@@ -4,61 +4,36 @@
 import '@/app/globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { FirebaseClientProvider, useUser } from '@/firebase';
+import { FirebaseClientProvider } from '@/firebase';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { SidebarInset } from '@/components/ui/sidebar';
+import { usePathname } from 'next/navigation';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, isUserLoading } = useUser();
+  
+  // Public pages like the proposal submission link should not have the main app layout.
+  const isPublicPage = pathname.startsWith('/proposal/submit');
+  const isHomepage = pathname === '/';
 
-  const isPublicPage = pathname === '/' || pathname.startsWith('/proposal/submit');
-  const isAppPage = !isPublicPage;
-
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (isAppPage && !user) {
-        // If on an app page and not logged in, redirect to login
-        router.replace('/');
-      } else if (pathname === '/' && user) {
-        // If on login page and logged in, redirect to dashboard
-        router.replace('/dashboard');
-      }
-    }
-  }, [user, isUserLoading, router, pathname, isAppPage]);
-
-  // While checking auth state on a protected page, show a full-screen loader.
-  if (isUserLoading && isAppPage) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+  if (isPublicPage || isHomepage) {
+    return <>{children}</>;
   }
 
-  // If the user is logged in and on an app page, render the full app layout
-  if (isAppPage && user) {
-     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset className="bg-background">
-                <Header />
-                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-                {children}
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
-     )
-  }
-
-  // For public pages (or if user is not logged in on an app page before redirect), render children directly.
-  return <>{children}</>;
+  // All other pages get the full app layout with sidebar and header.
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset className="bg-background">
+        <Header />
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
 
 

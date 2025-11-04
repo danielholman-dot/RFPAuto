@@ -21,22 +21,12 @@ import {
   Briefcase,
   HelpCircle,
   ClipboardList,
-  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/firebase';
-import { signOut } from 'firebase/auth';
+import { usePathname } from 'next/navigation';
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const auth = useAuth();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    router.push('/');
-  };
 
   const isActive = (path: string) => {
     if (path === '/dashboard' && pathname === '/dashboard') return true;
@@ -184,17 +174,6 @@ export function AppSidebar() {
                     </span>
                 </SidebarMenuButton>
                 </Link>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                    onClick={handleLogout}
-                    tooltip={{ children: 'Logout' }}
-                >
-                    <span>
-                    <LogOut />
-                    <span>Logout</span>
-                    </span>
-                </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
