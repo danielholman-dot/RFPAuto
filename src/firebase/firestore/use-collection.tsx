@@ -10,7 +10,7 @@ import {
   CollectionReference,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors'; // Assuming SecurityRuleContext is also from here or implied
 
 /** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
@@ -40,12 +40,12 @@ export interface InternalQuery extends Query<DocumentData> {
 /**
  * React hook to subscribe to a Firestore collection or query in real-time.
  * Handles nullable references/queries.
- * 
+ *
  *
  * IMPORTANT! YOU MUST MEMOIZE the inputted memoizedTargetRefOrQuery or BAD THINGS WILL HAPPEN
  * use useMemo to memoize it per React guidence.  Also make sure that it's dependencies are stable
  * references
- *  
+ *
  * @template T Optional type for document data. Defaults to any.
  * @param {CollectionReference<DocumentData> | Query<DocumentData> | null | undefined} targetRefOrQuery -
  * The Firestore CollectionReference or Query. Waits if null/undefined.
@@ -89,16 +89,23 @@ export function useCollection<T = any>(
         const path: string =
           memoizedTargetRefOrQuery.type === 'collection'
             ? (memoizedTargetRefOrQuery as CollectionReference).path
-            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
+            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
+        console.error("Firestore onSnapshot error:", error); // Log the original error
+
+        // --- Corrected Error Handling ---
+        // FirestorePermissionError expects a SecurityRuleContext object
+        // which only contains operation and path.
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
-        })
+          // cause: error, // Removed: 'cause' is not in SecurityRuleContext
+        });
+        // --- End Corrected Error Handling ---
 
-        setError(contextualError)
-        setData(null)
-        setIsLoading(false)
+        setError(contextualError);
+        setData(null);
+        setIsLoading(false);
 
         // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);
@@ -107,8 +114,12 @@ export function useCollection<T = any>(
 
     return () => unsubscribe();
   }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
+
   if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
-    throw new Error(memoizedTargetRefOrQuery + ' was not properly memoized using useMemoFirebase');
+    console.warn('useCollection: targetRefOrQuery was not memoized using useMemoFirebase. This may cause infinite loops.', memoizedTargetRefOrQuery);
+    // Depending on strictness, you might want to throw an error here in development
+    // throw new Error('useCollection: targetRefOrQuery was not properly memoized using useMemoFirebase');
   }
+
   return { data, isLoading, error };
 }

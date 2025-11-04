@@ -445,7 +445,8 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
@@ -682,3 +683,4 @@
     "reasoning": "The Firestore structure is designed to support the MARCUS Automation Suite, emphasizing authorization independence, clarity, and scalability. It leverages path-based ownership for user-specific data and membership maps for collaborative entities. The key strategy is denormalization of authorization data to avoid costly and insecure `get()` calls in security rules.\n\n**Authorization Independence (Denormalization):**\n\n*   The structure avoids hierarchical authorization dependencies.  Access control information (e.g., project membership) is denormalized into subcollections where necessary. For instance, if access to `EOIEmails` or `RFPEmails` depends on project membership, the relevant membership data is copied into those subcollections.\n\n**Structural Segregation:**\n\n*   The structure separates data with different security needs. For example, global metro codes are stored separately from project-specific data.\n\n**Access Modeling:**\n\n*   Path-Based Ownership: Entities directly associated with a user (none explicitly defined in the input, but could be added for settings or preferences) would reside under `/users/{userId}`.\n*   Membership Maps: Collaborative access is handled with membership maps. If, for example, project access needs to be controlled beyond the project creator, a `members` map would be added to the `Project` entity and denormalized to child collections like `EOIEmails` and `RFPEmails`.\n\n**QAPs (Rules are not Filters):**\n\n*   The segregation of data into collections with homogeneous security requirements ensures that list operations can be secured without filtering. For example, listing projects only requires checking the user's role against the project's metadata or associated membership map (if implemented).\n\n**Invariants:**\n\n*   Timestamps can be enforced using server-side timestamps and security rules. Ownership is maintained through the consistent use of `ownerId` and path-based ownership.\n\n**Example Security Rule Considerations:**\n\n*   A user can create a project if they have the appropriate global role (e.g., present in `/roles_project_creator/{userId}`).\n*   Access to `EOIEmails` or `RFPEmails` would be based on the user's presence in the project's `members` map (denormalized into these subcollections)."
   }
 }
+    
