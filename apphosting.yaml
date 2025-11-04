@@ -11,8 +11,8 @@ runConfig:
 env:
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  - variable: NEXT_PRIVATE_TURBOPACK
-    value: "0"
+  - variable: FORCE_WEBPACK
+    value: "1"
     availability:
       - BUILD
 
