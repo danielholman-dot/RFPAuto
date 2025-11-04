@@ -1,3 +1,4 @@
+
 'use client';
 
 import '@/app/globals.css';
@@ -32,7 +33,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, isUserLoading, router, pathname, isAppPage]);
 
-  if ((isUserLoading && isAppPage) || (isUserLoading && user)) {
+  // While checking auth state on a protected page, show a full-screen loader.
+  if (isUserLoading && isAppPage) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -40,6 +42,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // If the user is logged in and on an app page, render the full app layout
   if (isAppPage && user) {
      return (
         <SidebarProvider>
@@ -54,6 +57,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
      )
   }
 
+  // For public pages (or if user is not logged in on an app page before redirect), render children directly.
   return <>{children}</>;
 }
 
