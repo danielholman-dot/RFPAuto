@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { createContext, useContext, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
+import { Firestore, doc, setDoc } from 'firebase/firestore';
 import { Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
@@ -33,6 +33,32 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     firestore,
     auth,
   }), [firebaseApp, firestore, auth]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/firebase.User
+        const userRef = doc(firestore, "users", user.uid);
+        
+        // Use setDoc with merge:true to create the doc if it doesn't exist,
+        // or update it if it does. This is useful for when user info changes.
+        setDoc(userRef, { 
+            name: user.displayName, 
+            email: user.email,
+            avatar: user.photoURL,
+            // Add or update other fields as needed, but don't overwrite existing ones
+            // unless necessary. For example, you might want to set a 'lastLogin' field.
+        }, { merge: true });
+
+      } else {
+        // User is signed out
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [auth, firestore]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
