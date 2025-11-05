@@ -21,15 +21,17 @@ if (getApps().length) {
 auth = getAuth(app);
 firestore = getFirestore(app);
 
+const initializeFirebase = () => ({ app, auth, firestore });
+
+
 // --- Export Initialized Services ---
-export { app, auth, firestore };
+export { app, auth, firestore, initializeFirebase };
 
 // --- Export Hooks, Providers, and Utilities ---
 export * from './provider';
 export * from './client-provider';
-export * from './firestore/use-collection';
+export { default as useCollection } from './firestore/use-collection';
 export * from './firestore/use-doc';
-export * from './non-blocking-updates';
-export * from './non-blocking-login';
+export * from './auth/use-user';
 export * from './errors';
 export * from './error-emitter';
