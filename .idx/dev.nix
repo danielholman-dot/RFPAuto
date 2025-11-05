@@ -7,6 +7,8 @@
   packages = [
     pkgs.nodejs_20
     pkgs.zulu
+    pkgs.sudo        # <--- Added sudo
+    pkgs.imagemagick # <--- Added imagemagick
   ];
   # Sets environment variables in the workspace
   env = {};

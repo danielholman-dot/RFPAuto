@@ -1,29 +1,43 @@
+
 'use client';
 
-import type { User } from '@/lib/types';
 import { useMemo } from 'react';
+import type { User as AuthUser } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useDocument } from 'react-firebase-hooks/firestore';
+import type { User as AppUser } from '@/lib/types';
+import { useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useAuth } from '../provider';
 
-// A mock user for a public-only app experience
-const mockUser: User = {
-    id: 'public-user-01',
-    name: 'Guest User',
-    email: 'guest@example.com',
-    role: 'Google Procurement Office', // Provide a default role with max permissions
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1080',
-};
-
-
-/**
- * Hook for accessing a user object in a public-only app.
- * It returns a mock user object and bypasses actual authentication.
- */
 export const useUser = () => {
-  
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const [user, authLoading, authError] = useAuthState(auth);
+
+  // Directly use the user's UID to get the document reference.
+  const userDocRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  // Use the useDocument hook from react-firebase-hooks for a direct subscription.
+  const [userDoc, userLoading, userError] = useDocument(userDocRef);
+
+  const appUser = useMemo(() => {
+    if (userDoc?.exists()) {
+      return { id: userDoc.id, ...userDoc.data() } as AppUser;
+    }
+    return null;
+  }, [userDoc]);
+
+  const isLoading = authLoading || userLoading;
+
   const userState = useMemo(() => ({
-    user: mockUser,
-    isUserLoading: false, // Never loading as the user is hardcoded
-    userError: null,      // No errors as there's no auth process
-  }), []);
+    user: appUser,
+    isUserLoading: isLoading,
+    userError: authError || userError,
+  }), [appUser, isLoading, authError, userError]);
 
   return userState;
 };
