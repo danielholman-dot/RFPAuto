@@ -37,7 +37,8 @@ import { RfpGanttChart } from '@/components/dashboard/rfp-gantt-chart';
 import { useState, useMemo } from 'react';
 import { BudgetVsWonChart } from '@/components/dashboard/budget-vs-won-chart';
 import { Loader2 } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase, useAuth, useAuthState } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useAuth } from '@/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 
@@ -327,3 +328,5 @@ export default function Dashboard() {
     </>
   );
 }
+
+    

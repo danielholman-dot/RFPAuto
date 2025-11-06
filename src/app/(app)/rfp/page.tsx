@@ -36,7 +36,8 @@ import {
 } from '@/components/ui/table';
 import type { RFP } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useMemoFirebase, useFirestore, useAuth, useAuthState } from '@/firebase';
+import { useCollection, useMemoFirebase, useFirestore, useAuth } from '@/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { collection, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 
 export default function RfpRegistryPage() {
@@ -180,3 +181,5 @@ export default function RfpRegistryPage() {
     </Card>
   );
 }
+
+    

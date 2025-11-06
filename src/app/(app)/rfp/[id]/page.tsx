@@ -5,7 +5,8 @@ import { RfpTabs } from '@/components/rfp/rfp-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { RFP, MetroCode } from '@/lib/types';
-import { useDoc, useCollection, useMemoFirebase, useFirestore, useAuth, useAuthState } from '@/firebase';
+import { useDoc, useCollection, useMemoFirebase, useFirestore, useAuth } from '@/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { doc, collection } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 
@@ -134,3 +135,5 @@ export default function RfpDetailPage() {
     </div>
   );
 }
+
+    

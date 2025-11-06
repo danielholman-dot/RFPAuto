@@ -34,7 +34,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase, useAuth, useAuthState } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useAuth } from '@/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { collection, query } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 
@@ -334,3 +335,5 @@ export default function ContractorsPage() {
     </div>
   );
 }
+
+    
