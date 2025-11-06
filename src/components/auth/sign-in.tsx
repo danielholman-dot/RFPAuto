@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -21,12 +22,15 @@ export function SignIn() {
         }
 
         const provider = new GoogleAuthProvider();
-        provider.addScope('profile');
-        provider.addScope('email');
+        // This forces the account selection screen to appear every time.
+        // It can help resolve session-related 'auth/internal-error' issues.
+        provider.setCustomParameters({
+            prompt: 'select_account'
+        });
         
         try {
-            // Only perform the sign-in operation here.
-            // The user profile creation will be handled by the onAuthStateChanged listener in the provider.
+            // The user profile creation and validation is handled by the onAuthStateChanged
+            // listener in the FirebaseProvider, so we only need to trigger the sign-in here.
             await signInWithPopup(auth, provider);
         } catch (error: any) {
             console.error("Firebase Auth Error:", error);
