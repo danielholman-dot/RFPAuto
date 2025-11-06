@@ -18,10 +18,19 @@ export function SignIn() {
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                toast({
-                    title: "Signed In",
-                    description: `Welcome back, ${user.displayName}!`,
-                });
+                if (user.email && user.email.endsWith('@google.com')) {
+                    toast({
+                        title: "Signed In",
+                        description: `Welcome back, ${user.displayName}!`,
+                    });
+                } else {
+                    auth.signOut();
+                    toast({
+                        variant: 'destructive',
+                        title: 'Login Failed',
+                        description: 'Access is restricted to users with a @google.com email address.',
+                    });
+                }
             })
             .catch((error) => {
                 console.error("Error signing in with Google:", error);
