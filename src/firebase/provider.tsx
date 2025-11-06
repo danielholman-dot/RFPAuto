@@ -4,7 +4,7 @@
 import React, { createContext, useContext, ReactNode, useMemo, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, setDoc } from 'firebase/firestore';
-import { Auth, onAuthStateChanged, User } from 'firebase/auth';
+import { Auth, onAuthStateChanged, User, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 interface FirebaseProviderProps {
@@ -35,10 +35,29 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   }), [firebaseApp, firestore, auth]);
 
   useEffect(() => {
+    // This handles the result from signInWithRedirect
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // This is the signed-in user
+          const user = result.user;
+          const userRef = doc(firestore, "users", user.uid);
+          setDoc(userRef, { 
+              name: user.displayName, 
+              email: user.email,
+              avatar: user.photoURL,
+              id: user.uid, // Explicitly set the id
+              // Set a default role if it doesn't exist
+          }, { merge: true });
+        }
+      }).catch((error) => {
+        console.error("Error during sign-in redirect:", error);
+      });
+
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/firebase.User
+        // User is signed in, ensure their doc exists.
         const userRef = doc(firestore, "users", user.uid);
         
         // Use setDoc with merge:true to create the doc if it doesn't exist,
@@ -47,8 +66,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
             name: user.displayName, 
             email: user.email,
             avatar: user.photoURL,
-            // Add or update other fields as needed, but don't overwrite existing ones
-            // unless necessary. For example, you might want to set a 'lastLogin' field.
+            id: user.uid,
         }, { merge: true });
 
       } else {

@@ -15,20 +15,25 @@ export const useUser = () => {
   const [user, authLoading, authError] = useAuthState(auth);
 
   const userDocRef = useMemo(() => {
-    if (!user || !firestore) return null;
+    if (!user || !firestore) return undefined;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
 
-  const [appUser, userLoading, userError] = useDocumentData(userDocRef);
+  // Pass a third argument to useDocumentData to ensure it returns an ID.
+  const [appUser, userLoading, userError] = useDocumentData<AppUser>(userDocRef, {
+    idField: 'id',
+  });
 
-  const isLoading = authLoading || userLoading;
+  // The overall loading state is true if either the auth state or the user profile is loading.
+  const isLoading = authLoading || (user && userLoading);
 
   const memoizedUser = useMemo(() => {
-    if (appUser) {
-      return { ...appUser, uid: user!.uid } as AppUser;
+    if (user && appUser) {
+      // Combine the auth user and the app user profile.
+      return { ...appUser, uid: user.uid };
     }
     return null;
-  }, [appUser, user]);
+  }, [user, appUser]);
 
   const userState = useMemo(() => ({
     user: memoizedUser,
