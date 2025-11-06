@@ -32,16 +32,6 @@ export function SignIn() {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
-            if (user.email && !user.email.endsWith('@google.com')) {
-                await auth.signOut();
-                toast({
-                    variant: 'destructive',
-                    title: 'Access Denied',
-                    description: 'Only users with a @google.com email address are permitted to log in.',
-                });
-                return;
-            }
-
             const userRef = doc(firestore, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
