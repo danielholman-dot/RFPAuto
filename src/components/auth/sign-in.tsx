@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -22,11 +21,6 @@ export function SignIn() {
         }
 
         const provider = new GoogleAuthProvider();
-        // This forces the account selection screen to appear every time.
-        // It can help resolve session-related 'auth/internal-error' issues.
-        provider.setCustomParameters({
-            prompt: 'select_account'
-        });
         
         try {
             // The user profile creation and validation is handled by the onAuthStateChanged
