@@ -8,6 +8,9 @@ import { firestore } from "..";
 
 export const signInWithGoogle = (auth: Auth) => {
   const provider = new GoogleAuthProvider();
+  // Add standard scopes to ensure profile data is requested correctly.
+  provider.addScope('profile');
+  provider.addScope('email');
   
   signInWithPopup(auth, provider)
     .then((result) => {
@@ -26,6 +29,7 @@ export const signInWithGoogle = (auth: Auth) => {
           email: user.email,
           avatar: user.photoURL,
           id: user.uid,
+          role: "Project Management", // Assign a default role
       }, { merge: true });
 
       toast({
