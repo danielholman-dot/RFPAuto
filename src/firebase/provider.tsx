@@ -4,8 +4,9 @@
 import React, { createContext, useContext, ReactNode, useMemo, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, setDoc } from 'firebase/firestore';
-import { Auth, onAuthStateChanged, User, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { useToast } from '@/hooks/use-toast';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -33,19 +34,31 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     firestore,
     auth,
   }), [firebaseApp, firestore, auth]);
+  
+  const { toast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in. Ensure their document exists in Firestore.
-        const userRef = doc(firestore, "users", user.uid);
-        setDoc(userRef, { 
-            name: user.displayName, 
-            email: user.email,
-            avatar: user.photoURL,
-            id: user.uid,
-            role: "Project Management",
-        }, { merge: true });
+        // User is signed in. Validate email and ensure their document exists.
+        if (user.email && user.email.endsWith('@google.com')) {
+          const userRef = doc(firestore, "users", user.uid);
+          setDoc(userRef, { 
+              name: user.displayName, 
+              email: user.email,
+              avatar: user.photoURL,
+              id: user.uid,
+              role: "Project Management",
+          }, { merge: true });
+        } else {
+          // If email is not a @google.com email, sign them out immediately.
+          auth.signOut();
+          toast({
+              variant: 'destructive',
+              title: 'Login Failed',
+              description: 'Access is restricted to users with a @google.com email address.',
+          });
+        }
       } else {
         // User is signed out
       }
@@ -53,7 +66,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, [auth, firestore]);
+  }, [auth, firestore, toast]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
