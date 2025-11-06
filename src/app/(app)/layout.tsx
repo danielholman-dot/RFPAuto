@@ -1,11 +1,11 @@
-
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { SidebarInset } from '@/components/ui/sidebar';
-import { useUser } from '@/firebase';
+import { useAuth } from '@/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -16,13 +16,14 @@ function AppLayout({
 }>) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const [user, loading, error] = useAuthState(auth);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    if (!loading && !user) {
       router.push('/login');
     }
-  }, [isUserLoading, user, router]);
+  }, [loading, user, router]);
 
   // This check is a safeguard, but in practice, pages outside this layout are handled at the root.
   const isPublicPage = pathname.startsWith('/proposal/submit') || pathname === '/login';
@@ -32,7 +33,7 @@ function AppLayout({
     return <main>{children}</main>;
   }
 
-  if (isUserLoading || !user) {
+  if (loading || !user) {
     return (
         <div className="flex h-screen w-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
