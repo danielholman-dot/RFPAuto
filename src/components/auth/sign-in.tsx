@@ -1,8 +1,9 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/firebase";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithRedirect, GoogleAuthProvider } from "firebase/auth";
 import { Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,15 +24,16 @@ export function SignIn() {
         const provider = new GoogleAuthProvider();
         
         try {
-            // The user profile creation and validation is handled by the onAuthStateChanged
-            // listener in the FirebaseProvider, so we only need to trigger the sign-in here.
-            await signInWithPopup(auth, provider);
+            // Use signInWithRedirect instead of signInWithPopup
+            // This navigates the user to the Google sign-in page and then returns them to the app.
+            // The result is handled by the onAuthStateChanged listener and getRedirectResult.
+            await signInWithRedirect(auth, provider);
         } catch (error: any) {
-            console.error("Firebase Auth Error:", error);
+            console.error("Firebase Auth Redirect Error:", error);
             toast({
                 variant: 'destructive',
                 title: 'Sign-in Failed',
-                description: 'An internal authentication error occurred. Please check the browser console for details.',
+                description: 'Could not start the sign-in process. Please check the browser console for details.',
             });
         }
     };
