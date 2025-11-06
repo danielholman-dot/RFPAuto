@@ -35,40 +35,10 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   }), [firebaseApp, firestore, auth]);
 
   useEffect(() => {
-    // This handles the result from signInWithRedirect
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // This is the signed-in user
-          const user = result.user;
-          const userRef = doc(firestore, "users", user.uid);
-          setDoc(userRef, { 
-              name: user.displayName, 
-              email: user.email,
-              avatar: user.photoURL,
-              id: user.uid, // Explicitly set the id
-              // Set a default role if it doesn't exist
-          }, { merge: true });
-        }
-      }).catch((error) => {
-        console.error("Error during sign-in redirect:", error);
-      });
-
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in, ensure their doc exists.
-        const userRef = doc(firestore, "users", user.uid);
-        
-        // Use setDoc with merge:true to create the doc if it doesn't exist,
-        // or update it if it does. This is useful for when user info changes.
-        setDoc(userRef, { 
-            name: user.displayName, 
-            email: user.email,
-            avatar: user.photoURL,
-            id: user.uid,
-        }, { merge: true });
-
+        // User is signed in. We can ensure their doc exists here if needed,
+        // but it's now primarily handled after the popup returns.
       } else {
         // User is signed out
       }
