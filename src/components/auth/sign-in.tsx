@@ -6,36 +6,56 @@ import { useAuth } from "@/firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
 
 export function SignIn() {
     const auth = useAuth();
+    const firestore = useFirestore();
     const { toast } = useToast();
 
     const handleSignIn = async () => {
+        if (!auth || !firestore) {
+            toast({
+                variant: 'destructive',
+                title: 'Firebase not initialized',
+                description: 'The Firebase services could not be reached. Please try again later.',
+            });
+            return;
+        }
+
         const provider = new GoogleAuthProvider();
         provider.addScope('profile');
         provider.addScope('email');
         
         try {
-            await signInWithPopup(auth, provider);
-            // The onAuthStateChanged listener in FirebaseProvider will handle validation and profile creation.
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            if (user.email && !user.email.endsWith('@google.com')) {
+                await auth.signOut();
+                toast({
+                    variant: 'destructive',
+                    title: 'Access Denied',
+                    description: 'Only users with a @google.com email address are permitted to log in.',
+                });
+                return;
+            }
+
+            const userRef = doc(firestore, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    role: 'Project Management', // Default role
+                }, { merge: true });
+            }
         } catch (error: any) {
-            // Log the full error object for detailed diagnostics
             console.error("Firebase Auth Error:", error);
-
-            // Specifically log the code and message, which are standard in Firebase errors.
-            if (error.code) {
-                console.error("Error Code:", error.code);
-            }
-            if (error.message) {
-                console.error("Error Message:", error.message);
-            }
-            // The 'customData' property can sometimes contain more info, like the underlying server response.
-            if (error.customData) {
-                console.error("Custom Data:", error.customData);
-            }
-
-            // Provide a user-friendly error message
             toast({
                 variant: 'destructive',
                 title: 'Sign-in Failed',
