@@ -36,12 +36,13 @@ import {
 } from '@/components/ui/table';
 import type { RFP } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { useCollection, useMemoFirebase, useFirestore, useAuth, useAuthState } from '@/firebase';
 import { collection, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 
 export default function RfpRegistryPage() {
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const [user, isUserLoading] = useAuthState(auth);
   const { toast } = useToast();
   
   const rfpsQuery = useMemoFirebase(() => {

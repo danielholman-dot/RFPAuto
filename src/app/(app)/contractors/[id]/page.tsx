@@ -8,7 +8,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { HardHat, Users, Wrench, Zap, MapPin, Loader2, Phone, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useDoc, useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { useDoc, useCollection, useMemoFirebase, useFirestore, useAuth } from '@/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { doc, collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -33,7 +34,8 @@ export default function ContractorDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const [user, isUserLoading] = useAuthState(auth);
   const router = useRouter();
 
   const contractorRef = useMemoFirebase(() => {

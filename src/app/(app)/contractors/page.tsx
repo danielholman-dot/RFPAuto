@@ -34,7 +34,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useAuth, useAuthState } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 
@@ -123,7 +123,8 @@ const getIconForType = (type: string) => {
 
 export default function ContractorsPage() {
   const firestore = useFirestore();
-  const { isUserLoading } = useUser();
+  const auth = useAuth();
+  const [user, isUserLoading] = useAuthState(auth);
   const importFileRef = useRef<HTMLInputElement>(null);
 
   const contractorsQuery = useMemoFirebase(() => query(collection(firestore, 'contractors')), [firestore]);

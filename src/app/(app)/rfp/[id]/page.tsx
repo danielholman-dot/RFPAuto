@@ -5,7 +5,7 @@ import { RfpTabs } from '@/components/rfp/rfp-tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { RFP, MetroCode } from '@/lib/types';
-import { useDoc, useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { useDoc, useCollection, useMemoFirebase, useFirestore, useAuth, useAuthState } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 
@@ -13,7 +13,8 @@ export default function RfpDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const [user, isUserLoading] = useAuthState(auth);
 
   const rfpRef = useMemoFirebase(() => {
     if (!user) return null;
