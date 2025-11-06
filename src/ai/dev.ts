@@ -1,15 +1,3 @@
 
-import { config } from 'dotenv';
-config();
-
-import '@/ai/flows/analyze-and-score-proposals.ts';
-import '@/ai/flows/generate-project-rfp-instructions.ts';
-import '@/ai/flows/generate-rfp-invitations.ts';
-import '@/ai/flows/draft-reminder-emails-proposal-submissions.ts';
-import '@/ai/flows/generate-award-recommendations.ts';
-import '@/ai/flows/summarize-stakeholder-feedback.ts';
-import '@/ai/flows/generate-comparative-analysis.ts';
-import '@/ai/flows/generate-award-letter.ts';
-import '@/ai/flows/generate-non-award-letter.ts';
-import '@/ai/flows/generate-user-guide.ts';
-import '@/ai/flows/generate-rfp-release-email.ts';
+// This file is intentionally left blank for debugging purposes.
+// AI-related development flows have been temporarily removed to isolate an authentication issue.
