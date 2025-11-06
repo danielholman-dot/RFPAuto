@@ -1,12 +1,133 @@
-
+/**
+ * @fileOverview Firestore Security Rules for the MARCUS Automation Suite.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a combination of public read access for certain collections (ContractorType, Contractor, TechnicalDocument) and restricted write access based on ownership or membership. It leverages denormalization (copying `contractorIds` to RFPs) to ensure authorization independence.
+ *
+ * Data Structure:
+ * - /projects/{projectId}: Stores project data.  Write access is not restricted in this prototype.
+ * - /contractorTypes/{contractorTypeId}: Stores contractor type data. Public read, unrestricted write.
+ * - /contractors/{contractorId}: Stores contractor data. Public read, unrestricted write.
+ * - /technicalDocuments/{technicalDocumentId}: Stores technical document data. Public read, unrestricted write.
+ * - /rfps/{rfpId}: Stores RFP data, including `contractorIds` for access control.
+ * - /proposals/{proposalId}: Stores proposal data. Write access is not restricted in this prototype.
+ * - /feedback/{feedbackId}: Stores feedback data. Write access is not restricted in this prototype.
+ *
+ * Key Security Decisions:
+ * - Contractor, ContractorType and TechnicalDocument collections are publicly readable and writable.
+ * - Listing is generally allowed where it does not expose private user data.
+ * - Write access to Projects, Proposals, and Feedback is not restricted in this prototype.
+ * - RFPs restrict writes to only those users included in the `contractorIds` array.
+ *
+ * Denormalization for Authorization:
+ * - RFPs: The `contractorIds` array is denormalized directly onto the RFP document. This allows rules to efficiently check if the requesting user is authorized without additional reads.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read access to all documents
-    match /{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
+
+    /**
+     * @description Allows read and write access to project data.
+     * @path /projects/{projectId}
+     * @allow (get, list): if true
+     * @allow (create, update, delete): if true
+     * @deny (none): No requests are explicitly denied.
+     * @principle Unrestricted write access for prototyping.
+     */
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create, update, delete: if true; // In a production environment, restrict writes to authorized users only.
+    }
+
+    /**
+     * @description Allows read and write access to contractor type data.
+     * @path /contractorTypes/{contractorTypeId}
+     * @allow (get, list): if true
+     * @allow (create, update, delete): if true
+     * @deny (none): No requests are explicitly denied.
+     * @principle Public read access for prototyping.
+     */
+    match /contractorTypes/{contractorTypeId} {
+      allow get, list: if true;
+      allow create, update, delete: if true; // In a production environment, restrict writes to authorized users only.
+    }
+
+    /**
+     * @description Allows read and write access to contractor data.
+     * @path /contractors/{contractorId}
+     * @allow (get, list): if true
+     * @allow (create, update, delete): if true
+     * @deny (none): No requests are explicitly denied.
+     * @principle Public read access for prototyping.
+     */
+    match /contractors/{contractorId} {
+      allow get, list: if true;
+      allow create, update, delete: if true; // In a production environment, restrict writes to authorized users only.
+    }
+
+    /**
+     * @description Allows read and write access to technical document data.
+     * @path /technicalDocuments/{technicalDocumentId}
+     * @allow (get, list): if true
+     * @allow (create, update, delete): if true
+     * @deny (none): No requests are explicitly denied.
+     * @principle Public read access for prototyping.
+     */
+    match /technicalDocuments/{technicalDocumentId} {
+      allow get, list: if true;
+      allow create, update, delete: if true; // In a production environment, restrict writes to authorized users only.
+    }
+
+    /**
+     * @description Controls access to RFP documents based on the `contractorIds` array.
+     * @path /rfps/{rfpId}
+     * @allow (get, list): if true
+     * @allow (create, update): if request.auth != null && request.auth.uid in resource.data.contractorIds
+     * @allow delete: if resource != null && request.auth != null && request.auth.uid in resource.data.contractorIds;
+     * @deny (create, update): if request.auth == null || !(request.auth.uid in request.resource.data.contractorIds)
+     * @deny (delete): if resource == null || request.auth == null || !(request.auth.uid in resource.data.contractorIds)
+     * @principle Enforces shared access for RFP documents, restricting writes to listed contractors.
+     */
+    match /rfps/{rfpId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.contractorIds is list && request.auth.uid in request.resource.data.contractorIds;
+      allow update: if isExistingContractor();
+      allow delete: if isExistingContractor();
+    }
+
+    /**
+     * @description Allows read and write access to proposal data.
+     * @path /proposals/{proposalId}
+     * @allow (get, list): if true
+     * @allow (create, update, delete): if true
+     * @deny (none): No requests are explicitly denied.
+     * @principle Unrestricted write access for prototyping.
+     */
+    match /proposals/{proposalId} {
+      allow get, list: if true;
+      allow create, update, delete: if true; // In a production environment, restrict writes to authorized users only.
+    }
+
+    /**
+     * @description Allows read and write access to feedback data.
+     * @path /feedback/{feedbackId}
+     * @allow (get, list): if true
+     * @allow (create, update, delete): if true
+     * @deny (none): No requests are explicitly denied.
+     * @principle Unrestricted write access for prototyping.
+     */
+    match /feedback/{feedbackId} {
+      allow get, list: if true;
+      allow create, update, delete: if true; // In a production environment, restrict writes to authorized users only.
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isExistingContractor() {
+        return isSignedIn() && resource != null && request.auth.uid in resource.data.contractorIds;
     }
   }
 }
