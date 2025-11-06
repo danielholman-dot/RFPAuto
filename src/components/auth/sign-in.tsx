@@ -1,15 +1,13 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { useAuth, useFirestore } from "@/firebase";
+import { useAuth } from "@/firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 import { Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function SignIn() {
     const auth = useAuth();
-    const firestore = useFirestore();
     const { toast } = useToast();
 
     const handleSignIn = () => {
@@ -20,16 +18,6 @@ export function SignIn() {
         signInWithPopup(auth, provider)
             .then((result) => {
                 const user = result.user;
-                const userRef = doc(firestore, "users", user.uid);
-                
-                setDoc(userRef, { 
-                    name: user.displayName, 
-                    email: user.email,
-                    avatar: user.photoURL,
-                    id: user.uid,
-                    role: "Project Management",
-                }, { merge: true });
-
                 toast({
                     title: "Signed In",
                     description: `Welcome back, ${user.displayName}!`,

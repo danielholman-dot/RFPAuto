@@ -37,8 +37,15 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in. We can ensure their doc exists here if needed,
-        // but it's now primarily handled after the popup returns.
+        // User is signed in. Ensure their document exists in Firestore.
+        const userRef = doc(firestore, "users", user.uid);
+        setDoc(userRef, { 
+            name: user.displayName, 
+            email: user.email,
+            avatar: user.photoURL,
+            id: user.uid,
+            role: "Project Management",
+        }, { merge: true });
       } else {
         // User is signed out
       }
