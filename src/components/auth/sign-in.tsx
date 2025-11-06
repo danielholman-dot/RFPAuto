@@ -1,22 +1,35 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/firebase";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { Chrome } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export function SignIn() {
     const auth = useAuth();
+    const { toast } = useToast();
 
-    const handleSignIn = () => {
+    const handleSignIn = async () => {
         const provider = new GoogleAuthProvider();
         provider.addScope('profile');
         provider.addScope('email');
-        // The result is now handled by the onAuthStateChanged listener in FirebaseProvider
-        signInWithPopup(auth, provider).catch((error) => {
-            // The listener in the provider will handle success, we only need to catch pop-up errors here.
-            console.error("Popup sign-in error:", error);
-        });
+        
+        try {
+            await signInWithPopup(auth, provider);
+            // The onAuthStateChanged listener in FirebaseProvider will handle profile creation.
+        } catch (error: any) {
+            // Log the full error object for detailed diagnostics
+            console.error("Firebase Auth Error:", error);
+
+            // Provide a user-friendly error message
+            toast({
+                variant: 'destructive',
+                title: 'Sign-in Failed',
+                description: 'Could not sign in with Google. Please try again.',
+            });
+        }
     };
 
     return (
