@@ -268,10 +268,20 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
+// Local interface for a single legend item payload
+interface ChartLegendItemPayload {
+  dataKey?: string | number;
+  value?: string | number | React.ReactNode;
+  color?: string;
+  type?: RechartsPrimitive.LegendType;
+  id?: string;
+  payload?: any;
+}
+
 interface ChartLegendContentProps extends React.ComponentProps<"div"> {
   hideIcon?: boolean
   nameKey?: string
-  payload?: RechartsPrimitive.LegendPayload[]
+  payload?: ChartLegendItemPayload[] // Updated type
   verticalAlign?: RechartsPrimitive.LegendProps["verticalAlign"]
 }
 
@@ -298,13 +308,13 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {payload.map((item: RechartsPrimitive.LegendPayload, index: number) => {
+        {payload.map((item: ChartLegendItemPayload, index: number) => { // Updated type
           const key = `${nameKey || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
           return (
             <div
-              key={item.value || index}
+              key={item.value?.toString() || index} // Ensure key is a string
               className={cn(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
               )}

@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/firebase";
-import { signInWithRedirect, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,16 +24,14 @@ export function SignIn() {
         const provider = new GoogleAuthProvider();
         
         try {
-            // Use signInWithRedirect instead of signInWithPopup
-            // This navigates the user to the Google sign-in page and then returns them to the app.
-            // The result is handled by the onAuthStateChanged listener and getRedirectResult.
-            await signInWithRedirect(auth, provider);
+            await signInWithPopup(auth, provider);
+            // The onAuthStateChanged listener in the provider will handle the redirect.
         } catch (error: any) {
-            console.error("Firebase Auth Redirect Error:", error);
+            console.error("Firebase Auth Popup Error:", error);
             toast({
                 variant: 'destructive',
                 title: 'Sign-in Failed',
-                description: 'Could not start the sign-in process. Please check the browser console for details.',
+                description: error.message || 'An unknown error occurred during sign-in.',
             });
         }
     };

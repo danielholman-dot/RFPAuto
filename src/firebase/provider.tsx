@@ -4,7 +4,7 @@
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 import { useToast } from '@/hooks/use-toast';
 
@@ -76,18 +76,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
       return;
     }
-
-    // Check for redirect result
-    getRedirectResult(auth).catch((error) => {
-      console.error("Firebase Auth Redirect Result Error:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign-in Failed",
-        description: `An error occurred during sign-in: ${error.message}`,
-      });
-      setUserAuthState({ user: null, isUserLoading: false, userError: error });
-    });
-
 
     setUserAuthState({ user: null, isUserLoading: true, userError: null }); // Reset on auth instance change
 
