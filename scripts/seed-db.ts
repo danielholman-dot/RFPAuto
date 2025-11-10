@@ -1,8 +1,11 @@
 
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { collection, writeBatch, doc, getDocs, Timestamp, setDoc } from 'firebase/firestore';
-import { auth, firestore as db } from '../src/firebase';
+import { initializeFirebase } from '../src/firebase';
 import { ContractorsData, MetroCodesData, RFPData as seedRFPData, usersData } from '../src/lib/data';
+
+// Initialize Firebase and get the auth and firestore instances
+const { auth, firestore: db } = initializeFirebase();
 
 async function seedAuthUsers() {
     console.log('Seeding authentication users...');

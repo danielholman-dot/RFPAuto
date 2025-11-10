@@ -1,7 +1,9 @@
-
 import { collection, getDocs, doc, getDoc, addDoc, query, where, Timestamp } from 'firebase/firestore';
-import { firestore } from '@/firebase';
+import { initializeFirebase } from '@/firebase'; // Changed this line
 import type { MetroCode, RFP, Contractor, Proposal } from './types';
+
+// Get the Firebase SDKs, including firestore
+const { firestore } = initializeFirebase(); // Added this line
 
 export const usersData = [
     {
@@ -38,7 +40,7 @@ export const ContractorsData = [
     {
         "name": "ABB Inc",
         "contactName": "Ted Ioannou; Edgard Rodriguez; Elina Hermunen",
-        "contactEmail": "ted.ioannou@us.abb.com; edgard.rodriguez@us.abb.com; elina.hermunen@abb.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -47,7 +49,7 @@ export const ContractorsData = [
     {
         "name": "Allison-Smith Company LLC",
         "contactName": "Austin Morgan; Mark Gallacher; Jason Smith; Courtney Britt; Blake Harrelson; Stephen Sanchez",
-        "contactEmail": "amorgan@allisonsmith.com; mgallacher@allisonsmith.com; jsmith@allisonsmith.com; cbritt@allisonsmith.com; bharrelson@allisonsmith.com; ssanchez@allisonsmith.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Preferred",
         "region": "East",
@@ -56,7 +58,7 @@ export const ContractorsData = [
     {
         "name": "Archkey Solutions LLC",
         "contactName": "Chris White; Steven Stone; Rich Ross; Jason Fean; Kari Crawley; Dan Dvorak; Ryan Hildebrandt; Bill Olson",
-        "contactEmail": "cwhite@sachsco.com; steven.stone@archkey.com; Rich.Ross@archkey.com; jason.fean@archkey.com; kari.crawley@archkey.com; dan.dvorak@archkey.com; ryan.hildebrandt@archkey.com; bill.olson@archkey.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Preferred",
         "region": "North America",
@@ -65,7 +67,7 @@ export const ContractorsData = [
     {
         "name": "Ascension Construction Solutions LLC",
         "contactName": "Jeanna Hondel; Michael Hondel",
-        "contactEmail": "jhondel@ascension-cs.com; mhondel@ascension-cs.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "East",
@@ -74,7 +76,7 @@ export const ContractorsData = [
     {
         "name": "Batchelor and Kimball, Inc.",
         "contactName": "David Batchelor; Brian Batchelor; Nathan Deasy; William Doty; David M. Vepraskas; Carter Cochran; Roger Atkinson",
-        "contactEmail": "David@bkimechanical.com; Brian@bkimechanical.com; NDeasy@bkimechanical.com; Bill@bkimechanical.com; davidv@bkimechanical.com; ccochran@bkimechanical.com; ratkinson@bkimechanical.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Preferred",
         "region": "East",
@@ -83,7 +85,7 @@ export const ContractorsData = [
     {
         "name": "BGI-GCON JV LLC",
         "contactName": "Michael Godbehere; Michele Newlon",
-        "contactEmail": "godbehere@gconinc.com; michelen@gconinc.com; brianw@gconinc.com; flinte@gconinc.com; sarahg@gconinc.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West",
@@ -92,7 +94,7 @@ export const ContractorsData = [
     {
         "name": "Bombard Electric, LLC",
         "contactName": "Stephen Murray; Bobby House; Jason Luehsenhop",
-        "contactEmail": "stephen.murray@bombardmc.com; bobby.house@bombardelec.com; jason.luehsenhop@bombardmc.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Preferred",
         "region": "West Coast",
@@ -101,7 +103,7 @@ export const ContractorsData = [
     {
         "name": "Brandt Mechanical Services",
         "contactName": "Michael Kimmell; Enoch Paris; Josh Sperling",
-        "contactEmail": "michael.kimmell@brandt.us; enoch.paris@brandt.us; josh.sperling@brandt.us",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -110,7 +112,7 @@ export const ContractorsData = [
     {
         "name": "Bremik Construction",
         "contactName": "Brent Parry; Vijay Daniel; Trang Pham",
-        "contactEmail": "bp@bremik.com; vdaniel@bremik.com; tpham@bremik.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -119,7 +121,7 @@ export const ContractorsData = [
     {
         "name": "C.D. Moody Construction Company, Inc",
         "contactName": "C. David Moody, Jr; Erica Sims-Young",
-        "contactEmail": "dmoody@cdmoodyconstruction.com; Esims@cdmoodyconstruction.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
@@ -128,7 +130,7 @@ export const ContractorsData = [
     {
         "name": "Cache Valley Electric Company",
         "contactName": "Jim Laub; Michael Petric; Jammie Greer; Randi Burton",
-        "contactEmail": "jim.laub@cve.com; michael.petric@cve.com; jammie.greer@cve.com; businessdevelopment@cve.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -137,7 +139,7 @@ export const ContractorsData = [
     {
         "name": "Caddell Construction Co., Inc.",
         "contactName": "Zach Moore; Scott Thompson; Ricky Byrd",
-        "contactEmail": "Zach.Moore@caddell.com; Scott.Thompson@caddell.com; Ricky.Byrd@caddell.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -146,7 +148,7 @@ export const ContractorsData = [
     {
         "name": "Century Contractors, Inc.",
         "contactName": "Howard Smith; Johnny Dotson; Jim Kick",
-        "contactEmail": "hsmith@centurycontractors.com; jdotson@centurycontractors.com; jkick@centurycontractors.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -155,7 +157,7 @@ export const ContractorsData = [
     {
         "name": "Cleveland Electric Company",
         "contactName": "Robert Siegworth; Vann Cleveland; Andy Tolbert; Corey Bobo; Mike Taylor; Robin Domogala; John Cleveland; Corey Bobo",
-        "contactEmail": "roberts@clevelandgroup.com; vannc@clevelandgroup.com; Andy.Tolbert@clevelandgroup.com; CoreyB@clevelandgroup.com; MikeT@clevelandgroup.com; robind@clevelandgroup.com; coreyB@clevelandgroup.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -164,7 +166,7 @@ export const ContractorsData = [
     {
         "name": "CPG Beyond",
         "contactName": "Chad Towner; Keith Lambert",
-        "contactEmail": "chad.towner@cpgbeyond.com",
+        "contactEmail": "<REDACTED_PII>",
         "type": "Electrical / Professional Services",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -173,7 +175,7 @@ export const ContractorsData = [
     {
         "name": "Custom Computer Cable, Inc.",
         "contactName": "Michael Evans; Jeff Watson",
-        "contactEmail": "Mevans@cccincorp.com; jwatson@cccincorp.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -182,7 +184,7 @@ export const ContractorsData = [
     {
         "name": "D.H. Griffin Infrastructure LLC",
         "contactName": "Chad Wineinger; Danny Hoyle; Chris Carter",
-        "contactEmail": "cwineinger@dhgriffin.com; dhoyle@dhgriffin.com; ccarter@dhgriffin.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "East",
@@ -191,7 +193,7 @@ export const ContractorsData = [
     {
         "name": "Direct Line Global LLC",
         "contactName": "Jennifer Yniesta; Nathan Wood; Bret Kammersgard",
-        "contactEmail": "jennifer.yniesta@dlcomm.com; nathan.wood@dlcomm.com; bkammersgard@dlcomm.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -200,7 +202,7 @@ export const ContractorsData = [
     {
         "name": "DPR Construction, Inc",
         "contactName": "Luke Stocking; Damien McCants; Felix Cole; Kevin Burch; Brett Korn; Scott Hibbard; Chuck Rosenthall",
-        "contactEmail": "lukes@dpr.com; DamienM@dpr.com; felixc@dpr.com; kevinb@dpr.com; brettk@dpr.com; Scotthi@dpr.com; chuckr@dpr.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -209,7 +211,7 @@ export const ContractorsData = [
     {
         "name": "Dwatts Construction LLC",
         "contactName": "Jeremiah Watts; Maricar Buot; David Doherty",
-        "contactEmail": "JWatts@dwatts.com; mbuot@dwatts.com; DDoherty@dwatts.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -218,7 +220,7 @@ export const ContractorsData = [
     {
         "name": "Dynalectric Company",
         "contactName": "Bob Wagner; KaHee Emerson",
-        "contactEmail": "bwagner@dyna-oregon.com; kemerson@dyna-oregon.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -227,7 +229,7 @@ export const ContractorsData = [
     {
         "name": "E2 Optics, LLC.",
         "contactName": "Kristi Alford-Haarberg; Shane Moore; Andrea Spisak",
-        "contactEmail": "kristi@e2optics.com; shane.moore@e2optics.com; andrea.spisak@e2optics.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "NICON",
         "preferredStatus": "Most Preferred",
         "region": "North America",
@@ -236,7 +238,7 @@ export const ContractorsData = [
     {
         "name": "Environmental Air Systems, LLC",
         "contactName": "Charles Dick; Frank Stewart; Johnny Moorefield; Bill Bullock",
-        "contactEmail": "cdick@easinc.net; fstefanick@easinc.net; jmoorefield@etrol.net; bbullock@easinc.net",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -245,7 +247,7 @@ export const ContractorsData = [
     {
         "name": "Faith Technologies Inc.",
         "contactName": "David Jahner; Pat McGettigan; Mike Brown; Jesse Davis; Ken Baumgart; Brandon Miller",
-        "contactEmail": "David.jahner@faithtechinc.com; Pat.McGettigan@faithtechinc.com; michael.brown@faithtechinc.com; jesse.davis@faithtechinc.com; Ken.Baumgart@faithtechinc.com; brandon.miller@faithtechinc.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Most Preferred",
         "region": "North America",
@@ -254,7 +256,7 @@ export const ContractorsData = [
     {
         "name": "Fisk Electric Company",
         "contactName": "Cory Borchardt; Anthony Sant; Lenny Seibert; Greg Thomas",
-        "contactEmail": "cborchardt@fiskcorp.com; asant@fiskcorp.com; lseibert@fiskcorp.com; gthomas@fiskcorp.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -263,7 +265,7 @@ export const ContractorsData = [
     {
         "name": "Fortis Construction, Inc",
         "contactName": "Greg Wimmer; Chris Warner; Dan Boel (STY); Joe Vlasteelicia (STY); David Curry (PRY); Joe Bowen (PRY)",
-        "contactEmail": "greg.wimmer@fortisconstruction.com; Chris.warner@fortisconstruction.com; dan.boel@fortisconstruction; joe.vlasteelicia@fortisconstruction; david.curry@fortisconstruction; joe.bowen@fortisconstruction.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; dan.boel@fortisconstruction; joe.vlasteelicia@fortisconstruction; david.curry@fortisconstruction; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "West",
@@ -272,7 +274,7 @@ export const ContractorsData = [
     {
         "name": "Fulcrum Reliability Systems, Inc.",
         "contactName": "Jimmie Baile; Andrew Bohm",
-        "contactEmail": "jimmie.bailey@fulcrumdcs.com; andrew.bohm@fulcrumdcs.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "North America",
@@ -281,7 +283,7 @@ export const ContractorsData = [
     {
         "name": "GBA Builders, LLC.",
         "contactName": "Graham Jones; Joseph Alvarez; Kyle Quigley",
-        "contactEmail": "gjones@gbabuilders.com; jalvarez@gbabuilders.com; kquigley@gbabuilders.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -290,7 +292,7 @@ export const ContractorsData = [
     {
         "name": "GCON, Inc.",
         "contactName": "Michael Godbehere; Flint Ellis; Brian White",
-        "contactEmail": "mikegodbehere@gconinc.com; flinte@gconinc.com; brianw@gconinc.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West",
@@ -299,7 +301,7 @@ export const ContractorsData = [
     {
         "name": "Gilbane Building Company",
         "contactName": "Larry Mast; Daniel Baima",
-        "contactEmail": "LMastella@gilbaneco.com; DBaima@gilbaneco.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
@@ -308,7 +310,7 @@ export const ContractorsData = [
     {
         "name": "Grade A Construction, LLC",
         "contactName": "Rachelle Reigard; John Hayman; Mike Roberts",
-        "contactEmail": "rachelle.reigard@gradeaservices.com; john.hayman@gradeaservices.com; mike.roberts@gradeaservices.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -317,7 +319,7 @@ export const ContractorsData = [
     {
         "name": "H. J. Russell & Company",
         "contactName": "Clinton Kurtz; M Swick; Michael Russell",
-        "contactEmail": "ckurtz@hjrussell.com; mswick@hjrussell.com; mrussell@hjrussell.com; edent@hjrussell.com; bsharpe@hjrussell.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -326,7 +328,7 @@ export const ContractorsData = [
     {
         "name": "HITT Contracting, Inc",
         "contactName": "Evan Antonides; Steve Schoenefeldt; Kim Roy; Spencer Allin; Connor Toomey",
-        "contactEmail": "eantonides@hitt-gc.com; sschoenefeldt@hitt-gc.com; sallin@hitt-gc.com; ctoomey@hitt-gc.com; SAllin@hitt-gc.com; CToomey@hitt-gc.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -335,7 +337,7 @@ export const ContractorsData = [
     {
         "name": "Holder Construction Group, LLC",
         "contactName": "William Turpin; Shaun Haycock; Kim Spence; Rob Elias; Jason Bell",
-        "contactEmail": "bturpin@holder.com; shaycock@holder.com; kspence@holder.com; relias@holder.com; jbell@holder.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -344,7 +346,7 @@ export const ContractorsData = [
     {
         "name": "Holt Brothers Construction, LLC",
         "contactName": "Jeff Beam; Terrence Holt; Torry Holt; Yaswanthi Kothapalli",
-        "contactEmail": "jbeam@holtbrothersinc.com; terrence@holtbrothersinc.com; torry@holtbrothersinc.com; ykothapalli@holtbrothersinc.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -353,7 +355,7 @@ export const ContractorsData = [
     {
         "name": "IES Communications, LLC",
         "contactName": "Matthew Allen; John Seli; Becky Fisher; Jeff Carney; Richard Cho; Sarah Brouillette; Willam Schoeb; Kirsten Aydt; Brian Pezzillo",
-        "contactEmail": "Matt.Allen@iescomm.com; John.Seli@iescomm.com; Becky.Fisher@iescomm.com; Jeff.Carney@iescomm.com; Richard.Cho@iescomm.com; Sarah.Brouillette@iescomm.com; william.schoeb@iescomm.com; kirsten.aydt@iescomm.com; brian.pezzillo@iescomm.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -362,7 +364,7 @@ export const ContractorsData = [
     {
         "name": "Infrastructure Professional Services and Equipment, LLC",
         "contactName": "Jeffrey Farlow; Armita Ghalandar; Christina Griggs; Troy Bowen",
-        "contactEmail": "jeff.farlow@infrapros.net; armita.ghalandar@infrapros.net; christina.griggs@infrapros.net; troy.bowen@infrapros.net",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -371,7 +373,7 @@ export const ContractorsData = [
     {
         "name": "Inglett & Stubbs, LLC",
         "contactName": "Elyse Mcdowell; Holly Wilson; Gael Pirlot; Greg Turner",
-        "contactEmail": "emcdowell@inglett-stubbs.com; hwilson@inglett-stubbs.com; gpirlot@inglett-stubbs.com; gturner@inglett-stubbs.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -380,7 +382,7 @@ export const ContractorsData = [
     {
         "name": "J.E. Dunn Construction Group, Inc.",
         "contactName": "Chris Teddy; Joseph Schultz; Erica Froelich",
-        "contactEmail": "chris.teddy@jedunn.com; joseph.schultz@jedunn.com; erica.froelich@jedunn.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
@@ -389,7 +391,7 @@ export const ContractorsData = [
     {
         "name": "Kenimer & Knox Mechanical, LLC",
         "contactName": "Bill Kenimer; Tanya Kenimer; Tommy McChargue",
-        "contactEmail": "bkenimer@kkmech.com; tkenimer@kkmech.com; tmcchargue@kkmech.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -398,7 +400,7 @@ export const ContractorsData = [
     {
         "name": "Kor Building Group",
         "contactName": "Rebecca Fountain; Paul Bressan; Kris Churchfield",
-        "contactEmail": "rebecca@korbg.com; paul@korbg.com; kris@korbg.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -407,7 +409,7 @@ export const ContractorsData = [
     {
         "name": "Leapley Construction Group of Atlanta, LLC",
         "contactName": "David Goodson; Beau Walker; Mark Cleverly; Michael Mcrae; Meredith Leapley; Alisa Henderson",
-        "contactEmail": "dgoodson@leapleyconstruction.com; bwalker@leapleyconstruction.com; mcleverly@leapleyconstruction.com; mmcrae@leapleyconstruction.com; mleapley@leapleyconstruction.com; ahenderson@leapleyconstruction.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -416,7 +418,7 @@ export const ContractorsData = [
     {
         "name": "Low Voltage Solutions, Inc.",
         "contactName": "Gary St Cin; Nick Siwak; Tom Bleker; Steve Martin",
-        "contactEmail": "gstcin@lvsolutions.com; nsiwak@lvsolutions.com; tbleker@lvsolutions.com; smartin@lvsolutions.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "NICON",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -425,7 +427,7 @@ export const ContractorsData = [
     {
         "name": "M. A. Mortenson Company",
         "contactName": "Brian Tobiczyk; Bob Bachmeier; Emily Sherry",
-        "contactEmail": "bob.bachmeier@mortenson.com; emily.sherry@mortenson.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
@@ -434,7 +436,7 @@ export const ContractorsData = [
     {
         "name": "M.C. Dean, Inc.",
         "contactName": "Ahmed Gokturk; Karen Goldbeck; Amanda Johnson; Troy Stuck",
-        "contactEmail": "ahmed.gokturk@mcdean.com; Karen.Goldbeck@mcdean.com; amanda.johnson@mcdean.com; Troy.stuck@mcdean.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "North America",
@@ -443,7 +445,7 @@ export const ContractorsData = [
     {
         "name": "Manhattan Construction Company",
         "contactName": "Ryan Haynie; Ronnie Wood; Greg McClure; Davis Barksdale",
-        "contactEmail": "rhaynie@manhattanconstruction.com; rawood@manhattanconstruction.com; GMcClure@manhattanconstruction.com; Dbarksdale@manhattanconstruction.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
@@ -452,7 +454,7 @@ export const ContractorsData = [
     {
         "name": "McFarland Building Group, LLC",
         "contactName": "Michelle Smith; Becki Wilson; Ben Wilhelm; Gene Harris",
-        "contactEmail": "msmith@mcco-us.com; bwilson@mcco-us.com; bwilhelm@mcco-us.com; gharris@mcco-us.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -461,7 +463,7 @@ export const ContractorsData = [
     {
         "name": "McKenney's, Inc.",
         "contactName": "Steve Smith; Matt Stroer; Valerie Vanantwerp; Timothy Smith",
-        "contactEmail": "steve.r.smith@mckenneys.com; matt.stroer@mckenneys.com; valerie.vanantwerp@mckenneys.com; timothy.smith@mckenneys.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -470,7 +472,7 @@ export const ContractorsData = [
     {
         "name": "Miller Electric Company [MECOJAX]",
         "contactName": "Kevin Hebert; Derek Elmo; Helga Oliver; Donnie Smith; Nadene Young; Craig Langfeldt",
-        "contactEmail": "nhebert@mecojax.com; delmo@mecojax.com; holiver@mecojax.com; dsmith@mecojax.com; nyoung@mecojax.com; craigl@millerelect.com; byarber@mecojax.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -479,7 +481,7 @@ export const ContractorsData = [
     {
         "name": "Miller Electric Company [Omaha]",
         "contactName": "Craig Langfeldt; Tim Tanner; Roger Ferris",
-        "contactEmail": "craigl@millerelect.com; tim.tanner@millerelect.com; roger.ferris@millerelect.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
@@ -488,7 +490,7 @@ export const ContractorsData = [
     {
         "name": "MMC Mechanical Contractors, Inc",
         "contactName": "Tom Benassi; Jack Duren; Andrew Thompson; Dennis Eden",
-        "contactEmail": "tbenassi@mmccontractors.com; jduren@mmccontractors.com; athompson@mmccontractors.com; deden@mmccontractors.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -497,7 +499,7 @@ export const ContractorsData = [
     {
         "name": "OEG, Inc",
         "contactName": "Alex Maia; Sean Cox; Tom Bergmann; Danny Robinson",
-        "contactEmail": "alex.maia@oeg.us.com; sean.cox@oeg.us.com; tom.bergmann@oeg.us.com; danny.robinson@oeg.us.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Most Preferred",
         "region": "West",
@@ -506,7 +508,7 @@ export const ContractorsData = [
     {
         "name": "Oklahoma Electrical Supply Company",
         "contactName": "Bill Cooper; Rick Brasher; Robert Cook; William Hill; Roger Calvert; Steve Maloney [Tulsa]; Becky Barney [Oklahoma]",
-        "contactEmail": "bcooper@oesco.com; ebrashear@oesco.com; rcook@oesco.com; bhill@oesco.com; calvert@oesco.com; smaloney@oesco.com; RBarney@oesco.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -515,7 +517,7 @@ export const ContractorsData = [
     {
         "name": "P & C Construction, Inc.",
         "contactName": "Royce Cornelison; Stacie Cooper; Nic Cornelison; Jordan Cornelison",
-        "contactEmail": "royce@pc-const.com; stacie@pc-const.com; nic@pc-const.com; jordan@pc-const.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -524,7 +526,7 @@ export const ContractorsData = [
     {
         "name": "P1 Group",
         "contactName": "Daniel Farnan; Danny Rickman; Dan Gibson; Dan Osborne",
-        "contactEmail": "daniel.farnan@p1group.com; danny.rickman@p1group.com; dan.gibson@p1group.com; dan.osborne@p1group.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -533,7 +535,7 @@ export const ContractorsData = [
     {
         "name": "Palmetto Tri-Venture",
         "contactName": "Corey Ketchum; Todd Pressley; Bill Johnson; Jeremy Southerland",
-        "contactEmail": "CKetchum@tcco.com; TPressley@ujamaaconstruction.com; johnsonb@twc-stl.com; jsoutherland@tcco.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -542,7 +544,7 @@ export const ContractorsData = [
     {
         "name": "Patterson & Dewar Engineers, Inc.",
         "contactName": "John McCullen; James Rains; Larry Kincer; Jim Gelsomini",
-        "contactEmail": "johnmccullen@hoodpd.com; jrains@pdengineers.com; lkincer@pdengineers.com; jgelsomini@pdengineers.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical / Professional Services",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -551,7 +553,7 @@ export const ContractorsData = [
     {
         "name": "R. Lafferty & Son Industrial And Commercial Contractors, LLC",
         "contactName": "Hunter Schmitton; William B Bryant",
-        "contactEmail": "hunter@laffertyandson.com; bbryant@laffertyandson.com; laffertygc@laffertyandson.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -560,7 +562,7 @@ export const ContractorsData = [
     {
         "name": "Southland Industries",
         "contactName": "Timothy Michael; Jose Felsmann; Michael Starego; Jeremiah Newens",
-        "contactEmail": "tmichael@southlandind.com; jfelsmann@southlandind.com; mstarego@southlandind.com; jnewens@southlandind.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
@@ -569,7 +571,7 @@ export const ContractorsData = [
     {
         "name": "Suffolk Construction Company, Inc",
         "contactName": "Darin S Hart; Michael Mallon",
-        "contactEmail": "Dhart@suffolk.com; MMallon@suffolk.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -578,7 +580,7 @@ export const ContractorsData = [
     {
         "name": "Superior Fiber & Data Services, Inc.",
         "contactName": "Randy Fuller; Tommy Osborne; Jeff Macfee",
-        "contactEmail": "rfuller@sfdcabling.com",
+        "contactEmail": "<REDACTED_PII>",
         "type": "Electrical / NICON",
         "preferredStatus": "Not Evaluated",
         "region": "North America",
@@ -587,7 +589,7 @@ export const ContractorsData = [
     {
         "name": "T5 Data Centers LLC",
         "contactName": "Adam Board; Benjamin Hilderbrand; David Gruber; David Mettler; Brian Pate",
-        "contactEmail": "aboard@t5datacenters.com; bhilderbrand@t5datacenters.com; dgruber@t5datacenters.com; dmettler@t5datacenters.com; bpate@t5datacenters.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Preferred",
         "region": "North America",
@@ -596,7 +598,7 @@ export const ContractorsData = [
     {
         "name": "Teel Construction",
         "contactName": "Bryce Teel; Robert Tucker; Nick Davis; Adam Turner",
-        "contactEmail": "bteel@teelconstruction.com; rtucker@teelconstruction.com; ndavis@teelconstruction.com; aturner@teelconstruction.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -605,7 +607,7 @@ export const ContractorsData = [
     {
         "name": "Teklus Construction, LLC",
         "contactName": "Shu Nomura; Chris Hood; Nathan Weber; Joel McGraw",
-        "contactEmail": "shu.nomura@teklus.com; chris.hood@teklus.com; nathan.weber@teklus.com; joel.mcgraw@teklus.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -614,7 +616,7 @@ export const ContractorsData = [
     {
         "name": "The Poole and Kent Corporation",
         "contactName": "Donald Lynott; Jake Medina; Brian Touchard; Daniel Bock; Adam Snavely",
-        "contactEmail": "dlynott@emcor.net / dlynott@pkcorp.com; jmedina@emcor.net / jmedina@pkcorp.com; btouchard@emcor.net / btouchard@pkcorp.com; dbock@pkcorp.com; asnavely@emcor.net",
+        "contactEmail": "<REDACTED_PII> / <REDACTED_PII>; <REDACTED_PII> / <REDACTED_PII>; <REDACTED_PII> / <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -623,7 +625,7 @@ export const ContractorsData = [
     {
         "name": "The Whiting-Turner Contracting Company",
         "contactName": "Jonathan Hess; Brent Voyles; Kendall Martin; Adam Eshelbrenner",
-        "contactEmail": "Jonathan.Hess@whiting-turner.com; Brent.Voyles@whiting-turner.com; kendall.martin@whiting-turner.com; adam.eshelbrenner@whiting-turner.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West (Central)",
@@ -632,7 +634,7 @@ export const ContractorsData = [
     {
         "name": "TM Source Building Group, Inc.",
         "contactName": "Trelaine M. Mapp; Laurie Smithson Butler; Martin Barron",
-        "contactEmail": "tmapp@sourcebuild.net; lsmithson@sourcebuild.net; mbarron@sourcebuild.net",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -641,7 +643,7 @@ export const ContractorsData = [
     {
         "name": "Turner Construction Company Inc",
         "contactName": "Corey Ketchum; Dan Fine",
-        "contactEmail": "CKetchum@tcco.com; dmfine@tcco.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -650,7 +652,7 @@ export const ContractorsData = [
     {
         "name": "TW Constructors, LLC",
         "contactName": "Todd Weaver; Bill Johnson; Nick Gittemeier; Bill Begis; Todd Nelson",
-        "contactEmail": "weavert@twc-stl.com; Johnsonb@twc-stl.com; begisb@twc-stl.com; nelsont@twc-stl.com; gittemeiern@twc-stl.com; johnsonb@twc-stl.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -659,7 +661,7 @@ export const ContractorsData = [
     {
         "name": "U.S. Engineering Innovations, LLC",
         "contactName": "Vincent Michael Pianalto; Bryan Taylor; Justin Apprill; Jarrod Foster; Jeff Kiblen; Adam Provost; Richard Green",
-        "contactEmail": "vince.pianalto@usengineering.com; Bryan.Taylor@usengineering.com; Justin.Apprill@useinnovations.com; Jarrod.foster@useinnovations.com; jeff.kiblen@useinnovations.com; adam.provost@usengineering.com; richard.green@usengineering.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Mechanical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -668,7 +670,7 @@ export const ContractorsData = [
     {
         "name": "Ujamaa Construction Inc.",
         "contactName": "Todd O. Pressley; Justin Dwaun Redding; Kevin P. Waco",
-        "contactEmail": "TPressley@ujamaaconstruction.com; jredding@ujamaaconstruction.com; kwaco@ujamaaconstruction.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
@@ -677,7 +679,7 @@ export const ContractorsData = [
     {
         "name": "Vertiv Corporation",
         "contactName": "Omar Mckee; Samir Mehta; Simon Killen; Mark Asgarian; Dave Rubcich; Mike Zapata",
-        "contactEmail": "omar.mckee@emerson.com; samir.mehta@vertiv.com; simon.killen@vertiv.com; mark.asgarian@vertiv.com; dave.rubcich@vertiv.com; mike.zapata@vertiv.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -686,7 +688,7 @@ export const ContractorsData = [
     {
         "name": "Viking Engineering and Construction, LLC",
         "contactName": "Cecil DelaCruz; Jeffrey Payson; Drew Schaefer; Serge Bachinsky; Zach Hunt; Noah Johnson",
-        "contactEmail": "cecil@vikingec.com; jpayson@vikingec.com; drew@vikingec.com; serge@vikingec.com; zach@vikingec.com; noah@vikingec.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Most Preferred",
         "region": "West",
@@ -695,7 +697,7 @@ export const ContractorsData = [
     {
         "name": "Vision Technologies, LLC",
         "contactName": "Kevin Nolan; Yaser Ali; Peter Cava; Jon Lyman; Jennifer Spees; S. Michael Quade",
-        "contactEmail": "knolan@visiontech.biz; yali@visiontech.biz; pcava@visiontech.biz; jlyman@visiontech.biz; jspees@visiontech.biz; mquade@visiontech.biz",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "NICON",
         "preferredStatus": "Most Preferred",
         "region": "East",
@@ -704,7 +706,7 @@ export const ContractorsData = [
     {
         "name": "W. G. Yates & Sons Construction Company",
         "contactName": "Barry Scearce; Nick McIlwain; Jennifer Mountjoy",
-        "contactEmail": "bscearce@wgyates.com; nmcilwain@wgyates.com; jmountjoy@wgyates.com; chetnadolski@wgyates.com; piden@wgyates.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "West",
@@ -713,7 +715,7 @@ export const ContractorsData = [
     {
         "name": "Walker Engineering, Inc.",
         "contactName": "Randy Randolph; Eric Lugger; Justin Davis; Raymond Fischer",
-        "contactEmail": "rrandolph@walkertx.com; elugger@walkertx.com; jrdavis@walkertx.com; rfischer@walkertx.com",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "Electrical",
         "preferredStatus": "Most Preferred",
         "region": "West",
@@ -722,7 +724,7 @@ export const ContractorsData = [
     {
         "name": "Wycliffe Trinity, LLC",
         "contactName": "Anthony Reichel; Kristen Askin; Sam Metta",
-        "contactEmail": "tonyr@trinitygc.us; KristenA@TRINITYgc.us; SamM@TRINITYgc.us",
+        "contactEmail": "<REDACTED_PII>; <REDACTED_PII>; <REDACTED_PII>",
         "type": "General Contractor",
         "preferredStatus": "Not Evaluated",
         "region": "East",
