@@ -2,37 +2,196 @@
  * @fileoverview Firestore Security Rules for the MARCUS Automation Suite.
  *
  * Core Philosophy:
- * This ruleset implements a hybrid security model, combining user-based ownership for personal data,
- * public read access for global data, and role-based access control for collaborative projects.  It leverages
- * denormalization to enforce authorization without relying on costly `get()` operations.
+ * This ruleset enforces a combination of public read access for lookup data,
+ * path-based ownership for user-specific data, and role-based access control
+ * for collaborative and administrative data management. Data required for
+ * authorization decisions is denormalized onto the secured documents to avoid
+ * costly `get()` operations within the rules.
  *
  * Data Structure:
- * - /users/{userId}: Stores private user profile data. Only the user can read/write.
- * - /metro_codes/{metroCodeId}, /contractor_types/{contractorTypeId}, /contractors/{contractorId}:
- *   Store publicly readable global data.
- * - /projects/{projectId}: Stores project data with a `members` map for access control.
- * - /projects/{projectId}/technical_documents/{technicalDocumentId},
- *   /projects/{projectId}/proposals/{proposalId}: Store project-related data, inheriting access control from the
- *   parent project's `members` map.
- * - /users/{userId}/feedbacks/{feedbackId}: Stores user feedback. Only the user can read/write.
- * - /roles_admin/{userId}: Indicates if a user is an administrator. Existence of document grants admin privileges.
+ * - /metro_codes/{metroCodeId}: Publicly readable metro codes.
+ * - /contractor_types/{contractorTypeId}: Publicly readable contractor types.
+ * - /contractors/{contractorId}: Contractor information, access controlled by system roles.
+ * - /projects/{projectId}: Project details, access controlled by project membership (not yet implemented).
+ * - /projects/{projectId}/eoi_emails/{eoiEmailId}: EOI emails, access controlled by project membership (not yet implemented). Includes denormalized 'projectId'.
+ * - /projects/{projectId}/rfps/{rfpId}: RFPs, access controlled by project membership (not yet implemented). Includes denormalized 'projectId'.
+ * - /rfps/{rfpId}/proposals/{proposalId}: Proposals, access controlled by RFP membership (not yet implemented). Includes denormalized 'rfpId'.
+ * - /proposals/{proposalId}/scorecards/{scorecardId}: Scorecards, access controlled by Proposal membership (not yet implemented). Includes denormalized 'proposalId'.
+ * - /projects/{projectId}/award_recommendations/{awardRecommendationId}: Award recommendations, access controlled by project membership (not yet implemented). Includes denormalized 'projectId'.
+ * - /users/{userId}/feedback/{feedbackId}: Feedback from users, access controlled by path-based ownership.
+ * - /technical_documents/{technicalDocumentId}: Technical documents, access controlled by system roles (not yet implemented).
+ * - /documents/{documentId}: Generic documents, access controlled by association (not yet implemented).
  *
  * Key Security Decisions:
- * - User data is strictly isolated using path-based ownership.
- * - Global data is publicly readable.
- * - Project access is managed through a `members` map on the project document, denormalized to subcollections.
- * - Administrative privileges are granted based on the existence of a document in the `/roles_admin/{userId}` collection.
- * - List operations are secured to prevent unauthorized data exposure.
- * - Data shape validation is relaxed to allow for rapid prototyping.
+ * - Public read access is granted to the `metro_codes` and `contractor_types` collections.
+ * - User feedback is secured using path-based ownership under `/users/{userId}`.
+ * - Other collections have placeholder rules (`allow create, update, delete: if false;`) to prevent accidental open access.
+ * - No `list` operations are globally allowed except for `metro_codes` and `contractor_types`.
  *
  * Denormalization for Authorization:
- * The `members` map from `/projects/{projectId}` is denormalized into
- * `/projects/{projectId}/technical_documents/{technicalDocumentId}` and
- * `/projects/{projectId}/proposals/{proposalId}` to avoid `get()` calls and enforce consistent access control.
+ * - Several subcollections (e.g., `eoi_emails`, `rfps`) denormalize the parent `projectId` or `rfpId` onto the document for simpler authorization rules. This avoids needing to perform costly `get()` operations in the rules.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    /**
+     * @description Allows public read access to metro codes.
+     * @path /metro_codes/{metroCodeId}
+     * @allow (get, list) - Any user can read metro code data.
+     * @deny (create, update, delete) - No user can modify metro code data.
+     * @principle Public read access for lookup data.
+     */
+    match /metro_codes/{metroCodeId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows public read access to contractor types.
+     * @path /contractor_types/{contractorTypeId}
+     * @allow (get, list) - Any user can read contractor type data.
+     * @deny (create, update, delete) - No user can modify contractor type data.
+     * @principle Public read access for lookup data.
+     */
+    match /contractor_types/{contractorTypeId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Controls access to contractor information.
+     * @path /contractors/{contractorId}
+     * @allow None. Access to be controlled by system roles (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for role-based access control.
+     */
+    match /contractors/{contractorId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add role-based access control.
+    }
+
+    /**
+     * @description Controls access to project details.
+     * @path /projects/{projectId}
+     * @allow None. Access to be controlled by project membership (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for membership-based access control.
+     */
+    match /projects/{projectId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add project membership access control.
+    }
+
+    /**
+     * @description Controls access to EOI emails related to a project.
+     * @path /projects/{projectId}/eoi_emails/{eoiEmailId}
+     * @allow None. Access to be controlled by project membership (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for membership-based access control.
+     */
+    match /projects/{projectId}/eoi_emails/{eoiEmailId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add project membership access control.
+    }
+
+    /**
+     * @description Controls access to RFPs related to a project.
+     * @path /projects/{projectId}/rfps/{rfpId}
+     * @allow None. Access to be controlled by project membership (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for membership-based access control.
+     */
+    match /projects/{projectId}/rfps/{rfpId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add project membership access control.
+    }
+
+    /**
+     * @description Controls access to proposals submitted for an RFP.
+     * @path /rfps/{rfpId}/proposals/{proposalId}
+     * @allow None. Access to be controlled by RFP membership (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for membership-based access control.
+     */
+    match /rfps/{rfpId}/proposals/{proposalId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add RFP membership access control.
+    }
+
+    /**
+     * @description Controls access to scorecards for proposals.
+     * @path /proposals/{proposalId}/scorecards/{scorecardId}
+     * @allow None. Access to be controlled by Proposal membership (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for membership-based access control.
+     */
+    match /proposals/{proposalId}/scorecards/{scorecardId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add Proposal membership access control.
+    }
+
+    /**
+     * @description Controls access to award recommendations for projects.
+     * @path /projects/{projectId}/award_recommendations/{awardRecommendationId}
+     * @allow None. Access to be controlled by project membership (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for membership-based access control.
+     */
+    match /projects/{projectId}/award_recommendations/{awardRecommendationId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add project membership access control.
+    }
+
+    /**
+     * @description Allows users to manage their own feedback.
+     * @path /users/{userId}/feedback/{feedbackId}
+     * @allow (create) - User can create feedback if the userId matches their auth.
+     * @allow (get, list, update, delete) - User can access their own feedback.
+     * @deny (create, update, delete) - User cannot modify another user's feedback.
+     * @principle Path-based ownership for user-specific data.
+     */
+    match /users/{userId}/feedback/{feedbackId} {
+      allow get, list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && resource != null;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to technical documents.
+     * @path /technical_documents/{technicalDocumentId}
+     * @allow None. Access to be controlled by system roles (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for role-based access control.
+     */
+    match /technical_documents/{technicalDocumentId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add role-based access control.
+    }
+
+    /**
+     * @description Controls access to generic documents.
+     * @path /documents/{documentId}
+     * @allow None. Access to be controlled by association (not yet implemented).
+     * @deny All operations.
+     * @principle Placeholder for association-based access control.
+     */
+    match /documents/{documentId} {
+      allow get: if false;
+      allow list: if false;
+      allow create, update, delete: if false; // TODO: Add association-based access control.
+    }
+
+    // --- Helper Functions ---
 
     /**
      * @description Checks if the user is signed in.
@@ -43,150 +202,21 @@ service cloud.firestore {
     }
 
     /**
-     * @description Checks if the authenticated user's UID matches the provided userId.
-     * @param {string} userId - The user ID to compare against the authenticated user's UID.
+     * @description Checks if the user is the owner of the document based on the path.
+     * @param {string} userId The user ID from the path.
      * @return {bool} True if the user is the owner, false otherwise.
      */
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return request.auth.uid == userId;
     }
 
-    /**
-     * @description Checks if the authenticated user's UID matches the provided userId and the document exists.
-     * @param {string} userId - The user ID to compare against the authenticated user's UID.
+        /**
+     * @description Checks if the user is the owner of the existing document based on the path.
+     * @param {string} userId The user ID from the path.
      * @return {bool} True if the user is the owner and the document exists, false otherwise.
      */
     function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Checks if the authenticated user is an administrator.
-     * @return {bool} True if the user is an admin, false otherwise.
-     */
-    function isAdmin() {
-      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    /**
-     * @description Checks if the authenticated user is a member of the project.
-     * @param {string} projectId - The ID of the project.
-     * @return {bool} True if the user is a member, false otherwise.
-     */
-    function isProjectMember(projectId) {
-      return get(/databases/$(database)/documents/projects/$(projectId)).data.members[request.auth.uid] != null;
-    }
-
-    /**
-     * @description Rules for user profiles.
-     * @path /users/{userId}
-     * @allow (create) User 'user_abc' can create their profile if request.auth.uid == userId.
-     * @deny (create) User 'user_xyz' cannot create a profile for 'user_abc'.
-     * @allow (get) User 'user_abc' can read their own profile.
-     * @deny (get) User 'user_xyz' cannot read 'user_abc' profile.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data.
-     */
-    match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for metro codes.
-     * @path /metro_codes/{metroCodeId}
-     * @allow (get) Any user can read metro codes.
-     * @deny (create) No one can create metro codes.
-     * @principle Allows public read access to metro codes, but restricts write access.
-     */
-    match /metro_codes/{metroCodeId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Rules for contractor types.
-     * @path /contractor_types/{contractorTypeId}
-     * @allow (get) Any user can read contractor types.
-     * @deny (create) No one can create contractor types.
-     * @principle Allows public read access to contractor types, but restricts write access.
-     */
-    match /contractor_types/{contractorTypeId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Rules for contractors.
-     * @path /contractors/{contractorId}
-     * @allow (get) Any user can read contractor information.
-     * @deny (create) No one can create contractor information.
-     * @principle Allows public read access to contractors, but restricts write access.
-     */
-    match /contractors/{contractorId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Rules for projects.
-     * @path /projects/{projectId}
-     * @allow (create) Any authenticated user can create project
-     * @deny (update) User cannot update project if not a project member
-     */
-    match /projects/{projectId} {
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isProjectMember(projectId);
-        allow delete: if isProjectMember(projectId);
-    }
-
-    /**
-     * @description Rules for technical documents within a project.
-     * @path /projects/{projectId}/technical_documents/{technicalDocumentId}
-     */
-    match /projects/{projectId}/technical_documents/{technicalDocumentId} {
-        allow get, list: if isProjectMember(projectId);
-        allow create: if isProjectMember(projectId);
-        allow update: if isProjectMember(projectId);
-        allow delete: if isProjectMember(projectId);
-    }
-
-    /**
-     * @description Rules for proposals within a project.
-     * @path /projects/{projectId}/proposals/{proposalId}
-     */
-    match /projects/{projectId}/proposals/{proposalId} {
-        allow get, list: if isProjectMember(projectId);
-        allow create: if isProjectMember(projectId);
-        allow update: if isProjectMember(projectId);
-        allow delete: if isProjectMember(projectId);
-    }
-
-    /**
-     * @description Rules for user feedback.
-     * @path /users/{userId}/feedbacks/{feedbackId}
-     */
-    match /users/{userId}/feedbacks/{feedbackId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Rules for admin roles.
-     * @path /roles_admin/{userId}
-     */
-    match /roles_admin/{userId} {
-      allow get: if isAdmin();
-      allow list: if false;
-      allow create: if isAdmin();
-      allow update: if false;
-      allow delete: if isAdmin();
+      return isSignedIn() && isOwner(userId) && resource != null;
     }
   }
 }
