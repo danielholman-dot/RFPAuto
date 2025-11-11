@@ -29,8 +29,13 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    if (path === '/dashboard' && pathname === '/dashboard') return true;
-    if (path !== '/dashboard' && pathname.startsWith(path)) return true;
+    if (path === '/' && pathname === '/') return true;
+    if (path !== '/' && pathname.startsWith(path)) return true;
+    if (path === '/rfp' && pathname.startsWith('/rfp/')) return true;
+
+    // Special case for dashboard
+    if (path === '/' && pathname === '/dashboard') return true;
+
     return false;
   };
 
@@ -45,10 +50,10 @@ export function AppSidebar() {
       <SidebarMenu>
         <SidebarGroup>
           <SidebarMenuItem>
-            <Link href="/dashboard" passHref>
+            <Link href="/" passHref>
               <SidebarMenuButton
                 asChild
-                isActive={isActive('/dashboard')}
+                isActive={isActive('/')}
                 tooltip={{ children: 'Dashboard' }}
               >
                 <span>
@@ -76,7 +81,7 @@ export function AppSidebar() {
             <Link href="/rfp" passHref>
               <SidebarMenuButton
                 asChild
-                isActive={isActive('/rfp') && !isActive('/rfp/new')}
+                isActive={isActive('/rfp') && !pathname.includes('/rfp/new')}
                 tooltip={{ children: 'RFP Registry' }}
               >
                 <span>

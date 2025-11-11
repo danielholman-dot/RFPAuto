@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed-db": "node --loader ts-node/esm --experimental-specifier-resolution=node ./scripts/seed-db.ts"
+    "seed-db": "node --loader ts-node/esm --experimental-specifier-resolution=node ./scripts/seed-db.ts",
+    "postinstall": "rm -f src/app/page.tsx && touch src/app/page.tsx"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.22.0",
