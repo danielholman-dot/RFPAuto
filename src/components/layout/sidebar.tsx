@@ -29,12 +29,14 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    if (path === '/' && pathname === '/') return true;
-    if (path !== '/' && pathname.startsWith(path)) return true;
+    // Exact match for dashboard
+    if (path === '/dashboard' && pathname === '/dashboard') return true;
+    
+    // Default to dashboard for root
+    if (path === '/dashboard' && pathname === '/') return true;
+    
+    if (path !== '/dashboard' && pathname.startsWith(path)) return true;
     if (path === '/rfp' && pathname.startsWith('/rfp/')) return true;
-
-    // Special case for dashboard
-    if (path === '/' && pathname === '/dashboard') return true;
 
     return false;
   };
@@ -50,10 +52,10 @@ export function AppSidebar() {
       <SidebarMenu>
         <SidebarGroup>
           <SidebarMenuItem>
-            <Link href="/" passHref>
+            <Link href="/dashboard" passHref>
               <SidebarMenuButton
                 asChild
-                isActive={isActive('/')}
+                isActive={isActive('/dashboard')}
                 tooltip={{ children: 'Dashboard' }}
               >
                 <span>
