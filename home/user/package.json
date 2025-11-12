@@ -8,8 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed-db": "node --loader ts-node/esm --experimental-specifier-resolution=node ./scripts/seed-db.ts",
-    "postinstall": "rm -f src/app/page.tsx && touch src/app/page.tsx"
+    "seed-db": "node --loader ts-node/esm --experimental-specifier-resolution=node ./scripts/seed-db.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.22.0",
@@ -38,7 +37,6 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.2.3",
     "embla-carousel-react": "^8.1.7",
     "firebase": "^12.4.0",
     "genkit": "^1.22.0",
