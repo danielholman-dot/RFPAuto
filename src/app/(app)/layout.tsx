@@ -1,7 +1,7 @@
 
 'use client';
 
-import { usePathname, useRouter, redirect } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { SidebarInset } from '@/components/ui/sidebar';
@@ -21,39 +21,28 @@ function AppLayout({
   const [user, loading, error] = useAuthState(auth);
 
   useEffect(() => {
-    if (!loading && !user && !pathname.startsWith('/proposal/submit') && pathname !== '/login') {
+    // The root page now handles its own auth check.
+    // This layout is for all other pages under /app
+    if (!loading && !user && !pathname.startsWith('/proposal/submit') && pathname !== '/login' && pathname !== '/') {
       router.push('/login');
     }
   }, [loading, user, router, pathname]);
 
   const isPublicPage = pathname.startsWith('/proposal/submit') || pathname === '/login';
-  
-  // This logic is now handled in page.tsx and the effect above
-  // const isHomepage = pathname === '/';
-  // if (isHomepage) {
-  //   if (loading) {
-  //       return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  //   }
-  //   if (!user) {
-  //       redirect('/login');
-  //   } else {
-  //       redirect('/dashboard');
-  //   }
-  // }
-  
+
   if (isPublicPage) {
     return <main>{children}</main>;
   }
-
-
-  if (loading || (!user && !isPublicPage)) {
-    return (
+  
+  if (loading && !user) {
+     return (
         <div className="flex h-screen w-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Authenticating...</p>
+            <p className="ml-2">Loading...</p>
         </div>
     );
   }
+
 
   return (
     <>
