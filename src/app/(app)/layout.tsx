@@ -21,8 +21,7 @@ function AppLayout({
   const [user, loading, error] = useAuthState(auth);
 
   useEffect(() => {
-    // TEMPORARY: Force redirect to login for debugging
-    if (!loading && pathname !== '/login') {
+    if (!loading && !user) {
       router.push('/login');
     }
   }, [loading, user, router, pathname]);
