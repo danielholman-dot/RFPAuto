@@ -5,8 +5,7 @@ steps:
     args:
       - 'build'
       - '-t'
-      # Tag with the short commit SHA, and 'latest' as a fallback
-      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${_IMAGE_TAG}'
       - '.'
 
   # Step 1: Push the Docker image to Artifact Registry
@@ -14,7 +13,7 @@ steps:
     id: Push
     args:
       - 'push'
-      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${_IMAGE_TAG}'
 
   # Step 2: Deploy to Cloud Run using the Firebase App Hosting service account
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -25,7 +24,7 @@ steps:
       - 'deploy'
       - 'studio'
       - '--image'
-      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${_IMAGE_TAG}'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -42,13 +41,12 @@ steps:
 
 # Artifacts to be produced by the build
 images:
-  - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+  - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${_IMAGE_TAG}'
 
 # Options for the build
 options:
   logging: CLOUD_LOGGING_ONLY
-  # substitutionOption: ALLOW_LOOSE # Usually default for triggers
 
-# Service account for Cloud Build to use (This is the Cloud Build SA, not the Cloud Run SA)
-# Ensure this SA has roles/cloudbuild.builds.builder and roles/iam.serviceAccountUser
-# serviceAccount: 'projects/constructionrfp-sandbox-943476/serviceAccounts/<REDACTED_PII>'
+# User-defined substitutions
+substitutions:
+  _IMAGE_TAG: $(echo ${SHORT_SHA:-latest})
