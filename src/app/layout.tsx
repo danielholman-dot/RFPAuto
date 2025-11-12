@@ -4,11 +4,16 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/layout/sidebar';
+import { Header } from '@/components/layout/header';
+import { SidebarInset } from '@/components/ui/sidebar';
+import { AppLayoutContent } from '@/components/layout/app-layout-content';
+
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.Node;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -23,7 +28,9 @@ export default function RootLayout({
       <body className={cn('font-body antialiased', 'min-h-screen bg-background font-sans')}>
         <FirebaseClientProvider>
           <SidebarProvider>
-            {children}
+            <AppLayoutContent>
+                {children}
+            </AppLayoutContent>
           </SidebarProvider>
         </FirebaseClientProvider>
         <Toaster />
