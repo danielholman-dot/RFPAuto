@@ -1,0 +1,54 @@
+steps:
+  # Step 0: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Build
+    args:
+      - 'build'
+      - '-t'
+      # Tag with the short commit SHA, and 'latest' as a fallback
+      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+      - '.'
+
+  # Step 1: Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Push
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+
+  # Step 2: Deploy to Cloud Run using the Firebase App Hosting service account
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: Deploy
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'studio'
+      - '--image'
+      - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--quiet'
+      - '--service-account'
+      - '<REDACTED_PII>'
+      # Add other runConfig settings from apphosting.yaml if needed, e.g.:
+      # - '--min-instances=0'
+      # - '--max-instances=100'
+      # - '--concurrency=80'
+      # - '--cpu=1'
+      # - '--memory=512Mi'
+
+# Artifacts to be produced by the build
+images:
+  - 'us-central1-docker.pkg.dev/constructionrfp-sandbox-943476/firebaseapphosting-images/studio:${SHORT_SHA:-latest}'
+
+# Options for the build
+options:
+  logging: CLOUD_LOGGING_ONLY
+  # substitutionOption: ALLOW_LOOSE # Usually default for triggers
+
+# Service account for Cloud Build to use (This is the Cloud Build SA, not the Cloud Run SA)
+# Ensure this SA has roles/cloudbuild.builds.builder and roles/iam.serviceAccountUser
+# serviceAccount: 'projects/constructionrfp-sandbox-943476/serviceAccounts/<REDACTED_PII>'
