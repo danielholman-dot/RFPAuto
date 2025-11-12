@@ -21,9 +21,8 @@ function AppLayout({
   const [user, loading, error] = useAuthState(auth);
 
   useEffect(() => {
-    // The root page now handles its own auth check.
-    // This layout is for all other pages under /app
-    if (!loading && !user && !pathname.startsWith('/proposal/submit') && pathname !== '/login' && pathname !== '/') {
+    // TEMPORARY: Force redirect to login for debugging
+    if (!loading && pathname !== '/login') {
       router.push('/login');
     }
   }, [loading, user, router, pathname]);
@@ -34,7 +33,7 @@ function AppLayout({
     return <main>{children}</main>;
   }
   
-  if (loading && !user) {
+  if (loading || !user) {
      return (
         <div className="flex h-screen w-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -43,7 +42,7 @@ function AppLayout({
     );
   }
 
-
+  // This part will not be reached due to the redirect, but is kept for when the fix is reverted.
   return (
     <>
       <AppSidebar />
